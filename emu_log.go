@@ -115,6 +115,10 @@ const (
 )
 
 func main() {
+	if len(os.Args) > 1 {
+		printInfo()
+		return
+	}
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	checkLocalTimezone()
 	checkInternetConnection()
@@ -138,6 +142,22 @@ func main() {
 		log.Info().Msgf("next schduled run: %v", nextRun)
 		time.Sleep(time.Until(nextRun))
 	}
+}
+
+func printInfo() {
+	for i := range bureaus {
+		if bureaus[i].Code == os.Args[1] {
+			info, _ := bureaus[i].Info(os.Args[2])
+			prettyPrint(info)
+			return
+		}
+	}
+}
+
+func prettyPrint(obj interface{}) {
+	jsonBytes, err := json.MarshalIndent(obj, "", "    ")
+	checkFatal(err)
+	fmt.Printf("%s\n", jsonBytes)
 }
 
 func iterBureaus() {
