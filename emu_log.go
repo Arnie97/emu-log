@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"sync"
 	"time"
 
@@ -38,6 +39,7 @@ var bureaus = []Bureau{
 			var info JsonObject
 			info, err = this.Info(pqCode)
 			if err == nil {
+				defer catch(&err)
 				trainNo = info["trainName"].(string)
 				date = time.Now().Format("2006-01-02")
 			}
@@ -53,11 +55,11 @@ var bureaus = []Bureau{
 			defer resp.Body.Close()
 
 			var result struct {
-				Code int
-				Msg  string
-				Data JsonObject
+				Status int `json:"code"`
+				Msg    string
+				Data   JsonObject
 			}
-			err = json.NewDecoder(resp.Body).Decode(&result)
+			err = parseResult(resp, &result)
 			info = result.Data
 			return
 		},
@@ -69,6 +71,7 @@ var bureaus = []Bureau{
 			var info JsonObject
 			info, err = this.Info(qrCode)
 			if err == nil {
+				defer catch(&err)
 				trainNo = info["TrainnoId"].(string)
 				date = info["TrainnoDate"].(string)
 			}
@@ -84,14 +87,14 @@ var bureaus = []Bureau{
 				return
 			}
 			var result struct {
-				State int
-				Msg   string
-				Data  struct {
+				Status int `json:"state"`
+				Msg    string
+				Data   struct {
 					TrainInfo JsonObject
 					UrlStr    string
 				}
 			}
-			err = json.NewDecoder(resp.Body).Decode(&result)
+			err = parseResult(resp, &result)
 			info = result.Data.TrainInfo
 			return
 		},
@@ -113,6 +116,12 @@ const (
 	startTime      = 5 * time.Hour
 	endTime        = 24 * time.Hour
 )
+
+func catch(err *error) {
+	if r := recover(); r != nil {
+		*err = r.(error)
+	}
+}
 
 func main() {
 	if len(os.Args) > 1 {
@@ -186,7 +195,10 @@ func (b *Bureau) iterVehicles() {
 		var emuNo, qrCode, id string
 		checkFatal(rows.Scan(&emuNo, &qrCode, &id))
 		time.Sleep(requestDelay)
-		trainNo, date, _ := b.TrainNo(b, qrCode)
+		trainNo, date, err := b.TrainNo(b, qrCode)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
 		log.Debug().Msgf("%s: %s/%s", emuNo, b.Code, trainNo)
 		if trainNo != "" {
 			_, err := db.Exec(
@@ -260,5 +272,17 @@ func countRecords(tableName string) (count int) {
 	row := db.QueryRow(`SELECT COUNT(*) FROM ` + tableName)
 	err := row.Scan(&count)
 	checkFatal(err)
+	return
+}
+
+func parseResult(resp *http.Response, resultPtr interface{}) (err error) {
+	err = json.NewDecoder(resp.Body).Decode(resultPtr)
+	apiResult := reflect.Indirect(reflect.ValueOf(resultPtr)).FieldByName
+	if err == nil && apiResult("Status").Interface().(int) != 200 {
+		err = fmt.Errorf(
+			"api error %d: %s",
+			apiResult("Status"), apiResult("Msg"),
+		)
+	}
 	return
 }
