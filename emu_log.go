@@ -181,7 +181,11 @@ func (b *Bureau) iterVehicles() {
 	log.Info().Msgf("job started: %s", b.Name)
 	defer wg.Done()
 
-	rows, err := db.Query(`
+	tx, err := db.Begin()
+	checkFatal(err)
+	defer tx.Rollback()
+
+	rows, err := tx.Query(`
 		SELECT emu_no, emu_qrcode, MIN(rowid)
 		FROM emu_qrcode
 		WHERE emu_bureau = ?
@@ -201,13 +205,14 @@ func (b *Bureau) iterVehicles() {
 		}
 		log.Debug().Msgf("%s: %s/%s", emuNo, b.Code, trainNo)
 		if trainNo != "" {
-			_, err := db.Exec(
+			_, err := tx.Exec(
 				`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
 				date, emuNo, trainNo,
 			)
 			checkFatal(err)
 		}
 	}
+	tx.Commit()
 	log.Info().Msgf("job done: %s", b.Name)
 }
 
@@ -241,6 +246,7 @@ func checkDatabase() {
 	dbConn, err := sql.Open("sqlite3", "./emu_log.db")
 	checkFatal(err)
 	db = dbConn
+	db.SetMaxOpenConns(1)
 	// TODO: defer db.Close()
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS emu_log (
