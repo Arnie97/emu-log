@@ -170,20 +170,22 @@ func prettyPrint(obj interface{}) {
 }
 
 func iterBureaus() {
-	for i := range bureaus {
-		wg.Add(1)
-		go bureaus[i].iterVehicles()
-	}
-	wg.Wait()
-}
-
-func (b *Bureau) iterVehicles() {
-	log.Info().Msgf("job started: %s", b.Name)
-	defer wg.Done()
-
 	tx, err := db.Begin()
 	checkFatal(err)
 	defer tx.Rollback()
+
+	for i := range bureaus {
+		wg.Add(1)
+		go bureaus[i].iterVehicles(tx)
+	}
+
+	wg.Wait()
+	tx.Commit()
+}
+
+func (b *Bureau) iterVehicles(tx *sql.Tx) {
+	log.Info().Msgf("job started: %s", b.Name)
+	defer wg.Done()
 
 	rows, err := tx.Query(`
 		SELECT emu_no, emu_qrcode, MIN(rowid)
@@ -212,7 +214,6 @@ func (b *Bureau) iterVehicles() {
 			checkFatal(err)
 		}
 	}
-	tx.Commit()
 	log.Info().Msgf("job done: %s", b.Name)
 }
 
