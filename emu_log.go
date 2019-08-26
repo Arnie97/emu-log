@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,16 +19,17 @@ import (
 )
 
 type (
-	JsonObject map[string]interface{}
+	jsonObject map[string]interface{}
 	LogRecord  struct {
 		date, emuNo, trainNo string
 	}
 	Bureau struct {
-		Code    string
-		Name    string
-		TrainNo func(this *Bureau, qrCode string) (trainNo, date string, err error)
-		Info    func(qrCode string) (info JsonObject, err error)
-		Scan    func()
+		Code       string
+		Name       string
+		BruteForce func(chan<- string)
+		TrainNo    func(this *Bureau, qrCode string) (trainNo, date string, err error)
+		VehicleNo  func(this *Bureau, qrCode string) (vehicleNo string, err error)
+		Info       func(qrCode string) (info jsonObject, err error)
 	}
 )
 
@@ -35,8 +37,13 @@ var bureaus = []Bureau{
 	Bureau{
 		Code: "H",
 		Name: "中国铁路上海局集团有限公司",
+		BruteForce: func(pqCodes chan<- string) {
+			for i := 0; i < 2000000; i += 200 {
+				pqCodes <- fmt.Sprintf("PQ%07d", i)
+			}
+		},
 		TrainNo: func(this *Bureau, pqCode string) (trainNo, date string, err error) {
-			var info JsonObject
+			var info jsonObject
 			info, err = this.Info(pqCode)
 			if err == nil {
 				defer catch(&err)
@@ -45,7 +52,16 @@ var bureaus = []Bureau{
 			}
 			return
 		},
-		Info: func(pqCode string) (info JsonObject, err error) {
+		VehicleNo: func(this *Bureau, pqCode string) (vehicleNo string, err error) {
+			var info jsonObject
+			info, err = this.Info(pqCode)
+			if err == nil {
+				defer catch(&err)
+				vehicleNo = info["cdh"].(string)
+			}
+			return
+		},
+		Info: func(pqCode string) (info jsonObject, err error) {
 			const api = "https://g.xiuxiu365.cn/railway_api/web/index/train"
 			query := url.Values{"pqCode": {pqCode}}.Encode()
 			resp, err := httpClient.Get(api + "?" + query)
@@ -57,7 +73,7 @@ var bureaus = []Bureau{
 			var result struct {
 				Status int `json:"code"`
 				Msg    string
-				Data   JsonObject
+				Data   jsonObject
 			}
 			err = parseResult(resp, &result)
 			info = result.Data
@@ -67,8 +83,17 @@ var bureaus = []Bureau{
 	Bureau{
 		Code: "P",
 		Name: "中国铁路北京局集团有限公司",
+		BruteForce: func(qrCodes chan<- string) {
+			for x := 1; x <= 5; x += 2 {
+				for y := 0; y < 40; y++ {
+					for z := 0; z < 10000; z += 200 {
+						qrCodes <- fmt.Sprintf("%d%03d%04d", x, y, z)
+					}
+				}
+			}
+		},
 		TrainNo: func(this *Bureau, qrCode string) (trainNo, date string, err error) {
-			var info JsonObject
+			var info jsonObject
 			info, err = this.Info(qrCode)
 			if err == nil {
 				defer catch(&err)
@@ -77,7 +102,16 @@ var bureaus = []Bureau{
 			}
 			return
 		},
-		Info: func(qrCode string) (info JsonObject, err error) {
+		VehicleNo: func(this *Bureau, qrCode string) (vehicleNo string, err error) {
+			var info jsonObject
+			info, err = this.Info(qrCode)
+			if err == nil {
+				defer catch(&err)
+				vehicleNo = info["TrainId"].(string) // TODO: vehicle model inference
+			}
+			return
+		},
+		Info: func(qrCode string) (info jsonObject, err error) {
 			const api = "https://aymaoto.jtlf.cn/webapi/otoshopping/ewh_getqrcodetrainnoinfo"
 			const key = "qrcode=%s&key=ltRsjkiM8IRbC80Ni1jzU5jiO6pJvbKd"
 			sign := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(key, qrCode))))
@@ -90,8 +124,8 @@ var bureaus = []Bureau{
 				Status int `json:"state"`
 				Msg    string
 				Data   struct {
-					TrainInfo JsonObject
-					UrlStr    string
+					TrainInfo jsonObject
+					URLStr    string
 				}
 			}
 			err = parseResult(resp, &result)
@@ -117,22 +151,38 @@ const (
 	endTime        = 24 * time.Hour
 )
 
-func catch(err *error) {
-	if r := recover(); r != nil {
-		*err = r.(error)
-	}
-}
-
 func main() {
-	if len(os.Args) > 1 {
-		printInfo()
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	if len(os.Args) < 3 {
+		log.Error().Msg("required command-line arguments: task, bureau codes")
 		return
 	}
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	checkLocalTimezone()
 	checkInternetConnection()
 	checkDatabase()
 
+	switch os.Args[1] {
+	case "trainNoHourly":
+		scheduleTask(func() {
+			iterateBureaus((*Bureau).scanTrainNo, os.Args[2])
+		})
+	case "trainNo":
+		iterateBureaus((*Bureau).scanTrainNo, os.Args[2])
+	case "vehicleNo":
+		iterateBureaus((*Bureau).scanVehicleNo, os.Args[2])
+	case "info":
+		if len(os.Args) < 4 {
+			log.Error().Msg("missing argument: qr code")
+			return
+		}
+		printInfo(os.Args[2], os.Args[3])
+	default:
+		log.Error().Msgf("invalid task option: %s", os.Args[1])
+	}
+}
+
+func scheduleTask(task func()) {
 	var nextRun time.Time
 	for {
 		now := time.Now()
@@ -147,20 +197,21 @@ func main() {
 		} else {
 			nextRun = now.Truncate(repeatInterval).Add(repeatInterval)
 		}
-		iterBureaus()
-		log.Info().Msgf("next schduled run: %v", nextRun)
+		task()
+		log.Info().Msgf("next scheduled run: %v", nextRun)
 		time.Sleep(time.Until(nextRun))
 	}
 }
 
-func printInfo() {
+func printInfo(bureauCode, qrCode string) {
 	for i := range bureaus {
-		if bureaus[i].Code == os.Args[1] {
-			info, _ := bureaus[i].Info(os.Args[2])
+		if bureaus[i].Code == bureauCode {
+			info, _ := bureaus[i].Info(qrCode)
 			prettyPrint(info)
 			return
 		}
 	}
+	log.Error().Msgf("unknown bureau code: %s", bureauCode)
 }
 
 func prettyPrint(obj interface{}) {
@@ -169,22 +220,24 @@ func prettyPrint(obj interface{}) {
 	fmt.Printf("%s\n", jsonBytes)
 }
 
-func iterBureaus() {
+func iterateBureaus(task func(*Bureau, *sql.Tx), bureauCodes string) {
 	tx, err := db.Begin()
 	checkFatal(err)
 	defer tx.Rollback()
 
 	for i := range bureaus {
-		wg.Add(1)
-		go bureaus[i].iterVehicles(tx)
+		if bureauCodes == "" || strings.Contains(bureauCodes, bureaus[i].Code) {
+			wg.Add(1)
+			go task(&bureaus[i], tx)
+		}
 	}
 
 	wg.Wait()
 	tx.Commit()
 }
 
-func (b *Bureau) iterVehicles(tx *sql.Tx) {
-	log.Info().Msgf("job started: %s", b.Name)
+func (b *Bureau) scanTrainNo(tx *sql.Tx) {
+	log.Info().Msgf("[%s] job started: %s", b.Code, b.Name)
 	defer wg.Done()
 
 	rows, err := tx.Query(`
@@ -205,7 +258,7 @@ func (b *Bureau) iterVehicles(tx *sql.Tx) {
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
-		log.Debug().Msgf("%s: %s/%s", emuNo, b.Code, trainNo)
+		log.Debug().Msgf("[%s] %s -> %s", b.Code, emuNo, trainNo)
 		if trainNo != "" {
 			_, err := tx.Exec(
 				`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
@@ -215,6 +268,60 @@ func (b *Bureau) iterVehicles(tx *sql.Tx) {
 		}
 	}
 	log.Info().Msgf("job done: %s", b.Name)
+}
+
+func (b *Bureau) scanVehicleNo(tx *sql.Tx) {
+	log.Info().Msgf("[%s] job started: %s", b.Code, b.Name)
+	defer wg.Done()
+
+	rows, err := tx.Query(`
+		SELECT emu_qrcode
+		FROM emu_qrcode
+		WHERE emu_bureau = ?
+		ORDER BY emu_qrcode ASC;
+	`, b.Code)
+	checkFatal(err)
+	defer rows.Close()
+
+	qrCodes := make(chan string)
+	go func() {
+		b.BruteForce(qrCodes)
+		close(qrCodes)
+	}()
+
+	qrCodeFromDB := ""
+	for qrCode := range qrCodes {
+		// skip existing codes in the database
+		for qrCode > qrCodeFromDB && rows.Next() {
+			checkFatal(rows.Scan(&qrCodeFromDB))
+			log.Debug().Msgf("[%s] loaded: %s", b.Code, qrCodeFromDB)
+		}
+		if qrCode == qrCodeFromDB {
+			log.Debug().Msgf("[%s] skipped: %s", b.Code, qrCodeFromDB)
+			continue
+		}
+
+		time.Sleep(requestDelay)
+		vehicleNo, err := b.VehicleNo(b, qrCode)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		log.Debug().Msgf("[%s] checked: %s -> %s", b.Code, qrCode, vehicleNo)
+		if vehicleNo != "" {
+			_, err := tx.Exec(
+				`INSERT OR IGNORE INTO emu_qrcode VALUES (?, ?, ?)`,
+				vehicleNo, b.Code, qrCode,
+			)
+			checkFatal(err)
+		}
+	}
+	log.Info().Msgf("[%s] job done: %s", b.Code, b.Name)
+}
+
+func catch(err *error) {
+	if r := recover(); r != nil {
+		*err = r.(error)
+	}
 }
 
 func checkFatal(err error) {
