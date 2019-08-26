@@ -38,7 +38,10 @@ var bureaus = []Bureau{
 		Code: "H",
 		Name: "中国铁路上海局集团有限公司",
 		BruteForce: func(pqCodes chan<- string) {
-			for i := 0; i < 2000000; i += 200 {
+			for i := 2000; i < 11000; i += 200 {
+				pqCodes <- fmt.Sprintf("PQ%07d", i)
+			}
+			for i := 11000; i < 2000000; i += 500 {
 				pqCodes <- fmt.Sprintf("PQ%07d", i)
 			}
 		},
@@ -85,8 +88,8 @@ var bureaus = []Bureau{
 		Name: "中国铁路北京局集团有限公司",
 		BruteForce: func(qrCodes chan<- string) {
 			for x := 1; x <= 5; x += 2 {
-				for y := 0; y < 40; y++ {
-					for z := 0; z < 10000; z += 200 {
+				for y := 0; y < 50; y++ {
+					for z := 0; z < 10000; z += 500 {
 						qrCodes <- fmt.Sprintf("%d%03d%04d", x, y, z)
 					}
 				}
@@ -192,7 +195,7 @@ func scheduleTask(task func()) {
 		)
 		if now.Before(today.Add(startTime)) {
 			nextRun = today.Add(startTime)
-		} else if now.After(today.Add(endTime)) {
+		} else if now.After(today.Add(endTime - repeatInterval)) {
 			nextRun = today.Add(day)
 		} else {
 			nextRun = now.Truncate(repeatInterval).Add(repeatInterval)
