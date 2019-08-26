@@ -57,7 +57,7 @@ var bureaus = []Bureau{
 			info, err = this.Info(pqCode)
 			if err == nil {
 				defer catch(&err)
-				vehicleNo = info["cdh"].(string)
+				vehicleNo = strings.ReplaceAll(info["cdh"].(string), "-", "")
 			}
 			return
 		},
@@ -107,7 +107,7 @@ var bureaus = []Bureau{
 			info, err = this.Info(qrCode)
 			if err == nil {
 				defer catch(&err)
-				vehicleNo = info["TrainId"].(string) // TODO: vehicle model inference
+				vehicleNo = strings.ReplaceAll(info["TrainId"].(string), "-", "")
 			}
 			return
 		},
