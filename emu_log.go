@@ -368,7 +368,7 @@ func checkDatabase() {
 	);`)
 	checkFatal(err)
 	log.Info().Msgf(
-		"found %d log records in database",
+		"found %d log records in the database",
 		countRecords("emu_log"),
 	)
 
@@ -380,15 +380,21 @@ func checkDatabase() {
 	);`)
 	checkFatal(err)
 	log.Info().Msgf(
-		"found %d qr code records in database",
+		"found %d vehicles and %d qr codes in the database",
+		countRecords("emu_qrcode", "DISTINCT emu_no"),
 		countRecords("emu_qrcode"),
 	)
 }
 
-func countRecords(tableName string) (count int) {
-	row := db.QueryRow(`SELECT COUNT(*) FROM ` + tableName)
-	err := row.Scan(&count)
-	checkFatal(err)
+func countRecords(tableName string, fields ...string) (count int) {
+	field := "*"
+	if len(fields) != 0 {
+		field = fields[0]
+	}
+	row := db.QueryRow(fmt.Sprintf(
+		`SELECT COUNT(%s) FROM %s`, field, tableName,
+	))
+	checkFatal(row.Scan(&count))
 	return
 }
 
