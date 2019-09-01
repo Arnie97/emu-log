@@ -13,15 +13,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type (
-	jsonObject map[string]interface{}
-	LogRecord  struct {
-		date, emuNo, trainNo string
+	LogEntry struct {
+		Date      string `json:"date"`
+		VehicleNo string `json:"emu_no"`
+		TrainNo   string `json:"train_no"`
 	}
 	Bureau struct {
 		Code       string
@@ -31,6 +34,7 @@ type (
 		VehicleNo  func(this *Bureau, qrCode string) (vehicleNo string, err error)
 		Info       func(qrCode string) (info jsonObject, err error)
 	}
+	jsonObject map[string]interface{}
 )
 
 var bureaus = []Bureau{
@@ -140,7 +144,7 @@ var bureaus = []Bureau{
 
 var (
 	httpClient = &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: requestTimeout,
 	}
 	wg sync.WaitGroup
 	db *sql.DB
@@ -150,6 +154,7 @@ const (
 	day            = 24 * time.Hour
 	repeatInterval = time.Hour
 	requestDelay   = 4 * time.Second
+	requestTimeout = 5 * time.Second
 	startTime      = 5 * time.Hour
 	endTime        = 24 * time.Hour
 )
@@ -166,7 +171,8 @@ func main() {
 	checkDatabase()
 
 	switch os.Args[1] {
-	case "trainNoHourly":
+	case "serve":
+		go http.ListenAndServe("localhost:8080", newRouter())
 		scheduleTask(func() {
 			iterateBureaus((*Bureau).scanTrainNo, os.Args[2])
 		})
@@ -254,18 +260,19 @@ func (b *Bureau) scanTrainNo(tx *sql.Tx) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var emuNo, qrCode, id string
-		checkFatal(rows.Scan(&emuNo, &qrCode, &id))
+		var e LogEntry
+		var qrCode, id string
+		checkFatal(rows.Scan(&e.VehicleNo, &qrCode, &id))
 		time.Sleep(requestDelay)
-		trainNo, date, err := b.TrainNo(b, qrCode)
+		e.TrainNo, e.Date, err = b.TrainNo(b, qrCode)
 		if err != nil {
 			log.Error().Msg(err.Error())
 		}
-		log.Debug().Msgf("[%s] %s -> %s", b.Code, emuNo, trainNo)
-		if trainNo != "" {
+		log.Debug().Msgf("[%s] %s -> %s", b.Code, e.VehicleNo, e.TrainNo)
+		if e.TrainNo != "" {
 			_, err := tx.Exec(
 				`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
-				date, emuNo, trainNo,
+				e.Date, e.VehicleNo, e.TrainNo,
 			)
 			checkFatal(err)
 		}
@@ -357,7 +364,6 @@ func checkDatabase() {
 	dbConn, err := sql.Open("sqlite3", "./emu_log.db")
 	checkFatal(err)
 	db = dbConn
-	db.SetMaxOpenConns(1)
 	// TODO: defer db.Close()
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS emu_log (
@@ -408,4 +414,81 @@ func parseResult(resp *http.Response, resultPtr interface{}) (err error) {
 		)
 	}
 	return
+}
+
+func newRouter() *chi.Mux {
+	mux := chi.NewRouter()
+	mux.Use(
+		middleware.RealIP,
+		middleware.Logger,
+		middleware.Recoverer,
+		middleware.Timeout(requestTimeout),
+	)
+	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, trainNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z0-9]*?\d{4}}`, exactVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z0-9]+}`, wildcardVehicleNoHandler)
+	return mux
+}
+
+func trainNoHandler(w http.ResponseWriter, r *http.Request) {
+	trainNo := chi.URLParam(r, "trainNo")
+	rows, err := db.Query(`
+		SELECT *
+		FROM emu_log
+		WHERE train_no = ?
+			OR train_no LIKE ?
+			OR train_no LIKE ?
+			OR train_no LIKE ?
+		ORDER BY date DESC
+		LIMIT 30;
+	`, trainNo, trainNo+"/%", "%/"+trainNo+"/%", "%/"+trainNo)
+	checkFatal(err)
+	defer rows.Close()
+	serializeLogEntries(rows, w)
+}
+
+func exactVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query(`
+		SELECT *
+		FROM (
+			SELECT *
+			FROM emu_log
+			WHERE emu_no LIKE ?
+			ORDER BY date DESC
+			LIMIT 30
+		)
+		ORDER BY emu_no ASC;
+	`, "%"+chi.URLParam(r, "vehicleNo"))
+	checkFatal(err)
+	defer rows.Close()
+	serializeLogEntries(rows, w)
+}
+
+func wildcardVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query(`
+		SELECT *
+		FROM emu_log
+		WHERE rowid in (
+			SELECT MAX(rowid)
+			FROM emu_log
+			WHERE emu_no LIKE ?
+			GROUP BY emu_no
+			LIMIT 30
+		)
+		ORDER BY emu_no ASC;
+	`, "%"+chi.URLParam(r, "vehicleNo")+"%")
+	checkFatal(err)
+	defer rows.Close()
+	serializeLogEntries(rows, w)
+}
+
+func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
+	results := make([]LogEntry, 0)
+	for rows.Next() {
+		var e LogEntry
+		checkFatal(rows.Scan(&e.Date, &e.VehicleNo, &e.TrainNo))
+		results = append(results, e)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	checkFatal(json.NewEncoder(w).Encode(results))
 }
