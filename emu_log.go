@@ -424,10 +424,53 @@ func newRouter() *chi.Mux {
 		middleware.Recoverer,
 		middleware.Timeout(requestTimeout),
 	)
+	mux.Get(`/map/{stationName}`, railMapHandler)
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, trainNoHandler)
 	mux.Get(`/emu/{vehicleNo:[A-Z0-9]*?\d{4}}`, exactVehicleNoHandler)
 	mux.Get(`/emu/{vehicleNo:[A-Z0-9]+}`, wildcardVehicleNoHandler)
 	return mux
+}
+
+func railMapHandler(w http.ResponseWriter, r *http.Request) {
+	const site = "http://cnrail.geogv.org"
+	stationID := ""
+	stationName := chi.URLParam(r, "stationName")
+	defer func() {
+		http.Redirect(w, r, fmt.Sprintf(
+			"%s/zhcn/station/%s?useMapboxGl=true", site, stationID,
+		), http.StatusSeeOther)
+	}()
+
+	keyword := stationName
+	if len(stationName) > 2 {
+		keyword = strings.TrimSuffix(stationName, "所")
+	}
+	resp, err := httpClient.Get(fmt.Sprintf(
+		"%s/api/v1/match_feature/%s?locale=zhcn", site, keyword,
+	))
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	matches := struct {
+		Success bool
+		Data    [][3]string
+	}{}
+	err = json.NewDecoder(resp.Body).Decode(&matches)
+	if err != nil || !matches.Success {
+		return
+	}
+
+	for _, m := range matches.Data {
+		itemID, itemType, itemName := m[0], m[1], m[2]
+		if itemType != "STATION" {
+			continue
+		} else if strings.Replace(itemName, "线路所", "所", 1) == stationName {
+			stationID = itemID
+			return
+		}
+	}
 }
 
 func trainNoHandler(w http.ResponseWriter, r *http.Request) {
