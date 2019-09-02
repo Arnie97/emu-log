@@ -64,7 +64,7 @@ var bureaus = []Bureau{
 			info, err = this.Info(pqCode)
 			if err == nil {
 				defer catch(&err)
-				vehicleNo = strings.ReplaceAll(info["cdh"].(string), "-", "")
+				vehicleNo = normalize(info["cdh"].(string))
 			}
 			return
 		},
@@ -114,7 +114,7 @@ var bureaus = []Bureau{
 			info, err = this.Info(qrCode)
 			if err == nil {
 				defer catch(&err)
-				vehicleNo = strings.ReplaceAll(info["TrainId"].(string), "-", "")
+				vehicleNo = normalize(info["TrainId"].(string))
 			}
 			return
 		},
@@ -426,8 +426,8 @@ func newRouter() *chi.Mux {
 	)
 	mux.Get(`/map/{stationName}`, railMapHandler)
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, trainNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z0-9]*?\d{4}}`, exactVehicleNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z0-9]+}`, wildcardVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]*?\d{4}}`, exactVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]+}`, wildcardVehicleNoHandler)
 	return mux
 }
 
@@ -501,7 +501,7 @@ func exactVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 			LIMIT 30
 		)
 		ORDER BY emu_no ASC;
-	`, "%"+chi.URLParam(r, "vehicleNo"))
+	`, "%"+normalize(chi.URLParam(r, "vehicleNo")))
 	checkFatal(err)
 	defer rows.Close()
 	serializeLogEntries(rows, w)
@@ -519,10 +519,14 @@ func wildcardVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 			LIMIT 30
 		)
 		ORDER BY emu_no ASC;
-	`, "%"+chi.URLParam(r, "vehicleNo")+"%")
+	`, "%"+normalize(chi.URLParam(r, "vehicleNo"))+"%")
 	checkFatal(err)
 	defer rows.Close()
 	serializeLogEntries(rows, w)
+}
+
+func normalize(vehicleNo string) string {
+	return strings.ReplaceAll(vehicleNo, "-", "")
 }
 
 func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
