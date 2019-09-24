@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -21,6 +22,13 @@ import (
 )
 
 const dbSchema = `
+	CREATE TABLE IF NOT EXISTS emu_latest (
+		date        VARCHAR NOT NULL,
+		emu_no      VARCHAR NOT NULL,
+		train_no    VARCHAR NOT NULL,
+		log_id      INTEGER NOT NULL,
+		UNIQUE(train_no)
+	);
 	CREATE TABLE IF NOT EXISTS emu_log (
 		date        VARCHAR NOT NULL,
 		emu_no      VARCHAR NOT NULL,
@@ -80,7 +88,7 @@ var bureaus = []Bureau{
 			info, err = this.Info(pqCode)
 			if err == nil {
 				defer catch(&err)
-				vehicleNo = normalize(info["cdh"].(string))
+				vehicleNo = normalizeVehicleNo(info["cdh"].(string))
 			}
 			return
 		},
@@ -130,7 +138,7 @@ var bureaus = []Bureau{
 			info, err = this.Info(qrCode)
 			if err == nil {
 				defer catch(&err)
-				vehicleNo = normalize(info["TrainId"].(string))
+				vehicleNo = normalizeVehicleNo(info["TrainId"].(string))
 			}
 			return
 		},
@@ -286,11 +294,21 @@ func (b *Bureau) scanTrainNo(tx *sql.Tx) {
 		}
 		log.Debug().Msgf("[%s] %s -> %s", b.Code, e.VehicleNo, e.TrainNo)
 		if e.TrainNo != "" {
-			_, err := tx.Exec(
+			res, err := tx.Exec(
 				`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
 				e.Date, e.VehicleNo, e.TrainNo,
 			)
 			checkFatal(err)
+			logID, err := res.LastInsertId()
+			checkFatal(err)
+
+			for _, singleTrainNo := range normalizeTrainNo(e.TrainNo) {
+				_, err = tx.Exec(
+					`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,
+					e.Date, e.VehicleNo, singleTrainNo, logID,
+				)
+				checkFatal(err)
+			}
 		}
 	}
 	log.Info().Msgf("job done: %s", b.Name)
@@ -428,9 +446,10 @@ func newRouter() *chi.Mux {
 		middleware.Timeout(requestTimeout),
 	)
 	mux.Get(`/map/{stationName}`, railMapHandler)
-	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, trainNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]*?\d{4}}`, exactVehicleNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]+}`, wildcardVehicleNoHandler)
+	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
+	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]*?\d{4}}`, singleVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]+}`, multiVehicleNoHandler)
 	return mux
 }
 
@@ -476,7 +495,7 @@ func railMapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func trainNoHandler(w http.ResponseWriter, r *http.Request) {
+func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNo := chi.URLParam(r, "trainNo")
 	rows, err := db.Query(`
 		SELECT *
@@ -493,7 +512,24 @@ func trainNoHandler(w http.ResponseWriter, r *http.Request) {
 	serializeLogEntries(rows, w)
 }
 
-func exactVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
+func multiTrainNoHandler(w http.ResponseWriter, r *http.Request) {
+	trainNoList := strings.Split(chi.URLParam(r, "trainNo"), ",")
+	trainNoArgs := make([]interface{}, len(trainNoList))
+	trainNoArgsPlaceHolder := strings.Repeat(", ?", len(trainNoList))[2:]
+	for i := range trainNoList {
+		trainNoArgs[i] = trainNoList[i]
+	}
+	rows, err := db.Query(`
+		SELECT date, emu_no, train_no
+		FROM emu_latest
+		WHERE train_no IN (`+trainNoArgsPlaceHolder+`)
+	`, trainNoArgs...)
+	checkFatal(err)
+	defer rows.Close()
+	serializeLogEntries(rows, w)
+}
+
+func singleVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(`
 		SELECT *
 		FROM (
@@ -508,13 +544,13 @@ func exactVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 			LIMIT 30
 		)
 		ORDER BY emu_no ASC;
-	`, "%"+normalize(chi.URLParam(r, "vehicleNo")))
+	`, "%"+normalizeVehicleNo(chi.URLParam(r, "vehicleNo")))
 	checkFatal(err)
 	defer rows.Close()
 	serializeLogEntries(rows, w)
 }
 
-func wildcardVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
+func multiVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(`
 		SELECT *
 		FROM emu_log
@@ -530,13 +566,31 @@ func wildcardVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 			LIMIT 30
 		)
 		ORDER BY emu_no ASC;
-	`, "%"+normalize(chi.URLParam(r, "vehicleNo"))+"%")
+	`, "%"+normalizeVehicleNo(chi.URLParam(r, "vehicleNo"))+"%")
 	checkFatal(err)
 	defer rows.Close()
 	serializeLogEntries(rows, w)
 }
 
-func normalize(vehicleNo string) string {
+func normalizeTrainNo(trainNo string) (results []string) {
+	trainNoRegExp := regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
+	var initial string
+	for i, part := range strings.Split(trainNo, "/") {
+		if part = trainNoRegExp.FindString(part); len(part) == 0 {
+			return
+		} else if i == 0 && part[0] <= '9' {
+			return
+		} else if i == 0 {
+			initial = part
+		} else if omitted := len(initial) - len(part); omitted > 0 {
+			part = initial[:omitted] + part
+		}
+		results = append(results, part)
+	}
+	return
+}
+
+func normalizeVehicleNo(vehicleNo string) string {
 	return strings.ReplaceAll(vehicleNo, "-", "")
 }
 
