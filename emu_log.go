@@ -218,13 +218,13 @@ func scheduleTask(task func()) {
 		if now.Before(today.Add(startTime)) {
 			nextRun = today.Add(startTime)
 		} else if now.After(today.Add(endTime - repeatInterval)) {
-			nextRun = today.Add(day)
+			nextRun = today.Add(startTime + day)
 		} else {
 			nextRun = now.Truncate(repeatInterval).Add(repeatInterval)
 		}
-		task()
 		log.Info().Msgf("next scheduled run: %v", nextRun)
 		time.Sleep(time.Until(nextRun))
+		task()
 	}
 }
 
