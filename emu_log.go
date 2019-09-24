@@ -20,6 +20,22 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const dbSchema = `
+	CREATE TABLE IF NOT EXISTS emu_log (
+		date        VARCHAR NOT NULL,
+		emu_no      VARCHAR NOT NULL,
+		train_no    VARCHAR NOT NULL,
+		UNIQUE(date, emu_no, train_no)
+	);
+	CREATE TABLE IF NOT EXISTS emu_qrcode (
+		emu_no      VARCHAR NOT NULL,
+		emu_bureau  CHAR(1) NOT NULL,
+		emu_qrcode  VARCHAR NOT NULL,
+		UNIQUE(emu_bureau, emu_qrcode)
+	);
+	CREATE INDEX IF NOT EXISTS idx_emu_no ON emu_log(emu_no);
+`
+
 type (
 	LogEntry struct {
 		Date      string `json:"date"`
@@ -366,25 +382,12 @@ func checkDatabase() {
 	db = dbConn
 	// TODO: defer db.Close()
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS emu_log (
-		date        VARCHAR NOT NULL,
-		emu_no      VARCHAR NOT NULL,
-		train_no    VARCHAR NOT NULL,
-		UNIQUE(date, emu_no, train_no)
-	);`)
+	_, err = db.Exec(dbSchema)
 	checkFatal(err)
 	log.Info().Msgf(
 		"found %d log records in the database",
 		countRecords("emu_log"),
 	)
-
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS emu_qrcode (
-		emu_no      VARCHAR NOT NULL,
-		emu_bureau  CHAR(1) NOT NULL,
-		emu_qrcode  VARCHAR NOT NULL,
-		UNIQUE(emu_bureau, emu_qrcode)
-	);`)
-	checkFatal(err)
 	log.Info().Msgf(
 		"found %d vehicles and %d qr codes in the database",
 		countRecords("emu_qrcode", "DISTINCT emu_no"),
@@ -496,7 +499,11 @@ func exactVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 		FROM (
 			SELECT *
 			FROM emu_log
-			WHERE emu_no LIKE ?
+			WHERE emu_no IN (
+				SELECT emu_no
+				FROM emu_qrcode
+				WHERE emu_no LIKE ?
+			)
 			ORDER BY date DESC
 			LIMIT 30
 		)
@@ -511,10 +518,14 @@ func wildcardVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(`
 		SELECT *
 		FROM emu_log
-		WHERE rowid in (
+		WHERE rowid IN (
 			SELECT MAX(rowid)
 			FROM emu_log
-			WHERE emu_no LIKE ?
+			WHERE emu_no IN (
+				SELECT emu_no
+				FROM emu_qrcode
+				WHERE emu_no LIKE ?
+			)
 			GROUP BY emu_no
 			LIMIT 30
 		)
