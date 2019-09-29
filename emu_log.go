@@ -274,7 +274,7 @@ func (b *Bureau) scanTrainNo(tx *sql.Tx) {
 	defer wg.Done()
 
 	rows, err := tx.Query(`
-		SELECT emu_no, emu_qrcode, MIN(rowid)
+		SELECT emu_no, emu_qrcode, MAX(rowid)
 		FROM emu_qrcode
 		WHERE emu_bureau = ?
 		GROUP BY emu_no
