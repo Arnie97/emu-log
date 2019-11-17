@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/md5"
 	"database/sql"
 	"encoding/json"
@@ -69,7 +70,7 @@ var bureaus = []Bureau{
 			for i := 2000; i < 11000; i += 200 {
 				pqCodes <- fmt.Sprintf("PQ%07d", i)
 			}
-			for i := 11000; i < 2000000; i += 500 {
+			for i := 11000; i < 1550000; i += 500 {
 				pqCodes <- fmt.Sprintf("PQ%07d", i)
 			}
 		},
@@ -151,6 +152,8 @@ var bureaus = []Bureau{
 			if err != nil {
 				return
 			}
+			defer resp.Body.Close()
+
 			var result struct {
 				Status int `json:"state"`
 				Msg    string
@@ -161,6 +164,63 @@ var bureaus = []Bureau{
 			}
 			err = parseResult(resp, &result)
 			info = result.Data.TrainInfo
+			return
+		},
+	},
+	Bureau{
+		Code: "Q",
+		Name: "中国铁路广州局集团有限公司",
+		BruteForce: func(serials chan<- string) {
+			for x := 0; x < 100; x++ {
+				serials <- fmt.Sprintf("%d", x)
+			}
+		},
+		TrainNo: func(this *Bureau, serial string) (trainNo, date string, err error) {
+			var info jsonObject
+			info, err = this.Info(serial)
+			if err == nil {
+				defer catch(&err)
+				trainNo = info["train"].(string)
+				date = time.Now().Format("2006-01-02")
+			}
+			return
+		},
+		VehicleNo: func(this *Bureau, serial string) (vehicleNo string, err error) {
+			var info jsonObject
+			info, err = this.Info(serial)
+			if err == nil {
+				defer catch(&err)
+				vehicleNo = fmt.Sprintf("CR%s+%s", info["carriage_num"], serial)
+			}
+			return
+		},
+		Info: func(serial string) (info jsonObject, err error) {
+			const api = "https://v3i.minicart.cn/shopping/v3/getTrainnum"
+			const contentType = "application/json"
+			values := jsonObject{
+				"qr_code": serial,
+				"mpid":    9,
+				"mp_id":   9,
+				"mid":     9,
+				"token":   "2107e4f9dc309b5f8a5b05b9b7483cc0",
+			}
+			jsonStr, err := json.Marshal(values)
+			if err != nil {
+				return
+			}
+			resp, err := httpClient.Post(api, contentType, bytes.NewBuffer(jsonStr))
+			if err != nil {
+				return
+			}
+			defer resp.Body.Close()
+
+			var result struct {
+				Status string `json:"error_code"`
+				Msg    string
+				Data   jsonObject
+			}
+			err = parseResult(resp, &result)
+			info = result.Data
 			return
 		},
 	},
@@ -425,14 +485,32 @@ func countRecords(tableName string, fields ...string) (count int) {
 	return
 }
 
+func getField(object interface{}, fieldName string) interface{} {
+	reflectObject := reflect.Indirect(reflect.ValueOf(object))
+	return reflectObject.FieldByName(fieldName).Interface()
+}
+
 func parseResult(resp *http.Response, resultPtr interface{}) (err error) {
 	err = json.NewDecoder(resp.Body).Decode(resultPtr)
-	apiResult := reflect.Indirect(reflect.ValueOf(resultPtr)).FieldByName
-	if err == nil && apiResult("Status").Interface().(int) != 200 {
-		err = fmt.Errorf(
-			"api error %d: %s",
-			apiResult("Status"), apiResult("Msg"),
-		)
+	if err != nil {
+		return
+	}
+
+	var (
+		ok     bool
+		status = getField(resultPtr, "Status")
+		msg    = getField(resultPtr, "Msg")
+	)
+	switch status.(type) {
+	case string:
+		ok = status.(string) == "ok"
+	case int:
+		ok = status.(int) == 200
+	default:
+		ok = false
+	}
+	if !ok {
+		err = fmt.Errorf("api error %v: %s", status, msg)
 	}
 	return
 }
@@ -448,8 +526,8 @@ func newRouter() *chi.Mux {
 	mux.Get(`/map/{stationName}`, railMapHandler)
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
 	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]*?\d{4}}`, singleVehicleNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9]+}`, multiVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\d{4}}`, singleVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]+}`, multiVehicleNoHandler)
 	return mux
 }
 
