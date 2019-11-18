@@ -618,7 +618,7 @@ func singleVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 				FROM emu_qrcode
 				WHERE emu_no LIKE ?
 			)
-			ORDER BY date DESC
+			ORDER BY date DESC, rowid DESC
 			LIMIT 30
 		)
 		ORDER BY emu_no ASC;
