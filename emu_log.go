@@ -171,8 +171,8 @@ var bureaus = []Bureau{
 		Code: "Q",
 		Name: "中国铁路广州局集团有限公司",
 		BruteForce: func(serials chan<- string) {
-			for x := 0; x < 100; x++ {
-				serials <- fmt.Sprintf("%d", x)
+			for x := 1; x < 100; x++ {
+				serials <- fmt.Sprintf("%03d", x)
 			}
 		},
 		TrainNo: func(this *Bureau, serial string) (trainNo, date string, err error) {
@@ -198,7 +198,7 @@ var bureaus = []Bureau{
 			const api = "https://v3i.minicart.cn/shopping/v3/getTrainnum"
 			const contentType = "application/json"
 			values := jsonObject{
-				"qr_code": serial,
+				"qr_code": strings.TrimLeft(serial, "0"),
 				"mpid":    9,
 				"mp_id":   9,
 				"mid":     9,
