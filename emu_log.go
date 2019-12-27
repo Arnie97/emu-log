@@ -116,12 +116,11 @@ var bureaus = []Bureau{
 		Code: "P",
 		Name: "中国铁路北京局集团有限公司",
 		BruteForce: func(qrCodes chan<- string) {
-			for x := 1; x <= 5; x += 2 {
-				for y := 0; y < 50; y++ {
-					for z := 0; z < 10000; z += 500 {
-						qrCodes <- fmt.Sprintf("%d%03d%04d", x, y, z)
-					}
-				}
+			for x := 0; x < 70000; x += 500 {
+				qrCodes <- fmt.Sprintf("3%07d", x)
+			}
+			for x := 0; x < 506000; x += 500 {
+				qrCodes <- fmt.Sprintf("5%07d", x)
 			}
 		},
 		TrainNo: func(this *Bureau, qrCode string) (trainNo, date string, err error) {
@@ -224,6 +223,54 @@ var bureaus = []Bureau{
 			return
 		},
 	},
+	Bureau{
+		Code: "F",
+		Name: "中国铁路郑州局集团有限公司",
+		BruteForce: func(serials chan<- string) {
+		},
+		TrainNo: func(this *Bureau, serial string) (trainNo, date string, err error) {
+			var info jsonObject
+			info, err = this.Info(serial)
+			if err == nil {
+				defer catch(&err)
+				trainNo = info["trainCode"].(string)
+				date = info["startDay"].(string)
+				date = date[:4] + "-" + date[4:6] + date[6:8]
+			}
+			return
+		},
+		VehicleNo: func(this *Bureau, serial string) (vehicleNo string, err error) {
+			var info jsonObject
+			info, err = this.Info(serial)
+			if err == nil {
+				defer catch(&err)
+				vehicleNo = normalizeVehicleNo(info["carNo"].(string))
+			}
+			return
+		},
+		Info: func(serial string) (info jsonObject, err error) {
+			const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
+			req, err := http.NewRequest("POST", api, nil)
+			if err != nil {
+				return
+			}
+			req.Header.Set("Cookie", "JSESSIONID=CFCCE09F218366805487FDE74247CA58")
+			resp, err := httpClient.Do(req)
+			if err != nil {
+				return
+			}
+			defer resp.Body.Close()
+
+			var result struct {
+				Data struct {
+					TrainQrcodeInfo jsonObject
+				}
+			}
+			err = json.NewDecoder(resp.Body).Decode(&result)
+			info = result.Data.TrainQrcodeInfo
+			return
+		},
+	},
 }
 
 var (
@@ -246,7 +293,7 @@ const (
 	day            = 24 * time.Hour
 	repeatInterval = time.Hour
 	requestDelay   = 4 * time.Second
-	requestTimeout = 5 * time.Second
+	requestTimeout = 9 * time.Second
 	startTime      = 5 * time.Hour
 	endTime        = 24 * time.Hour
 	userAgent      = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.8(0x17000820) NetType/4G Language/zh_CN"
@@ -267,7 +314,7 @@ func main() {
 	case "serve":
 		go http.ListenAndServe("localhost:8080", newRouter())
 		scheduleTask(func() {
-			iterateBureaus((*Bureau).scanTrainNo, os.Args[2])
+			iterateBureaus((*Bureau).task, os.Args[2])
 		})
 	case "trainNo":
 		iterateBureaus((*Bureau).scanTrainNo, os.Args[2])
@@ -336,6 +383,19 @@ func iterateBureaus(task func(*Bureau, *sql.Tx), bureauCodes string) {
 
 	wg.Wait()
 	tx.Commit()
+}
+
+func (b *Bureau) task(tx *sql.Tx) {
+	now := time.Now()
+	today := time.Date(
+		now.Year(), now.Month(), now.Day(),
+		0, 0, 0, 0, time.Local,
+	)
+	if b.Code != "H" || now.After(today.Add(endTime-repeatInterval)) {
+		wg.Add(1)
+		defer b.scanVehicleNo(tx)
+	}
+	b.scanTrainNo(tx)
 }
 
 func (b *Bureau) scanTrainNo(tx *sql.Tx) {
