@@ -228,11 +228,19 @@ var bureaus = []Bureau{
 
 var (
 	httpClient = &http.Client{
-		Timeout: requestTimeout,
+		Timeout:   requestTimeout,
+		Transport: &setDefaultHeaders{},
 	}
 	wg sync.WaitGroup
 	db *sql.DB
 )
+
+type setDefaultHeaders struct{}
+
+func (setDefaultHeaders) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("User-Agent", userAgent)
+	return http.DefaultTransport.RoundTrip(req)
+}
 
 const (
 	day            = 24 * time.Hour
@@ -241,6 +249,7 @@ const (
 	requestTimeout = 5 * time.Second
 	startTime      = 5 * time.Hour
 	endTime        = 24 * time.Hour
+	userAgent      = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.8(0x17000820) NetType/4G Language/zh_CN"
 )
 
 func main() {
