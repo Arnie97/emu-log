@@ -116,11 +116,21 @@ var bureaus = []Bureau{
 		Code: "P",
 		Name: "中国铁路北京局集团有限公司",
 		BruteForce: func(qrCodes chan<- string) {
-			for x := 0; x < 70000; x += 500 {
-				qrCodes <- fmt.Sprintf("3%07d", x)
+			for y := 1; y <= 4; y++ {
+				for x := 11000; x < 16000; x += 500 {
+					qrCodes <- fmt.Sprintf("%d%07d", y, x)
+				}
 			}
-			for x := 0; x < 506000; x += 500 {
+			for x := 342000; x < 640000; x += 500 {
 				qrCodes <- fmt.Sprintf("5%07d", x)
+			}
+			for x := 1000; x < 500000; x += 500 {
+				qrCodes <- fmt.Sprintf("6%07d", x)
+			}
+			for y := 7; y <= 9; y++ {
+				for x := 11000; x < 16000; x += 500 {
+					qrCodes <- fmt.Sprintf("%d%07d", y, x)
+				}
 			}
 		},
 		TrainNo: func(this *Bureau, qrCode string) (trainNo, date string, err error) {
@@ -170,7 +180,7 @@ var bureaus = []Bureau{
 		Code: "Q",
 		Name: "中国铁路广州局集团有限公司",
 		BruteForce: func(serials chan<- string) {
-			for x := 1; x < 100; x++ {
+			for x := 1; x < 90; x++ {
 				serials <- fmt.Sprintf("%03d", x)
 			}
 		},
@@ -292,7 +302,7 @@ func (setDefaultHeaders) RoundTrip(req *http.Request) (*http.Response, error) {
 const (
 	day            = 24 * time.Hour
 	repeatInterval = time.Hour
-	requestDelay   = 4 * time.Second
+	requestDelay   = 2 * time.Second
 	requestTimeout = 9 * time.Second
 	startTime      = 5 * time.Hour
 	endTime        = 24 * time.Hour
@@ -470,7 +480,6 @@ func (b *Bureau) scanVehicleNo(tx *sql.Tx) {
 			log.Debug().Msgf("[%s] loaded: %s", b.Code, qrCodeFromDB)
 		}
 		if qrCode == qrCodeFromDB {
-			log.Debug().Msgf("[%s] skipped: %s", b.Code, qrCodeFromDB)
 			continue
 		}
 
@@ -596,6 +605,7 @@ func newRouter() *chi.Mux {
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
 	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
 	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\d{4}}`, singleVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\+\d\d}`, singleVehicleNoHandler)
 	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]+}`, multiVehicleNoHandler)
 	return mux
 }
