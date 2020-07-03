@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -20,6 +21,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+)
+
+var (
+	normalizer    = strings.NewReplacer("-", "", "_", "")
+	trainNoRegExp = regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
+	extractRegExp = regexp.MustCompile(`<p class="schedule">.+?:(\w+)-*</p>`)
 )
 
 const dbSchema = `
@@ -173,6 +180,58 @@ var bureaus = []Bureau{
 			}
 			err = parseResult(resp, &result)
 			info = result.Data.TrainInfo
+			return
+		},
+	},
+	Bureau{
+		Code: "Z",
+		Name: "中国铁路南宁局集团有限公司",
+		BruteForce: func(serials chan<- string) {
+			for x := 1; x < 300; x++ {
+				serials <- fmt.Sprintf("%03d", x)
+			}
+		},
+		TrainNo: func(this *Bureau, serial string) (trainNo, date string, err error) {
+			var info jsonObject
+			info, err = this.Info(serial)
+			if err == nil {
+				defer catch(&err)
+				trainNo = info["trainNo"].(string)
+			}
+			return
+		},
+		VehicleNo: func(this *Bureau, serial string) (vehicleNo string, err error) {
+			var info jsonObject
+			info, err = this.Info(serial)
+			if err == nil {
+				defer catch(&err)
+				vehicleNo = info["vehicleNo"].(string)
+			}
+			return
+		},
+		Info: func(serial string) (info jsonObject, err error) {
+			const api = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s"
+			resp, err := httpClient.Get(fmt.Sprintf(api, serial))
+			if err != nil {
+				return
+			}
+			defer resp.Body.Close()
+
+			bytes, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return
+			}
+
+			extract := extractRegExp.FindSubmatch(bytes)
+			if len(extract) < 2 {
+				return
+			}
+
+			key := "vehicleNo"
+			if trainNoRegExp.Match(extract[1]) {
+				key = "trainNo"
+			}
+			info = jsonObject{key: string(extract[1])}
 			return
 		},
 	},
@@ -730,7 +789,6 @@ func multiVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func normalizeTrainNo(trainNo string) (results []string) {
-	trainNoRegExp := regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
 	var initial string
 	for i, part := range strings.Split(trainNo, "/") {
 		if part = trainNoRegExp.FindString(part); len(part) == 0 {
@@ -748,7 +806,7 @@ func normalizeTrainNo(trainNo string) (results []string) {
 }
 
 func normalizeVehicleNo(vehicleNo string) string {
-	return strings.ReplaceAll(vehicleNo, "-", "")
+	return normalizer.Replace(vehicleNo)
 }
 
 func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
