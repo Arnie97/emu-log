@@ -10,6 +10,8 @@ var (
 	trainNoRegExp = regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
 )
 
+// NormalizeTrainNo converts possibly abbreviated train number pairs to an
+// array of full qualified train number strings.
 func NormalizeTrainNo(trainNo string) (results []string) {
 	var initial string
 	for i, part := range strings.Split(trainNo, "/") {

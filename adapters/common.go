@@ -1,3 +1,4 @@
+// Package adapters defines API adapters for each supported railway bureau.
 package adapters
 
 import (

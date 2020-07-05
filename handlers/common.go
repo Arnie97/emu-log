@@ -1,3 +1,4 @@
+// Package handlers defines service handlers for incoming HTTP requests.
 package handlers
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
+// NewRouter defines middlewares and API endpoints for the HTTP service.
 func NewRouter() *chi.Mux {
 	mux := chi.NewRouter()
 	mux.Use(
@@ -27,6 +29,7 @@ func NewRouter() *chi.Mux {
 	return mux
 }
 
+// serializeLogEntries converts database query results to a JSON response.
 func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
 	results := make([]common.LogEntry, 0)
 	for rows.Next() {

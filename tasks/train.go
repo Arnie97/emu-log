@@ -9,6 +9,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// scanTrainNo iterates over all the known vehicles operated by the specified
+// railway company to see if any of these vehicles is currently associated to
+// a train number (or a bunch of train numbers).
 func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 	log.Info().Msgf("[%s] job started: %s", b.Code(), b.Name())
 	defer wg.Done()

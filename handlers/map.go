@@ -10,6 +10,9 @@ import (
 	"github.com/go-chi/chi"
 )
 
+// railMapHandler redirects the user to the page for a given railway station
+// if an exact match for the station name was found on the railway map, or to
+// the home page of the map website otherwise.
 func railMapHandler(w http.ResponseWriter, r *http.Request) {
 	const site = "http://cnrail.geogv.org"
 	stationID := ""

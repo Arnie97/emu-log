@@ -25,6 +25,7 @@ var (
 	once sync.Once
 )
 
+// scheduleTask run web scraping routines on an regular basis.
 func scheduleTask(task func()) {
 	var nextRun time.Time
 	for {
@@ -46,7 +47,8 @@ func scheduleTask(task func()) {
 	}
 }
 
-func task(b adapters.Bureau, tx *sql.Tx) {
+// scanTask is a combination of scanVehicleNo() and scanTrainNo().
+func scanTask(b adapters.Bureau, tx *sql.Tx) {
 	now := time.Now()
 	today := time.Date(
 		now.Year(), now.Month(), now.Day(),
@@ -59,7 +61,9 @@ func task(b adapters.Bureau, tx *sql.Tx) {
 	scanTrainNo(b, tx)
 }
 
-func iterateBureaus(task func(adapters.Bureau, *sql.Tx), bureauArray ...string) {
+// iterateBureaus parallelizes scanning requests for different railway
+// companies with goroutines.
+func iterateBureaus(task func(adapters.Bureau, *sql.Tx), bureaus ...string) {
 	once.Do(func() {
 		checkLocalTimezone()
 		checkInternetConnection()
@@ -70,7 +74,7 @@ func iterateBureaus(task func(adapters.Bureau, *sql.Tx), bureauArray ...string) 
 	defer tx.Rollback()
 
 	// support both joined bureau codes and space separated bureau codes
-	bureauCodes := strings.Join(bureauArray, "")
+	bureauCodes := strings.Join(bureaus, "")
 	if len(bureauCodes) == 0 {
 		for _, b := range adapters.Bureaus {
 			wg.Add(1)
@@ -88,6 +92,8 @@ func iterateBureaus(task func(adapters.Bureau, *sql.Tx), bureauArray ...string) 
 	tx.Commit()
 }
 
+// checkLocalTimezone prints a warning if the server timezone settings is
+// different from China Railways (UTC+08).
 func checkLocalTimezone() {
 	tzName, tzOffset := time.Now().Zone()
 	if time.Duration(tzOffset)*time.Second != beijingTime {
@@ -98,6 +104,7 @@ func checkLocalTimezone() {
 	}
 }
 
+// checkInternetConnection prints the RTT for a HTTP connection.
 func checkInternetConnection() {
 	start := time.Now()
 	_, err := adapters.Bureaus["H"].Info("PQ0123456")

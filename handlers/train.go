@@ -8,6 +8,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
+// singleTrainNoHandler returns the used vehicle and the corresponding date
+// for the 30 most recent log items that matches the given train number.
 func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNo := chi.URLParam(r, "trainNo")
 	rows, err := common.DB().Query(`
@@ -25,6 +27,8 @@ func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	serializeLogEntries(rows, w)
 }
 
+// multiTrainNoHandler returns the last used vehicle for the first train
+// numbers in lexicographical order that matches the given fuzzy pattern.
 func multiTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNoList := strings.Split(chi.URLParam(r, "trainNo"), ",")
 	trainNoArgs := make([]interface{}, len(trainNoList))

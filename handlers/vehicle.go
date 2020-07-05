@@ -7,6 +7,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
+// singleVehicleNoHandler returns the 30 most recent log items for the given
+// vehicle number.
 func singleVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := common.DB().Query(`
 		SELECT *
@@ -28,6 +30,8 @@ func singleVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	serializeLogEntries(rows, w)
 }
 
+// multiVehicleNoHandler returns the most recent occurance for the first 30
+// vehicles in lexicographical order that matches the given fuzzy pattern.
 func multiVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := common.DB().Query(`
 		SELECT *

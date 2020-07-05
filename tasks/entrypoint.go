@@ -1,3 +1,4 @@
+// Package tasks defines web scraping schedules.
 package tasks
 
 import (
@@ -32,7 +33,7 @@ func CmdParser() {
 	case "schedule":
 		go serveHTTP()
 		scheduleTask(func() {
-			iterateBureaus(task, os.Args[2:]...)
+			iterateBureaus(scanTask, os.Args[2:]...)
 		})
 	case "trainNo":
 		iterateBureaus(scanTrainNo, os.Args[2:]...)

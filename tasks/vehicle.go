@@ -9,6 +9,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// scanVehicleNo trys each unknown two-dimensional barcodes in the brute force
+// key space to see if any of these barcodes was recently put in to use.
 func scanVehicleNo(b adapters.Bureau, tx *sql.Tx) {
 	log.Info().Msgf("[%s] job started: %s", b.Code(), b.Name())
 	defer wg.Done()
