@@ -3,7 +3,6 @@ package tasks
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
@@ -11,46 +10,46 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const helpMsg = `missing argument: TASK_TYPE
+const helpMsg = `%s
 
 usage:
 
-%[1]s info       BUREAU_CODE [QR_CODE ...]
-%[1]s trainNo   [BUREAU_CODE ...]
-%[1]s vehicleNo [BUREAU_CODE ...]
-%[1]s schedule  [BUREAU_CODE ...]
-%[1]s serve
+%[2]s i[nfo]       BUREAU_CODE [QR_CODE ...]
+%[2]s t[rainNo]   [BUREAU_CODE ...]
+%[2]s v[ehicleNo] [BUREAU_CODE ...]
+%[2]s s[chedule]  [BUREAU_CODE ...]
+%[2]s d[aemon]
 `
 
-func CmdParser() {
-	if len(os.Args) < 2 {
-		log.Fatal().Msgf(helpMsg, os.Args[0])
+func CmdParser(args ...string) {
+	if len(args) < 2 {
+		log.Fatal().Msgf(helpMsg, "missing argument: TASK_TYPE", args[0])
 	}
 
-	switch os.Args[1] {
-	case "serve":
+	switch args[1] {
+	case "d", "daemon":
 		serveHTTP()
-	case "schedule":
+	case "s", "schedule":
 		go serveHTTP()
 		scheduleTask(func() {
-			iterateBureaus(scanTask, os.Args[2:]...)
+			iterateBureaus(scanTask, args[2:]...)
 		})
-	case "trainNo":
-		iterateBureaus(scanTrainNo, os.Args[2:]...)
-	case "vehicleNo":
-		iterateBureaus(scanVehicleNo, os.Args[2:]...)
-	case "info":
-		if len(os.Args) < 3 {
+	case "t", "trainNo":
+		iterateBureaus(scanTrainNo, args[2:]...)
+	case "v", "vehicleNo":
+		iterateBureaus(scanVehicleNo, args[2:]...)
+	case "i", "info":
+		if len(args) < 3 {
 			log.Fatal().Msg("missing argument: BUREAU_CODE [QR_CODE ...]")
 		}
 
-		b := adapters.MustGetBureauByCode(os.Args[2])
-		for _, qrCode := range os.Args[3:] {
+		b := adapters.MustGetBureauByCode(args[2])
+		for _, qrCode := range args[3:] {
 			info, _ := b.Info(qrCode)
 			common.PrettyPrint(info)
 		}
 	default:
-		log.Fatal().Msgf("invalid TASK_TYPE: %s", os.Args[1])
+		log.Fatal().Msgf(helpMsg, "invalid TASK_TYPE: "+args[1], args[0])
 	}
 }
 
