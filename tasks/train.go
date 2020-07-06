@@ -37,6 +37,11 @@ func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 		}
 		log.Debug().Msgf("[%s] %s -> %s", b.Code(), e.VehicleNo, e.TrainNo)
 		if e.TrainNo != "" {
+			// use current date as the default value if date is not provided
+			if e.Date == "" {
+				e.Date = time.Now().Format("2006-01-02")
+			}
+
 			res, err := tx.Exec(
 				`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
 				e.Date, e.VehicleNo, e.TrainNo,

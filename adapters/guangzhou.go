@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -66,7 +65,6 @@ func (b Guangzhou) TrainNo(serial string) (trainNo, date string, err error) {
 	if err == nil {
 		defer common.Catch(&err)
 		trainNo = info["train"].(string)
-		date = time.Now().Format("2006-01-02")
 	}
 	return
 }

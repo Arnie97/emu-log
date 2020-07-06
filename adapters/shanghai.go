@@ -3,7 +3,6 @@ package adapters
 import (
 	"fmt"
 	"net/url"
-	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -56,7 +55,6 @@ func (b Shanghai) TrainNo(pqCode string) (trainNo, date string, err error) {
 	if err == nil {
 		defer common.Catch(&err)
 		trainNo = info["trainName"].(string)
-		date = time.Now().Format("2006-01-02")
 	}
 	return
 }
