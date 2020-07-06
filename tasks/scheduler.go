@@ -114,3 +114,16 @@ func checkInternetConnection() {
 		time.Since(start),
 	)
 }
+
+// checkDatabase prints row counts for all tables to ensure a working DB
+func checkDatabase() {
+	log.Info().Msgf(
+		"found %d log records in the database",
+		common.CountRecords("emu_log"),
+	)
+	log.Info().Msgf(
+		"found %d vehicles and %d qr codes in the database",
+		common.CountRecords("emu_qrcode", "DISTINCT emu_no"),
+		common.CountRecords("emu_qrcode"),
+	)
+}
