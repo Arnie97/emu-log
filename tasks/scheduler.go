@@ -14,7 +14,7 @@ import (
 const (
 	day            = 24 * time.Hour
 	repeatInterval = time.Hour
-	requestDelay   = 2 * time.Second
+	requestDelay   = 3 * time.Second
 	startTime      = 5 * time.Hour
 	endTime        = 24 * time.Hour
 	beijingTime    = 8 * time.Hour
@@ -49,12 +49,30 @@ func scheduleTask(task func()) {
 
 // scanTask is a combination of scanVehicleNo() and scanTrainNo().
 func scanTask(b adapters.Bureau, tx *sql.Tx) {
-	now := time.Now()
-	today := time.Date(
-		now.Year(), now.Month(), now.Day(),
-		0, 0, 0, 0, time.Local,
-	)
-	if b.Code() != "H" || now.After(today.Add(endTime-repeatInterval)) {
+	scanForNewVehicles := false
+
+	// these bureau adapters return nothing when online ordering is disabled,
+	// so we cannot distinguish nonexistent barcodes from offline vehicles,
+	// and should always scan the whole key space.
+	const bureausAlwaysScanAll = "PQ"
+	if strings.Contains(bureausAlwaysScanAll, b.Code()) {
+		scanForNewVehicles = true
+	} else {
+		now := time.Now()
+		today := time.Date(
+			now.Year(), now.Month(), now.Day(),
+			0, 0, 0, 0, time.Local,
+		)
+
+		// for other bureau adapters, it would be more than sufficient to scan
+		// the whole key space once a day to discover recently added vehicles.
+		// let's run it during the possessive intervals in the train diagrams.
+		if now.After(today.Add(endTime - repeatInterval)) {
+			scanForNewVehicles = true
+		}
+	}
+
+	if scanForNewVehicles {
 		wg.Add(1)
 		defer scanVehicleNo(b, tx)
 	}

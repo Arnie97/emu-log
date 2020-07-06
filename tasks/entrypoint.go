@@ -45,8 +45,9 @@ func CmdParser(args ...string) {
 
 		b := adapters.MustGetBureauByCode(args[2])
 		for _, qrCode := range args[3:] {
-			info, _ := b.Info(qrCode)
+			info, err := b.Info(qrCode)
 			common.PrettyPrint(info)
+			common.Must(err)
 		}
 	default:
 		log.Fatal().Msgf(helpMsg, "invalid TASK_TYPE: "+args[1], args[0])

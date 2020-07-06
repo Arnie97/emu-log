@@ -1,15 +1,20 @@
 package adapters
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/arnie97/emu-log/common"
 )
 
 var (
-	extractRegExp = regexp.MustCompile(`<p class="schedule">.+?:(\w+)-*</p>`)
+	htmlVehicleRegExp = regexp.MustCompile(`<p class="schedule">.+:(\w+)-6-6D/F</p>`)
+	jsonVehicleRegExp = regexp.MustCompile(`var locomotive_info = (\{.+\});`)
+	jsonCompanyRegExp = regexp.MustCompile(`var company_info = (\{.+\});`)
 )
 
 type Wuhan struct{}
@@ -33,8 +38,13 @@ func (Wuhan) BruteForce(serials chan<- string) {
 }
 
 func (Wuhan) Info(serial string) (info jsonObject, err error) {
-	const api = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s"
-	resp, err := common.HTTPClient().Get(fmt.Sprintf(api, serial))
+	const api = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=6&seatRow=6&seatNo=D/F"
+	req, err := http.NewRequest("GET", fmt.Sprintf(api, serial), nil)
+	if err != nil {
+		return
+	}
+	req.Header.Set("Cookie", "OpenId=oaIK-wv06uZ7eiOw7Ee-hEp0ox_k")
+	resp, err := common.HTTPClient().Do(req)
 	if err != nil {
 		return
 	}
@@ -45,16 +55,14 @@ func (Wuhan) Info(serial string) (info jsonObject, err error) {
 		return
 	}
 
-	extract := extractRegExp.FindSubmatch(bytes)
-	if len(extract) < 2 {
-		return
+	if match := jsonVehicleRegExp.FindSubmatch(bytes); match != nil {
+		json.Unmarshal(match[1], &info)
+	} else if match := htmlVehicleRegExp.FindSubmatch(bytes); match != nil {
+		info = jsonObject{"locomotive_code": string(match[1])}
 	}
-
-	key := "vehicleNo"
-	if len(common.NormalizeTrainNo(string(extract[1]))) != 0 {
-		key = "trainNo"
+	if match := jsonCompanyRegExp.FindSubmatch(bytes); match != nil {
+		json.Unmarshal(match[1], &info)
 	}
-	info = jsonObject{key: string(extract[1])}
 	return
 }
 
@@ -63,7 +71,7 @@ func (b Wuhan) TrainNo(serial string) (trainNo, date string, err error) {
 	info, err = b.Info(serial)
 	if err == nil {
 		defer common.Catch(&err)
-		trainNo = info["trainNo"].(string)
+		trainNo = info["partner_name"].(string)
 	}
 	return
 }
@@ -73,7 +81,10 @@ func (b Wuhan) VehicleNo(serial string) (vehicleNo string, err error) {
 	info, err = b.Info(serial)
 	if err == nil {
 		defer common.Catch(&err)
-		vehicleNo = info["vehicleNo"].(string)
+		vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
+		if strings.HasPrefix(vehicleNo, "380") {
+			vehicleNo = "CRH" + vehicleNo
+		}
 	}
 	return
 }
