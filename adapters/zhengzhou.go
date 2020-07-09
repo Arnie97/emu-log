@@ -24,13 +24,13 @@ func (Zhengzhou) Name() string {
 func (Zhengzhou) BruteForce(serials chan<- string) {
 }
 
-func (Zhengzhou) Info(serial string) (info jsonObject, err error) {
+func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
 	req, err := http.NewRequest("POST", api, nil)
 	if err != nil {
 		return
 	}
-	req.Header.Set("Cookie", "JSESSIONID=CFCCE09F218366805487FDE74247CA58")
+	req.Header.Set("Cookie", common.Conf(b.Code()))
 	resp, err := common.HTTPClient().Do(req)
 	if err != nil {
 		return

@@ -47,7 +47,7 @@ var (
 func DB() *sql.DB {
 	dbOnce.Do(func() {
 		var err error
-		dbConn, err = sql.Open("sqlite3", "./emu-log.db")
+		dbConn, err = sql.Open("sqlite3", AppPath()+"/emu-log.db")
 		Must(err)
 		// TODO: defer dbConn.Close()
 
@@ -58,6 +58,7 @@ func DB() *sql.DB {
 	return dbConn
 }
 
+// CountRecords takes a tableName and returns the number of rows in the table.
 func CountRecords(tableName string, fields ...string) (count int) {
 	field := "*"
 	if len(fields) != 0 {

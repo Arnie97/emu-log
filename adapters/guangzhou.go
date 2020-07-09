@@ -29,14 +29,14 @@ func (Guangzhou) BruteForce(serials chan<- string) {
 	}
 }
 
-func (Guangzhou) Info(serial string) (info jsonObject, err error) {
+func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://v3i.minicart.cn/shopping/v3/getTrainnum"
 	values := jsonObject{
 		"qr_code": strings.TrimLeft(serial, "0"),
 		"mpid":    9,
 		"mp_id":   9,
 		"mid":     9,
-		"token":   "2107e4f9dc309b5f8a5b05b9b7483cc0",
+		"token":   common.Conf(b.Code()),
 	}
 
 	jsonBytes, err := json.Marshal(values)

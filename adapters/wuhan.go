@@ -37,13 +37,13 @@ func (Wuhan) BruteForce(serials chan<- string) {
 	}
 }
 
-func (Wuhan) Info(serial string) (info jsonObject, err error) {
+func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	const api = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=6&seatRow=6&seatNo=D/F"
 	req, err := http.NewRequest("GET", fmt.Sprintf(api, serial), nil)
 	if err != nil {
 		return
 	}
-	req.Header.Set("Cookie", "OpenId=oaIK-wv06uZ7eiOw7Ee-hEp0ox_k")
+	req.Header.Set("Cookie", common.Conf(b.Code()))
 	resp, err := common.HTTPClient().Do(req)
 	if err != nil {
 		return
