@@ -31,7 +31,6 @@ func (Guangzhou) BruteForce(serials chan<- string) {
 
 func (Guangzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://v3i.minicart.cn/shopping/v3/getTrainnum"
-	const contentType = "application/json"
 	values := jsonObject{
 		"qr_code": strings.TrimLeft(serial, "0"),
 		"mpid":    9,
@@ -39,11 +38,13 @@ func (Guangzhou) Info(serial string) (info jsonObject, err error) {
 		"mid":     9,
 		"token":   "2107e4f9dc309b5f8a5b05b9b7483cc0",
 	}
-	jsonStr, err := json.Marshal(values)
+
+	jsonBytes, err := json.Marshal(values)
 	if err != nil {
 		return
 	}
-	resp, err := common.HTTPClient().Post(api, contentType, bytes.NewBuffer(jsonStr))
+	buf := bytes.NewBuffer(jsonBytes)
+	resp, err := common.HTTPClient().Post(api, contentType, buf)
 	if err != nil {
 		return
 	}

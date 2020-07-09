@@ -1,6 +1,7 @@
 package common_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/arnie97/emu-log/common"
@@ -44,4 +45,16 @@ func TestGetField(t *testing.T) {
 	assert.Panics(t, func() {
 		common.GetField(station, "Nonexistent")
 	})
+}
+
+func ExampleStructDecode() {
+	var dest struct {
+		Field []int64 `json:"root"`
+	}
+	common.StructDecode(
+		map[string]interface{}{"root": []float32{1, 2, 3}},
+		&dest,
+	)
+	fmt.Printf("%+v", dest)
+	// Output: {Field:[1 2 3]}
 }

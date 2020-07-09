@@ -39,7 +39,7 @@ func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 		if e.TrainNo != "" {
 			// use current date as the default value if date is not provided
 			if e.Date == "" {
-				e.Date = time.Now().Format("2006-01-02")
+				e.Date = time.Now().Format(common.ISODate)
 			}
 
 			res, err := tx.Exec(

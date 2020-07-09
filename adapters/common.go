@@ -10,6 +10,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const contentType = "application/json"
+
 type (
 	Bureau interface {
 		Code() string
@@ -54,9 +56,9 @@ func parseResult(resp *http.Response, resultPtr interface{}) (err error) {
 	)
 	switch status.(type) {
 	case string:
-		ok = status.(string) == "ok"
+		ok = status == "ok"
 	case int:
-		ok = status.(int) == 200
+		ok = status == 200 || status == 0
 	default:
 		ok = false
 	}
