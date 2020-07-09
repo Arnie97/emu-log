@@ -2,10 +2,8 @@ package common_test
 
 import (
 	"fmt"
-	"testing"
 
 	"github.com/arnie97/emu-log/common"
-	"github.com/stretchr/testify/assert"
 )
 
 func ExamplePrettyPrint() {
@@ -33,18 +31,25 @@ func ExamplePrettyPrint() {
 	// }
 }
 
-func TestGetField(t *testing.T) {
+func ExampleGetField() {
 	station := struct {
 		Pinyin, Telegraphy string
 		TMIS               int
 	}{"HGT", "HTT", 53144}
 
-	assert.Equal(t, common.GetField(station, "Pinyin"), "HGT")
-	assert.Equal(t, common.GetField(station, "Telegraphy"), "HTT")
-	assert.Equal(t, common.GetField(station, "TMIS"), 53144)
-	assert.Panics(t, func() {
-		common.GetField(station, "Nonexistent")
-	})
+	fmt.Println(
+		common.GetField(station, "Pinyin"),
+		common.GetField(station, "Telegraphy"),
+		common.GetField(station, "TMIS"),
+	)
+	// Output: HGT HTT 53144
+
+	defer func() {
+		if recover() == nil {
+			fmt.Println("panic expected here!")
+		}
+	}()
+	common.GetField(station, "Nonexistent")
 }
 
 func ExampleStructDecode() {

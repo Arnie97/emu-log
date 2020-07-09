@@ -1,17 +1,22 @@
 package common_test
 
 import (
-	"testing"
+	"fmt"
 
 	"github.com/arnie97/emu-log/common"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestDB(t *testing.T) {
+func ExampleDB() {
 	x := common.DB()
 	y := common.DB()
-	assert.NotNil(t, x)
-	assert.Equal(t, x, y)
-	common.DB().Exec(`SELECT 1;`)
+	_, err := x.Exec(`SELECT 1;`)
 	common.CountRecords("emu_log")
+
+	fmt.Println("x == y:  ", x == y)
+	fmt.Println("x != nil:", x != nil)
+	fmt.Println("error:   ", err)
+	// Output:
+	// x == y:   true
+	// x != nil: true
+	// error:    <nil>
 }

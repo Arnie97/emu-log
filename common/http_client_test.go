@@ -2,28 +2,36 @@ package common_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"testing"
 
 	"github.com/arnie97/emu-log/common"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestHTTPClient(t *testing.T) {
+func ExampleHTTPClient() {
 	x := common.HTTPClient()
 	y := common.HTTPClient()
-	assert.NotNil(t, x)
-	assert.Equal(t, x, y)
+	fmt.Println("x == y:  ", x == y)
+	fmt.Println("x != nil:", x != nil)
 
 	resp, err := x.Get("https://httpbin.org/user-agent")
-	assert.Nil(t, err)
+	fmt.Println("get err: ", err)
 	body, err := ioutil.ReadAll(resp.Body)
-	assert.Nil(t, err)
+	fmt.Println("read err:", err)
 
 	s := struct {
 		UserAgent string `json:"user-agent"`
 	}{}
 	err = json.Unmarshal(body, &s)
-	assert.Nil(t, err)
-	assert.Equal(t, s.UserAgent, common.UserAgent)
+	fmt.Println("load err:", err)
+
+	fmt.Println("ua equal:", s.UserAgent == common.UserAgent)
+
+	// Output:
+	// x == y:   true
+	// x != nil: true
+	// get err:  <nil>
+	// read err: <nil>
+	// load err: <nil>
+	// ua equal: true
 }
