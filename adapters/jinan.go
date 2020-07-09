@@ -108,7 +108,6 @@ func (b Jinan) TrainNo(serial string) (trainNo, date string, err error) {
 				TrainNumber, FirstStation, LastStation string
 				StartTimestamp, ArriveTimestamp        int64
 			}
-			TrainScheduleList jsonObject
 		}
 	)
 	if info, err = b.Info(serial); err != nil {

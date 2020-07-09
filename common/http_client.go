@@ -1,7 +1,9 @@
 package common
 
 import (
+	"io"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -12,18 +14,26 @@ const (
 )
 
 var (
-	httpClient *http.Client
+	httpClient httpRequester
 	httpOnce   sync.Once
 )
 
-type setDefaultHeaders struct{}
+type (
+	httpRequester interface {
+		Do(*http.Request) (*http.Response, error)
+		Get(url string) (*http.Response, error)
+		Post(url, contentType string, body io.Reader) (*http.Response, error)
+		PostForm(url string, data url.Values) (*http.Response, error)
+	}
+	setDefaultHeaders struct{}
+)
 
 func (setDefaultHeaders) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", UserAgent)
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-func HTTPClient() *http.Client {
+func HTTPClient() httpRequester {
 	httpOnce.Do(func() {
 		httpClient = &http.Client{
 			Timeout:   RequestTimeout,
