@@ -1,0 +1,83 @@
+build: script
+shallow_clone: true
+
+environment:
+  TZ: Asia/Shanghai
+  GO111MODULE: on
+  GOPATH: "$HOME/go"
+
+clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
+
+before_build:
+- uname -a
+- go version
+- gcc --version
+
+build_script:
+- go get -d ./...
+- go build -v -ldflags="-s -w"
+
+test_script:
+- go vet ./...
+- go test -v -cover ./...
+
+stack:
+- go 1.8
+- go 1.10
+- go 1.14
+
+image:
+- MacOS
+- Ubuntu
+- Visual Studio 2019
+
+for:
+- matrix:
+    only:
+    - image: MacOS
+      stack: go 1.8
+    - image: Visual Studio 2019
+      stack: go 1.8
+    - image: Visual Studio 2019
+      stack: go 1.10
+  skip_tags: true
+  skip_non_tags: true
+
+- matrix:
+    only:
+    - image: MacOS
+      stack: go 1.10
+  init:
+  - sw_vers
+  before_test:
+  - sudo systemsetup -settimezone $TZ
+
+- matrix:
+    only:
+    - image: MacOS
+      stack: go 1.14
+  init:
+  - sw_vers
+  before_test:
+  - sudo systemsetup -settimezone $TZ
+  on_success:
+  - go test -covermode=count -coverprofile=coverage.txt ./...
+  - bash <(curl -s https://codecov.io/bash)
+
+- matrix:
+    only:
+    - image: Ubuntu
+  init:
+  - lsb_release -a
+
+- matrix:
+    only:
+    - image: Visual Studio 2019
+  init:
+  - ver
+  clone_folder: 'c:\go\src\github.com\arnie97\emu-log'
+  environment:
+    GOPATH: 'c:\go'
+    PATH: 'c:\msys64\mingw64\bin;c:\msys64\bin;%PATH%'
+  before_test:
+  - tzutil /s "China Standard Time"
