@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 )
 
 type mockHTTPClient struct {
@@ -15,11 +16,18 @@ type mockHTTPClient struct {
 
 func MockHTTPClientRespBody(body string) {
 	confOnce.Do(func() {})
-	httpOnce.Do(func() {
-		httpClient = &mockHTTPClient{resp: &http.Response{}}
-	})
+	httpOnce.Do(func() {})
+	httpClient = &mockHTTPClient{resp: &http.Response{}}
 	mockBody := ioutil.NopCloser(strings.NewReader(body))
 	httpClient.(*mockHTTPClient).resp.Body = mockBody
+}
+
+func DisableMockHTTPClient() {
+	httpOnce = sync.Once{}
+	httpClient = &http.Client{
+		Timeout:   RequestTimeout,
+		Transport: &setDefaultHeaders{},
+	}
 }
 
 func (x *mockHTTPClient) Do(*http.Request) (*http.Response, error) {

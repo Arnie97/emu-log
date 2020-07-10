@@ -9,6 +9,8 @@ import (
 )
 
 func ExampleHTTPClient() {
+	common.DisableMockHTTPClient()
+
 	x := common.HTTPClient()
 	y := common.HTTPClient()
 	fmt.Println("x == y:  ", x == y)
