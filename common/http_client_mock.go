@@ -13,17 +13,13 @@ type mockHTTPClient struct {
 	err  error
 }
 
-func MockHTTPClient() httpRequester {
+func MockHTTPClientRespBody(body string) {
 	confOnce.Do(func() {})
 	httpOnce.Do(func() {
 		httpClient = &mockHTTPClient{resp: &http.Response{}}
 	})
-	return httpClient
-}
-
-func SetMockHTTPClientRespBody(body string) {
 	mockBody := ioutil.NopCloser(strings.NewReader(body))
-	MockHTTPClient().(*mockHTTPClient).resp.Body = mockBody
+	httpClient.(*mockHTTPClient).resp.Body = mockBody
 }
 
 func (x *mockHTTPClient) Do(*http.Request) (*http.Response, error) {

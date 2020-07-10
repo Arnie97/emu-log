@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" class="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <!--强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览-->
+    <meta name="viewport"
+        content="iewport-fit=cover,width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!--iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览-->
+    <meta content="yes" name="apple-mobile-web-app-capable" />
+    <!--iphone的私有标签，它指定的iphone中safari顶端的状态条的样式-->
+    <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+    <!--告诉设备忽略将页面中的数字识别为电话号码-->
+    <meta content="telephone=no" name="format-detection" />
+    <!--告诉设备忽略将页面中的数字识别为电话号码-->
+    <meta content="email=no" name="format-detection" />
+    <title>高铁旅客在线服务</title>
+    <link href="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/css/weui.min.css" rel="stylesheet">
+
+    <!--<script src="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/js/jquery.min.js"></script>-->
+    <!--<link href="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/css/weui.min.css" rel="stylesheet">-->
+    <!--<link href="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/css/jquery-weui.min.css" rel="stylesheet">-->
+    <!-- <script src="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/js/jquery-weui.min.js"></script> -->
+    <!-- <link href="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/css/jquery-weui.min.css" rel="stylesheet"> -->
+    <style>
+        .weui-icon_toast.weui-icon-success-no-circle{
+            display: none;
+        }
+        li {
+            list-style: none;
+        }
+
+        body {
+            background: #F8F8F8;
+        }
+        .banner{
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        /*               .banner {
+                  height: 4.2rem;
+                  background: url(http://zeus.lvtudd.net/storage/company/61T63G7csXFvapxfbnGY2GLdEV28ykab4B84ULo9.png) no-repeat center center;
+                  background-size: 100% 100%;
+              }
+
+         */
+
+
+                 .order {
+            box-sizing: border-box;
+            height: 1.38rem;
+            padding: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+            background: #FFFFFF;
+        }
+
+        .order .sche {}
+
+        .order .sche .schedule {
+            font-size: 0.3rem;
+            font-weight: 500;
+            color: rgba(51, 51, 51, 1);
+            line-height: 0.42rem;
+        }
+
+        .order .sche .greetings {
+            font-size: 0.24rem;
+            font-weight: 400;
+            color: rgba(153, 153, 153, 1);
+            line-height: 0.34rem;
+        }
+
+        .order .details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .order .details .icon {
+            display: block;
+            width: 0.36rem;
+            height: 0.4rem;
+            margin: 0 auto;
+            background: url("/Public/img/index/image/order.png") no-repeat center center;
+            background-size: 100% 100%;
+
+        }
+
+        .order .details p {
+            align-items: center;
+            font-size: 0.24rem;
+            font-weight: 500;
+            color: rgba(51, 51, 51, 1);
+            line-height: 0.34rem;
+            padding-top: 0.04rem;
+            color: #333333 ;
+        }
+        .order .details .tab-order{
+
+            color: #333333 ;
+        }
+        .section-wrap,
+        .sectionWrap {
+            margin-top: 0.2rem;
+            padding: 0 0.3rem;
+        }
+
+        .section-wrap .section,
+        .sectionWrap .section {
+            height: 1.08rem;
+            background: url("/Public/img/index/image/navbg.png") no-repeat center center;
+            background-size: 100% 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-wrap .section p,
+        .sectionWrap .section p {
+            line-height: 1.08rem;
+            padding-left: 0.3rem;
+            font-size: 0.36rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .section-wrap .section .BuyNow {
+            width: 1.48rem;
+            height: 0.46rem;
+            background: linear-gradient(180deg, rgba(252, 232, 186, 1) 0%, rgba(252, 204, 143, 1) 100%);
+            border-radius: 0.23rem;
+            border: 0.02rem solid rgba(255, 160, 78, 1);
+            margin-left: 0.2rem;
+            position: relative;
+            align-items: center;
+            display: flex;
+        }
+
+        .sectionWrap .section .BuyNow {
+            width: 2rem;
+            line-height: 0.46rem;
+            background: linear-gradient(180deg, rgba(252, 232, 186, 1) 0%, rgba(252, 204, 143, 1) 100%);
+            border-radius: 0.23rem;
+            border: 0.02rem solid rgba(255, 160, 78, 1);
+            margin-left: 0.2rem;
+        }
+
+        .section-wrap .section .BuyNow:after {
+            position: absolute;
+            content: '';
+            display: block;
+            width: 0.12rem;
+            height: 0.2rem;
+            top: 54%;
+            transform: translate(0, -50%);
+            right: 0.16rem;
+            background: url("/Public/img/index/image/rightArrow.png") no-repeat center center;
+            background-size: 100% 100%;
+
+        }
+
+        .section-wrap .BuyNow span,
+        .sectionWrap .BuyNow span {
+            font-size: 0.24rem;
+            font-weight: 500;
+            color: rgba(38, 24, 18, 1);
+            margin-left: 0.16rem;
+            line-height: 0.46rem;
+        }
+
+        .RealList-wrap {
+            padding: 0 0.3rem;
+        }
+
+        .RealList-wrap .RealList {
+            background: rgba(255, 255, 255, 1);
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0.3rem 0.2rem;
+        }
+
+        .RealList-wrap li {
+            width: 1.9rem;
+            position: relative;
+        }
+        .RealList-wrap li::after{
+            position: absolute;
+            content: '图片仅供参考';
+            display: block;
+            width: 100%;
+            height: 0.36rem;
+            top: 1.54rem;
+            left: 0;
+            line-height: 0.36rem;
+            text-align: center;
+            background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,0.5) 100%);
+border-radius:0px 0px 0.08rem 0.08rem;
+font-size:0.2rem;
+
+font-weight:400;
+color:rgba(255,255,255,1);
+
+        }
+        .RealList-wrap li .RealTitle {
+            height: 0.68rem;
+            font-size: 0.24rem;
+            font-weight: 400;
+            color: rgba(51, 51, 51, 1);
+            line-height: 0.34rem;
+            margin-top: 0.1rem;
+            margin-bottom: 0.02rem;
+            overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+        }
+
+        .RealList-wrap li .img {
+            display: block;
+            width: 100%;
+            height: 1.9rem;
+            box-sizing: border-box;
+            border-radius:4px;
+            border:1px solid rgba(222,222,222,1);
+        }
+
+        .RealList-wrap li .price {
+            height: 0.44rem;
+            font-size: 0.24rem;
+            font-weight: 500;
+            color: rgba(255, 83, 57, 1);
+            line-height: 0.44rem;
+        }
+
+        .RealList-wrap li .price span {
+            font-size: 0.34rem;
+        }
+
+        .service-wrar,
+        .serviceWrar {
+            padding: 0.2rem 0.3rem 0.32rem;
+        }
+
+        .service-wrar .service,
+        .serviceWrar .service {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .service-wrar .service .container,
+        .serviceWrar .service .container {
+            width: 3.3rem;
+            height: 1.44rem;
+            background: rgba(255, 255, 255, 1);
+            box-sizing: border-box;
+            padding: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .serviceWrar .service .container{
+            background:rgba(232,232,232,1);
+        }
+        .service-wrar .container .titleMax,
+        .serviceWrar .container .titleMax {
+            line-height: 0.44rem;
+            font-size: 0.32rem;
+            font-weight: 500;
+            color: rgba(51, 51, 51, 1);
+            margin-bottom: 0.06rem;
+        }
+
+        .service-wrar .container .titleMin,
+        .serviceWrar .container .titleMin {
+            font-size: 0.24rem;
+            font-weight: 400;
+            color: rgba(153, 153, 153, 1);
+            line-height: 0.34rem;
+        }
+
+        .service-wrar .container:nth-of-type(1) .icon {
+            background: url("/Public/img/index/image/clean.png") no-repeat center center;
+            background-size: 100% 100%;
+        }
+
+        .service-wrar .container:nth-of-type(2) .icon {
+            background: url("/Public/img/index/image/card.png") no-repeat center center;
+            background-size: 100% 100%;
+        }
+
+        .serviceWrar .container:nth-of-type(1) .icon {
+            background: url("/Public/img/index/image/cleanh.png") no-repeat center center;
+            background-size: 100% 100%;
+        }
+
+        .serviceWrar .container:nth-of-type(2) .icon {
+            background: url("/Public/img/index/image/cardh.png") no-repeat center center;
+            background-size: 100% 100%;
+        }
+
+        .service-wrar .container .icon,
+        .serviceWrar .container .icon {
+            width: 0.6rem;
+            height: 0.6rem;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <!--<image class="banner" src="/Public/img/index/image/banner.png"></image>-->
+        <image class="banner" src=http://zeus.lvtudd.net/storage/company/61T63G7csXFvapxfbnGY2GLdEV28ykab4B84ULo9.png></image>
+
+
+        <div class="order">
+        <div class="sche">
+
+
+
+                                <div class="train" style="line-height: 0.3rem">
+                    <p class="schedule">当前车次:G6856 6车厢 6排 D/F座</p>
+
+                    <!--<span>G6856</span>-->
+                    <!--<span>6车厢</span>-->
+                    <!--<span>6排</span>-->
+                    <!--<span>D/F座</span>-->
+                </div>
+                                                    <p class="greetings">尊敬的旅客，下午好！</p>
+
+                    </div>
+        <div class="details">
+            <a href="/index.php/QrSweepCode/page_user_order_v1.html">
+                <span class="icon"></span>
+                <p>订单</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="section-wrap send" >
+        <div class="section">
+            <p>餐饮零食</p>
+            <div class="BuyNow">
+                <span>立即选购</span>
+            </div>
+        </div>
+    </div>
+    <div class="RealList-wrap send">
+        <ul class="RealList">
+
+            <li>
+                <a href="####" class="send" goodid="1">
+                                        <img class="img" src=http://lvtudiandian.img-cn-hangzhou.aliyuncs.com/upload/attachment/20191228162940759.jpg />
+
+
+
+                    <p class="RealTitle">和厨香菇排骨面</p>
+                    <p class="price">¥<span>40</span></p>
+                </a>
+            </li>
+
+
+            <li>
+                <a href="####" class="send" goodid="1">
+                                        <img class="img" src=http://lvtudiandian.img-cn-hangzhou.aliyuncs.com/upload/attachment/20200109165002222.jpg />
+
+
+
+                    <p class="RealTitle">和厨番茄牛腩面</p>
+                    <p class="price">¥<span>40</span></p>
+                </a>
+            </li>
+
+
+            <li>
+                <a href="####" class="send" goodid="1">
+                                        <img class="img" src=http://lvtudiandian.img-cn-hangzhou.aliyuncs.com/upload/attachment/20190718141133880.jpg />
+
+
+
+                    <p class="RealTitle">和厨番茄鸡蛋面</p>
+                    <p class="price">¥<span>25</span></p>
+                </a>
+            </li>
+
+                        <!--<li>-->
+                <!--<a href="####" class="send" goodid="1">-->
+                    <!--<img class="img" src="/Public/img/index/image/banner.png" />-->
+                    <!--<p class="RealTitle">标题标题</p>-->
+                    <!--<p class="price">¥<span>66.66</span></p>-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="####" class="send" goodid="11">-->
+                    <!--<img class="img" src="/Public/img/index/image/banner.png" />-->
+                    <!--<p class="RealTitle">标题标题</p>-->
+                    <!--<p class="price">¥<span>66.66</span></p>-->
+                <!--</a>-->
+            <!--</li>-->
+            <!--<li>-->
+                <!--<a href="####" class="send" goodid="12">-->
+                    <!--<img class="img" src="/Public/img/index/image/banner.png" />-->
+                    <!--<p class="RealTitle">标题标题</p>-->
+                    <!--<p class="price">¥<span>66.66</span></p>-->
+                <!--</a>-->
+            <!--</li>-->
+
+        </ul>
+    </div>
+
+    <!---->
+
+    <!--&lt;!&ndash; 暂未开店  style:display:none&ndash;&gt;-->
+    <!--<div class="sectionWrap" >-->
+        <!--<div class="section">-->
+            <!--<p>暂未开店</p>-->
+            <!--<div class="BuyNow">-->
+                <!--<span>请前往餐车选购</span>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!---->
+
+    <form id="sendForm" action="/index.php/QrSweepCode/page_index.html" method="post">
+        <input type="hidden" name="partner_id" value="16976" />
+        <input type="hidden" name="carriage" value="6" />
+        <input type="hidden" name="carriage_row" value="6" />
+        <input type="hidden" name="carriage_seat" value="D/F" />
+        <input type="hidden" name="minopenid" value="" />
+        <input type="hidden" name="shop" value="1" />
+        <!--<input type="text"  class="cateval" name="cate" value="1" />-->
+
+    </form>
+<script src="/Public/rem.js"></script>
+<script src="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/js/jquery.min.js"></script>
+<script src="https://lvtudiandian.oss-cn-hangzhou.aliyuncs.com/static/juery-weui/js/jquery-weui.min.js"></script>
+</body>
+
+</html>
+
+<script>
+    $(function(){
+        $.toast.prototype.defaults.duration='200'
+        $(".send").click(function(){
+            // console.log($(this))
+            // alert(123);
+            // var cate = $(this).attr("cate");
+            // alert(cate);
+            // $(".cateval").val(cate);
+            // var c =  $(".cateval").val();
+            // alert(c);
+
+            $("#sendForm").submit();
+
+        })
+    })
+    function callClean() {
+        var locomotive_info = {"emp_id":"1917","emp_name":"\u59da\u8d1d\u8d1d","partner_id":"16976","partner_name":"G6856","bind_id":"159386","carriage":"1","locomotive_code":"CRH380A_2900","company_id":"48"};
+        var openid = "oaIK-wv06uZ7eiOw7Ee-hEp0ox_k";
+        var company_info = {"company_id":"48","company_name":"\u6b66\u6c49\u52a8\u9ad8\u8944\u9633\u4e1c\u7ad9","create_on":"2019-12-03 12:53:40","create_timestamp":"1575348820","is_delete":"0","delete_on":null,"delete_timestamp":null,"create_no":"hu8hu","mange_phone":null,"mange_open_id":null,"use_oms":"1","scan_qr_meal":"1","scan_qr_receipt":"1","background_img":null,"crew_meal":"1","type":"0","parent_company_id":null,"word_color":"#4e9a42","button_color":"#4e9a42","home_img":"http:\/\/zeus.lvtudd.net\/storage\/company\/61T63G7csXFvapxfbnGY2GLdEV28ykab4B84ULo9.png","banner_img":"","up_send_fee":"15","is_call":"0","business_type":"1"};
+
+
+
+        var carriage = "6 ";
+        var seatRow = "6";
+        var seatNo = "D/F";
+        // var partner_name = "";
+
+
+
+        console.log(locomotive_info);
+        // alert(openid) ;
+        // alert(locomotive_info.emp_id);
+        $.get("/index.php/TpApi/Apply/is_call.html",{"emp_id":locomotive_info.emp_id,"openid":openid},function(ret){
+            // console.log(ret);
+            if(ret.success){
+                $.alert("您已经呼叫过了哦，请等等再来",function(){
+                    $('.weui-mask').hide()
+                    $('.weui-dialog').hide()
+                });
+            }else{
+                $.modal({
+                    title: '',
+                    text: "保洁人员即将为您过来打扫卫生",
+                    buttons: [
+                        { text: "取消", className: "default", onClick: function(){
+                            // console.log('取消')
+                                $('.weui-mask').hide()
+                                $('.weui-dialog').hide()
+                        }},
+                        { text: "确认呼叫", onClick: function(){
+
+                                $.get("/index.php/TpApi/Apply/index.html",{"carriage":carriage,"seatRow":seatRow,"seatNo":seatNo,"type":1,"emp_id":locomotive_info.emp_id,"emp_name":locomotive_info.emp_name,"partner_name":locomotive_info.partner_name,"company_id":company_info.company_id,"company_name":company_info.company_name,"openid":openid},function(ret){
+
+                                    // alert(123)
+                                    console.log(ret);
+
+                                    $.toast("呼叫成功", 'text',function(){
+                                        $('.weui-mask').hide()
+                                        $('.weui-dialog').hide()
+                                    });
+
+                                });
+
+
+                            }
+                        },
+                    ]
+
+                });
+            }
+            // if(ret.success == 0){
+            //
+            //   alert(ret.errormsg);
+            // }else{
+            //
+            //
+            //   alert('退款成功');
+            //
+            //   window.history.go(-1);
+            //
+            // }
+        },"json");
+
+
+
+
+
+    }
+    function callTickt() {
+        var locomotive_info = {"emp_id":"1917","emp_name":"\u59da\u8d1d\u8d1d","partner_id":"16976","partner_name":"G6856","bind_id":"159386","carriage":"1","locomotive_code":"CRH380A_2900","company_id":"48"};
+        var openid = "oaIK-wv06uZ7eiOw7Ee-hEp0ox_k";
+        var company_info = {"company_id":"48","company_name":"\u6b66\u6c49\u52a8\u9ad8\u8944\u9633\u4e1c\u7ad9","create_on":"2019-12-03 12:53:40","create_timestamp":"1575348820","is_delete":"0","delete_on":null,"delete_timestamp":null,"create_no":"hu8hu","mange_phone":null,"mange_open_id":null,"use_oms":"1","scan_qr_meal":"1","scan_qr_receipt":"1","background_img":null,"crew_meal":"1","type":"0","parent_company_id":null,"word_color":"#4e9a42","button_color":"#4e9a42","home_img":"http:\/\/zeus.lvtudd.net\/storage\/company\/61T63G7csXFvapxfbnGY2GLdEV28ykab4B84ULo9.png","banner_img":"","up_send_fee":"15","is_call":"0","business_type":"1"};
+
+
+
+        var carriage = "6 ";
+        var seatRow = "6";
+        var seatNo = "D/F";
+        // var partner_name = "";
+        $.get("/index.php/TpApi/Apply/is_call.html",{"type":2,"emp_id":locomotive_info.emp_id,"openid":openid},function(ret){
+            console.log(ret);
+            if(ret.success){
+                $.alert("您已经呼叫过了哦，请等等再来",function(){
+                    $('.weui-mask').hide()
+                    $('.weui-dialog').hide()
+                });
+
+            }else{
+
+
+                $.modal({
+                    title: '',
+                    text: "乘务人员即将为您过来办理补票服务",
+                    buttons: [
+                        { text: "取消", className: "default", onClick: function(){
+                            console.log('取消')
+                            $('.weui-mask').hide()
+                            $('.weui-dialog').hide()
+                        }},
+                        { text: "确认呼叫", onClick: function(){
+
+                                $.get("/index.php/TpApi/Apply/index.html",{"carriage":carriage,"seatRow":seatRow,"seatNo":seatNo,"type":2,"emp_id":locomotive_info.emp_id,"emp_name":locomotive_info.emp_name,"partner_name":locomotive_info.partner_name,"company_id":company_info.company_id,"company_name":company_info.company_name,"openid":openid},function(ret){
+
+                                    // alert(123)
+                                    console.log(ret);
+                                    $.toast("呼叫成功", 'text',function(){
+                                        $('.weui-mask').hide()
+                                        $('.weui-dialog').hide()
+                                    });
+
+                                });
+                                // $.toast("呼叫成功", "text");
+                            }
+                        },
+                    ]
+                });
+            }
+
+        },"json");
+
+    }
+    // 点击取消弹框消失
+    // var cancel = function () {
+    //     $('.weui-mask').hide()
+    //     $('.weui-dialog').hide()
+
+    // }
+
+</script>

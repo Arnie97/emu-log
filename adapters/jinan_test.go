@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/arnie97/emu-log/adapters"
-	"github.com/arnie97/emu-log/common"
 )
 
 func ExampleJinan_SerialEncrypt() {
@@ -32,13 +31,19 @@ func ExampleJinan_PKCS7Padding() {
 }
 
 func ExampleJinan_TrainNo() {
-	common.SetMockHTTPClientRespBody(jinanFullResult)
-	fmt.Println(adapters.Jinan{}.TrainNo(""))
-	// Output: G2079/G2078 2020-07-09 <nil>
+	printTrainNo(adapters.Jinan{}, "jinan_full.json")
+	printTrainNo(adapters.Jinan{}, "jinan_basic.json")
+
+	// Output:
+	// "G2079/G2078"  false "2020-07-09"
+	// ""             false ""
 }
 
 func ExampleJinan_VehicleNo() {
-	common.SetMockHTTPClientRespBody(jinanFullResult)
-	fmt.Println(adapters.Jinan{}.VehicleNo(""))
-	// Output: CRH380B5847 <nil>
+	printVehicleNo(adapters.Jinan{}, "jinan_full.json")
+	printVehicleNo(adapters.Jinan{}, "jinan_basic.json")
+
+	// Output:
+	// "CRH380B5847"  false
+	// "CRH380B5847"  false
 }
