@@ -26,6 +26,7 @@ func NewRouter() *chi.Mux {
 	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\d{4}}`, singleVehicleNoHandler)
 	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\+\d\d}`, singleVehicleNoHandler)
 	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]+}`, multiVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\d{4}}/qr`, vehicleBuildURLHandler)
 	return mux
 }
 
