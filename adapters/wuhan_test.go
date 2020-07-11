@@ -5,10 +5,12 @@ import (
 )
 
 func ExampleWuhan_TrainNo() {
-	printTrainNo(adapters.Wuhan{}, "wuhan_full.html")
-	printTrainNo(adapters.Wuhan{}, "wuhan_basic.html")
-	printTrainNo(adapters.Wuhan{}, "wuhan_invalid.html")
-
+	printTrainNo(
+		adapters.Wuhan{},
+		"wuhan_full.html",
+		"wuhan_basic.html",
+		"wuhan_invalid.html",
+	)
 	// Output:
 	// "G6856"        false ""
 	// ""             true  ""
@@ -16,10 +18,12 @@ func ExampleWuhan_TrainNo() {
 }
 
 func ExampleWuhan_VehicleNo() {
-	printVehicleNo(adapters.Wuhan{}, "wuhan_full.html")
-	printVehicleNo(adapters.Wuhan{}, "wuhan_basic.html")
-	printVehicleNo(adapters.Wuhan{}, "wuhan_invalid.html")
-
+	printVehicleNo(
+		adapters.Wuhan{},
+		"wuhan_full.html",
+		"wuhan_basic.html",
+		"wuhan_invalid.html",
+	)
 	// Output:
 	// "CRH380A2900"  false
 	// "CRH2A2445"    false

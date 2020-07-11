@@ -1,6 +1,7 @@
 package adapters_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -9,20 +10,55 @@ import (
 	"github.com/arnie97/emu-log/common"
 )
 
+func ExampleBuildURL() {
+	for _, testCase := range urlTestCases() {
+		bureauCode, serial, url := testCase[0], testCase[1], testCase[2]
+		b := adapters.MustGetBureauByCode(bureauCode)
+		if urlBuilt := adapters.BuildURL(b, serial); urlBuilt != url {
+			fmt.Println(urlBuilt)
+			fmt.Println(url)
+		}
+	}
+	// Output:
+}
+
+func ExampleParseURL() {
+	for _, testCase := range urlTestCases() {
+		bCode, serial, url := testCase[0], testCase[1], testCase[2]
+		if b, s := adapters.ParseURL(url); s != serial || b.Code() != bCode {
+			fmt.Println(b, s)
+		}
+	}
+
+	fmt.Println(adapters.ParseURL("https://moerail.ml"))
+	// Output: <nil>
+}
+
+func urlTestCases() (testCases [][]string) {
+	content, err := ioutil.ReadFile("testdata/url.json")
+	common.Must(err)
+	common.Must(json.Unmarshal(content, &testCases))
+	return
+}
+
 func mockHTTPClientRespBodyFromFile(mockFile string) {
 	content, err := ioutil.ReadFile(filepath.Join("testdata", mockFile))
 	common.Must(err)
 	common.MockHTTPClientRespBody(string(content))
 }
 
-func printTrainNo(b adapters.Bureau, mockFile string) {
-	mockHTTPClientRespBodyFromFile(mockFile)
-	trainNo, date, err := b.TrainNo("")
-	fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
+func printTrainNo(b adapters.Bureau, mockFiles ...string) {
+	for _, mockFile := range mockFiles {
+		mockHTTPClientRespBodyFromFile(mockFile)
+		trainNo, date, err := b.TrainNo("")
+		fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
+	}
 }
 
-func printVehicleNo(b adapters.Bureau, mockFile string) {
-	mockHTTPClientRespBodyFromFile(mockFile)
-	vehicleNo, err := b.VehicleNo("")
-	fmt.Printf("%#-14v %-5v\n", vehicleNo, err != nil)
+func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
+	for _, mockFile := range mockFiles {
+		mockHTTPClientRespBodyFromFile(mockFile)
+		vehicleNo, err := b.VehicleNo("")
+		fmt.Printf("%#-14v %-5v\n", vehicleNo, err != nil)
+	}
 }

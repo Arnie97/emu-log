@@ -21,6 +21,10 @@ func (Zhengzhou) Name() string {
 	return "中国铁路郑州局集团有限公司"
 }
 
+func (Zhengzhou) URL() string {
+	return "https://p.12306.cn/tservice/catering/init?c=%s&w=h"
+}
+
 func (Zhengzhou) BruteForce(serials chan<- string) {
 }
 

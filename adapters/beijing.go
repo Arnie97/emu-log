@@ -22,6 +22,10 @@ func (Beijing) Name() string {
 	return "中国铁路北京局集团有限公司"
 }
 
+func (Beijing) URL() string {
+	return "https://aymaoto.jtlf.cn/page/oto/index?QR=%s"
+}
+
 func (Beijing) BruteForce(qrCodes chan<- string) {
 	for y := 1; y <= 4; y++ {
 		for x := 11000; x < 16000; x += 500 {

@@ -31,18 +31,22 @@ func ExampleJinan_PKCS7Padding() {
 }
 
 func ExampleJinan_TrainNo() {
-	printTrainNo(adapters.Jinan{}, "jinan_full.json")
-	printTrainNo(adapters.Jinan{}, "jinan_basic.json")
-
+	printTrainNo(
+		adapters.Jinan{},
+		"jinan_full.json",
+		"jinan_basic.json",
+	)
 	// Output:
 	// "G2079/G2078"  false "2020-07-09"
 	// ""             false ""
 }
 
 func ExampleJinan_VehicleNo() {
-	printVehicleNo(adapters.Jinan{}, "jinan_full.json")
-	printVehicleNo(adapters.Jinan{}, "jinan_basic.json")
-
+	printVehicleNo(
+		adapters.Jinan{},
+		"jinan_full.json",
+		"jinan_basic.json",
+	)
 	// Output:
 	// "CRH380B5847"  false
 	// "CRH380B5847"  false

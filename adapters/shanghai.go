@@ -21,6 +21,10 @@ func (Shanghai) Name() string {
 	return "中国铁路上海局集团有限公司"
 }
 
+func (Shanghai) URL() string {
+	return "http://portal.xiuxiu365.cn/portal/qrcode/%s"
+}
+
 func (Shanghai) BruteForce(pqCodes chan<- string) {
 	for i := 2000; i < 11000; i += 200 {
 		pqCodes <- fmt.Sprintf("PQ%07d", i)

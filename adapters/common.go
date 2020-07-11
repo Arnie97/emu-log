@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/arnie97/emu-log/common"
 	"github.com/rs/zerolog/log"
@@ -16,6 +17,7 @@ type (
 	Bureau interface {
 		Code() string
 		Name() string
+		URL() string
 		BruteForce(chan<- string)
 		Info(qrCode string) (info jsonObject, err error)
 		TrainNo(qrCode string) (trainNo, date string, err error)
@@ -41,6 +43,21 @@ func MustGetBureauByCode(bureauCode string) (b Bureau) {
 		log.Fatal().Msgf("[%s] unknown bureau adapter", bureauCode)
 	}
 	return
+}
+
+func BuildURL(b Bureau, serial string) (url string) {
+	return fmt.Sprintf(b.URL(), serial)
+}
+
+func ParseURL(url string) (b Bureau, serial string) {
+	for _, b = range Bureaus {
+		urlPattern := fmt.Sprintf(regexp.QuoteMeta(b.URL()), `(\w+)`)
+		urlRegExp := regexp.MustCompile(urlPattern)
+		if match := urlRegExp.FindStringSubmatch(url); match != nil {
+			return b, match[1]
+		}
+	}
+	return nil, ""
 }
 
 func parseResult(resp *http.Response, resultPtr interface{}) (err error) {

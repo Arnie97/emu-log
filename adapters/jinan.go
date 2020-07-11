@@ -30,6 +30,10 @@ func (Jinan) Name() string {
 	return "中国铁路济南局集团有限公司"
 }
 
+func (Jinan) URL() string {
+	return "https://static.ccrgt.com/orderMeals?scene=%s"
+}
+
 func (Jinan) BruteForce(serials chan<- string) {
 }
 

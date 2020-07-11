@@ -31,6 +31,10 @@ func (Wuhan) Name() string {
 	return "中国铁路武汉局集团有限公司"
 }
 
+func (Wuhan) URL() string {
+	return "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=6&seatRow=6&seatNo=D/F"
+}
+
 func (Wuhan) BruteForce(serials chan<- string) {
 	for x := 1; x < 500; x++ {
 		serials <- fmt.Sprintf("%03d", x)
@@ -38,8 +42,7 @@ func (Wuhan) BruteForce(serials chan<- string) {
 }
 
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {
-	const api = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=6&seatRow=6&seatNo=D/F"
-	req, err := http.NewRequest("GET", fmt.Sprintf(api, serial), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf(b.URL(), serial), nil)
 	if err != nil {
 		return
 	}
