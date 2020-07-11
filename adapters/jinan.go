@@ -50,7 +50,7 @@ func (b Jinan) Info(serial string) (info jsonObject, err error) {
 		return
 	}
 	buf := bytes.NewBuffer(jsonBytes)
-	resp, err := common.HTTPClient().Post(api, contentType, buf)
+	resp, err := common.HTTPClient().Post(api, common.ContentType, buf)
 	if err != nil {
 		return
 	}
@@ -104,9 +104,8 @@ func (b Jinan) PKCS7Padding(input []byte, blockSize int) (buf []byte) {
 	return
 }
 
-func (b Jinan) TrainNo(serial string) (trainNo, date string, err error) {
+func (b Jinan) TrainNo(info jsonObject) (trainNo, date string, err error) {
 	var (
-		info     jsonObject
 		infoList []struct {
 			TrainInfo struct {
 				TrainNumber, FirstStation, LastStation string
@@ -114,9 +113,6 @@ func (b Jinan) TrainNo(serial string) (trainNo, date string, err error) {
 			}
 		}
 	)
-	if info, err = b.Info(serial); err != nil {
-		return
-	}
 	if err = common.StructDecode(info["trainInfos"], &infoList); err != nil {
 		return
 	}
@@ -133,12 +129,8 @@ func (b Jinan) TrainNo(serial string) (trainNo, date string, err error) {
 	return
 }
 
-func (b Jinan) VehicleNo(serial string) (vehicleNo string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		vehicleNo = common.NormalizeVehicleNo(info["czNo"].(string))
-	}
+func (b Jinan) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["czNo"].(string))
 	return
 }

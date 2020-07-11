@@ -51,24 +51,16 @@ func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	return
 }
 
-func (b Zhengzhou) TrainNo(serial string) (trainNo, date string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		trainNo = info["trainCode"].(string)
-		date = info["startDay"].(string)
-		date = date[:4] + "-" + date[4:6] + date[6:8]
-	}
+func (b Zhengzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
+	defer common.Catch(&err)
+	trainNo = info["trainCode"].(string)
+	date = info["startDay"].(string)
+	date = date[:4] + "-" + date[4:6] + date[6:8]
 	return
 }
 
-func (b Zhengzhou) VehicleNo(serial string) (vehicleNo string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		vehicleNo = common.NormalizeVehicleNo(info["carNo"].(string))
-	}
+func (b Zhengzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["carNo"].(string))
 	return
 }

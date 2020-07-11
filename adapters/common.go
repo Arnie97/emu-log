@@ -11,17 +11,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const contentType = "application/json"
-
 type (
 	Bureau interface {
 		Code() string
 		Name() string
 		URL() string
 		BruteForce(chan<- string)
-		Info(qrCode string) (info jsonObject, err error)
-		TrainNo(qrCode string) (trainNo, date string, err error)
-		VehicleNo(qrCode string) (vehicleNo string, err error)
+		Info(serial string) (info jsonObject, err error)
+		TrainNo(info jsonObject) (trainNo, date string, err error)
+		VehicleNo(info jsonObject) (vehicleNo string, err error)
 	}
 	jsonObject map[string]interface{}
 )

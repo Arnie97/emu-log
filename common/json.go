@@ -10,6 +10,10 @@ import (
 	"sync"
 )
 
+const (
+	ContentType = "application/json"
+)
+
 var (
 	confOnce sync.Once
 	conf     map[string]string

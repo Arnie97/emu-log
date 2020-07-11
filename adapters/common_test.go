@@ -50,7 +50,8 @@ func mockHTTPClientRespBodyFromFile(mockFile string) {
 func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
 		mockHTTPClientRespBodyFromFile(mockFile)
-		trainNo, date, err := b.TrainNo("")
+		info, err := b.Info("")
+		trainNo, date, err := b.TrainNo(info)
 		fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
 	}
 }
@@ -58,7 +59,8 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
 		mockHTTPClientRespBodyFromFile(mockFile)
-		vehicleNo, err := b.VehicleNo("")
+		info, err := b.Info("")
+		vehicleNo, err := b.VehicleNo(info)
 		fmt.Printf("%#-14v %-5v\n", vehicleNo, err != nil)
 	}
 }

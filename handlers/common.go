@@ -29,7 +29,7 @@ func NewRouter() *chi.Mux {
 	return mux
 }
 
-// serializeLogEntries converts database query results to a JSON response.
+// serializeLogEntries converts database query results to a JSON array.
 func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
 	results := make([]common.LogEntry, 0)
 	for rows.Next() {
@@ -37,6 +37,11 @@ func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
 		common.Must(rows.Scan(&e.Date, &e.VehicleNo, &e.TrainNo))
 		results = append(results, e)
 	}
-	w.Header().Set("Content-Type", "application/json")
-	common.Must(json.NewEncoder(w).Encode(results))
+	jsonResponse(results, w)
+}
+
+// jsonResponse takes a structure and marshals it to a JSON HTTP response.
+func jsonResponse(v interface{}, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", common.ContentType)
+	common.Must(json.NewEncoder(w).Encode(v))
 }

@@ -9,10 +9,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// scanVehicleNo trys each unknown two-dimensional barcodes in the brute force
-// key space to see if any of these barcodes was recently put in to use.
+// scanVehicleNo trys each unknown QR code in the brute force key space to see
+// if any of these serial numbers was recently (or is currently) put in to use.
 func scanVehicleNo(b adapters.Bureau, tx *sql.Tx) {
-	log.Info().Msgf("[%s] job started: %s", b.Code(), b.Name())
+	log.Info().Msgf("[%s] started scanning for new vehicles", b.Code())
 	defer wg.Done()
 
 	rows, err := tx.Query(`
@@ -24,36 +24,53 @@ func scanVehicleNo(b adapters.Bureau, tx *sql.Tx) {
 	common.Must(err)
 	defer rows.Close()
 
-	qrCodes := make(chan string)
+	serials := make(chan string)
 	go func() {
-		b.BruteForce(qrCodes)
-		close(qrCodes)
+		b.BruteForce(serials)
+		close(serials)
 	}()
 
-	qrCodeFromDB := ""
-	for qrCode := range qrCodes {
+	var serialFromDB string
+	for serial := range serials {
 		// skip existing codes in the database
-		for qrCode > qrCodeFromDB && rows.Next() {
-			common.Must(rows.Scan(&qrCodeFromDB))
-			log.Debug().Msgf("[%s] loaded: %s", b.Code(), qrCodeFromDB)
+		for serial > serialFromDB && rows.Next() {
+			common.Must(rows.Scan(&serialFromDB))
+			log.Debug().Msgf("[%s] %s loaded", b.Code(), serialFromDB)
 		}
-		if qrCode == qrCodeFromDB {
+		if serial == serialFromDB {
 			continue
 		}
-
-		time.Sleep(requestDelay)
-		vehicleNo, err := b.VehicleNo(qrCode)
-		if err != nil {
-			log.Error().Msg(err.Error())
-		}
-		log.Debug().Msgf("[%s] checked: %s -> %s", b.Code(), qrCode, vehicleNo)
-		if vehicleNo != "" {
-			_, err := tx.Exec(
-				`INSERT OR IGNORE INTO emu_qrcode VALUES (?, ?, ?)`,
-				vehicleNo, b.Code(), qrCode,
-			)
-			common.Must(err)
-		}
+		addVehicleBySerial(b, tx, serial)
 	}
-	log.Info().Msgf("[%s] job done: %s", b.Code(), b.Name())
+	log.Info().Msgf("[%s] finished scanning", b.Code())
+}
+
+// addVehicleBySerial takes a serial number from some railway company and
+// save it to the database if the serial number maps to a vehicle number.
+func addVehicleBySerial(b adapters.Bureau, tx *sql.Tx, serial string) {
+	// handle errors
+	var e common.LogEntry
+	time.Sleep(requestDelay)
+	info, err := b.Info(serial)
+	if err == nil {
+		e.VehicleNo, err = b.VehicleNo(info)
+	}
+	if err != nil || e.VehicleNo == "" {
+		log.Error().Msgf("[%s] %s -> %v", b.Code(), serial, err)
+		return
+	}
+
+	// add a vehicle serial number record
+	_, err = tx.Exec(
+		`INSERT OR IGNORE INTO emu_qrcode VALUES (?, ?, ?)`,
+		e.VehicleNo, b.Code(), serial,
+	)
+	common.Must(err)
+
+	// also add a activity log record if the train number is available
+	e.TrainNo, e.Date, err = b.TrainNo(info)
+	if err == nil && e.TrainNo != "" {
+		addTrainOperationLog(&e, tx)
+	}
+	log.Debug().Msgf("[%s] %s -> %v", b.Code(), serial, e)
 }

@@ -69,23 +69,15 @@ func (Beijing) Info(qrCode string) (info jsonObject, err error) {
 	return
 }
 
-func (b Beijing) TrainNo(qrCode string) (trainNo, date string, err error) {
-	var info jsonObject
-	info, err = b.Info(qrCode)
-	if err == nil {
-		defer common.Catch(&err)
-		trainNo = info["TrainnoId"].(string)
-		date = info["TrainnoDate"].(string)
-	}
+func (b Beijing) TrainNo(info jsonObject) (trainNo, date string, err error) {
+	defer common.Catch(&err)
+	trainNo = info["TrainnoId"].(string)
+	date = info["TrainnoDate"].(string)
 	return
 }
 
-func (b Beijing) VehicleNo(qrCode string) (vehicleNo string, err error) {
-	var info jsonObject
-	info, err = b.Info(qrCode)
-	if err == nil {
-		defer common.Catch(&err)
-		vehicleNo = common.NormalizeVehicleNo(info["TrainId"].(string))
-	}
+func (b Beijing) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["TrainId"].(string))
 	return
 }

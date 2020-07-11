@@ -69,25 +69,17 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	return
 }
 
-func (b Wuhan) TrainNo(serial string) (trainNo, date string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		trainNo = info["partner_name"].(string)
-	}
+func (b Wuhan) TrainNo(info jsonObject) (trainNo, date string, err error) {
+	defer common.Catch(&err)
+	trainNo = info["partner_name"].(string)
 	return
 }
 
-func (b Wuhan) VehicleNo(serial string) (vehicleNo string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
-		if strings.HasPrefix(vehicleNo, "380") {
-			vehicleNo = "CRH" + vehicleNo
-		}
+func (b Wuhan) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
+	if strings.HasPrefix(vehicleNo, "380") {
+		vehicleNo = "CRH" + vehicleNo
 	}
 	return
 }

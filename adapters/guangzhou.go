@@ -55,28 +55,22 @@ func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
 	info = result.Data
 	if info != nil {
 		err = nil
+		info["serial"] = serial
 	}
 	return
 }
 
-func (b Guangzhou) TrainNo(serial string) (trainNo, date string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		trainNo = info["train"].(string)
-	}
+func (b Guangzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
+	defer common.Catch(&err)
+	trainNo = info["train"].(string)
 	return
 }
 
-func (b Guangzhou) VehicleNo(serial string) (vehicleNo string, err error) {
-	var info jsonObject
-	info, err = b.Info(serial)
-	if err == nil {
-		defer common.Catch(&err)
-		vehicleNo = fmt.Sprintf(
-			"CR%s-%.0f+%s", info["carriageNum"], info["id"], serial,
-		)
-	}
+func (b Guangzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+	defer common.Catch(&err)
+	vehicleNo = fmt.Sprintf(
+		"CR%s-%.0f+%s",
+		info["carriageNum"].(string), info["id"], info["serial"].(string),
+	)
 	return
 }

@@ -53,22 +53,14 @@ func (Shanghai) Info(pqCode string) (info jsonObject, err error) {
 	return
 }
 
-func (b Shanghai) TrainNo(pqCode string) (trainNo, date string, err error) {
-	var info jsonObject
-	info, err = b.Info(pqCode)
-	if err == nil {
-		defer common.Catch(&err)
-		trainNo = info["trainName"].(string)
-	}
+func (b Shanghai) TrainNo(info jsonObject) (trainNo, date string, err error) {
+	defer common.Catch(&err)
+	trainNo = info["trainName"].(string)
 	return
 }
 
-func (b Shanghai) VehicleNo(pqCode string) (vehicleNo string, err error) {
-	var info jsonObject
-	info, err = b.Info(pqCode)
-	if err == nil {
-		defer common.Catch(&err)
-		vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
-	}
+func (b Shanghai) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
 	return
 }

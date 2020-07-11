@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/arnie97/emu-log/adapters"
@@ -13,7 +14,7 @@ import (
 // railway company to see if any of these vehicles is currently associated to
 // a train number (or a bunch of train numbers).
 func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
-	log.Info().Msgf("[%s] job started: %s", b.Code(), b.Name())
+	log.Info().Msgf("[%s] retrieving latest activities for known vehicles", b.Code())
 	defer wg.Done()
 
 	rows, err := tx.Query(`
@@ -27,37 +28,55 @@ func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var e common.LogEntry
-		var qrCode, id string
-		common.Must(rows.Scan(&e.VehicleNo, &qrCode, &id))
+		var (
+			e      common.LogEntry
+			serial string
+			id     int64
+		)
+		common.Must(rows.Scan(&e.VehicleNo, &serial, &id))
 		time.Sleep(requestDelay)
-		e.TrainNo, e.Date, err = b.TrainNo(qrCode)
-		if err != nil {
-			log.Error().Msg(err.Error())
+		info, err := b.Info(serial)
+		if err == nil {
+			e.TrainNo, e.Date, err = b.TrainNo(info)
 		}
-		log.Debug().Msgf("[%s] %s -> %s", b.Code(), e.VehicleNo, e.TrainNo)
-		if e.TrainNo != "" {
-			// use current date as the default value if date is not provided
-			if e.Date == "" {
-				e.Date = time.Now().Format(common.ISODate)
-			}
+		if err != nil || e.TrainNo == "" {
+			log.Error().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, err)
+			continue
+		}
+		addTrainOperationLog(&e, tx)
 
-			res, err := tx.Exec(
-				`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
-				e.Date, e.VehicleNo, e.TrainNo,
-			)
-			common.Must(err)
-			logID, err := res.LastInsertId()
-			common.Must(err)
-
-			for _, singleTrainNo := range common.NormalizeTrainNo(e.TrainNo) {
-				_, err = tx.Exec(
-					`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,
-					e.Date, e.VehicleNo, singleTrainNo, logID,
-				)
-				common.Must(err)
-			}
+		vehicleNo, err := b.VehicleNo(info)
+		if vehicleNo == e.VehicleNo || strings.ContainsRune(vehicleNo, '+') {
+			log.Debug().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, e)
+		} else {
+			log.Warn().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, e)
 		}
 	}
-	log.Info().Msgf("[%s] job done: %s", b.Code(), b.Name())
+	log.Info().Msgf("[%s] updates done for known vehicles", b.Code())
+}
+
+// addTrainOperationLog saves the log entry to DB,
+// and update related records in the materialized view.
+func addTrainOperationLog(e *common.LogEntry, tx *sql.Tx) {
+	// use current date as the default value if date is not provided
+	if e.Date == "" {
+		e.Date = time.Now().Format(common.ISODate)
+	}
+
+	res, err := tx.Exec(
+		`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
+		e.Date, e.VehicleNo, e.TrainNo,
+	)
+	common.Must(err)
+	logID, err := res.LastInsertId()
+	common.Must(err)
+
+	// update the materialized view: last used vehicle for each train number
+	for _, singleTrainNo := range common.NormalizeTrainNo(e.TrainNo) {
+		_, err = tx.Exec(
+			`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,
+			e.Date, e.VehicleNo, singleTrainNo, logID,
+		)
+		common.Must(err)
+	}
 }
