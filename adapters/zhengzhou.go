@@ -55,12 +55,12 @@ func (b Zhengzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
 	defer common.Catch(&err)
 	trainNo = info["trainCode"].(string)
 	date = info["startDay"].(string)
-	date = date[:4] + "-" + date[4:6] + date[6:8]
+	date = date[:4] + "-" + date[4:6] + "-" + date[6:8]
 	return
 }
 
 func (b Zhengzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["carNo"].(string))
+	vehicleNo = common.NormalizeVehicleNo(info["carCode"].(string))
 	return
 }

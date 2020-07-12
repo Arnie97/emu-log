@@ -1,0 +1,31 @@
+package adapters_test
+
+import (
+	"github.com/arnie97/emu-log/adapters"
+)
+
+func ExampleZhengzhou_TrainNo() {
+	printTrainNo(
+		adapters.Zhengzhou{},
+		"zhengzhou_full.json",
+		"zhengzhou_basic.json",
+		"zhengzhou_invalid.json",
+	)
+	// Output:
+	// "D2751"        false "2020-07-12"
+	// ""             true  ""
+	// ""             true  ""
+}
+
+func ExampleZhengzhou_VehicleNo() {
+	printVehicleNo(
+		adapters.Zhengzhou{},
+		"zhengzhou_full.json",
+		"zhengzhou_basic.json",
+		"zhengzhou_invalid.json",
+	)
+	// Output:
+	// "CRH5G5194"    false
+	// "CHR380B3667"  false
+	// ""             true
+}
