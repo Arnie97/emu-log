@@ -26,6 +26,6 @@ func ExampleWuhan_VehicleNo() {
 	)
 	// Output:
 	// "CRH380A2900"  false
-	// "CRH2A2445"    false
+	// "CRH380D1545"  false
 	// ""             true
 }

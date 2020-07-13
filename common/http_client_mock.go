@@ -23,6 +23,7 @@ func MockHTTPClientRespBody(body string) {
 }
 
 func DisableMockHTTPClient() {
+	confOnce = sync.Once{}
 	httpOnce = sync.Once{}
 	httpClient = &http.Client{
 		Timeout:   RequestTimeout,
