@@ -34,6 +34,10 @@ func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 			id     int64
 		)
 		common.Must(rows.Scan(&e.VehicleNo, &serial, &id))
+		if !strings.HasPrefix(e.VehicleNo, "CR") {
+			log.Debug().Msgf("[%s] %s -> ignored", b.Code(), e.VehicleNo)
+			continue
+		}
 		time.Sleep(requestDelay)
 		info, err := b.Info(serial)
 		if err == nil {

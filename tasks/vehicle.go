@@ -35,7 +35,6 @@ func scanVehicleNo(b adapters.Bureau, tx *sql.Tx) {
 		// skip existing codes in the database
 		for serial > serialFromDB && rows.Next() {
 			common.Must(rows.Scan(&serialFromDB))
-			log.Debug().Msgf("[%s] %s loaded", b.Code(), serialFromDB)
 		}
 		if serial == serialFromDB {
 			continue
