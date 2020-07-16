@@ -23,10 +23,9 @@ func NewRouter() *chi.Mux {
 	mux.Get(`/map/{stationName}`, railMapHandler)
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
 	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\d{4}}`, singleVehicleNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\+\d\d}`, singleVehicleNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]+}`, multiVehicleNoHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-0-9+]*?\d{4}}/qr`, vehicleBuildURLHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-@\d]*?[@\d]\d{3}}`, singleVehicleNoHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-@\d]*?[@\d]\d{3}}/qr`, vehicleBuildURLHandler)
+	mux.Get(`/emu/{vehicleNo:[A-Z-@\d]+}`, multiVehicleNoHandler)
 	return mux
 }
 

@@ -22,6 +22,6 @@ func ExampleGuangzhou_VehicleNo() {
 		"guangzhou_invalid.json",
 	)
 	// Output:
-	// "CR8+8-11876+" false
+	// "CR8+8-11876@" false
 	// ""             true
 }

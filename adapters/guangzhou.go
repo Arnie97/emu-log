@@ -72,7 +72,7 @@ func (b Guangzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
 func (b Guangzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = fmt.Sprintf(
-		"CR%s-%.0f+%s",
+		"CR%s-%.0f@%s",
 		info["carriageNum"].(string), info["id"], info["serial"].(string),
 	)
 	return
