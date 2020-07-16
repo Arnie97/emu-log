@@ -2,6 +2,8 @@ package tasks
 
 import (
 	"database/sql"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
 	"time"
@@ -12,12 +14,11 @@ import (
 )
 
 const (
-	day            = 24 * time.Hour
-	repeatInterval = time.Hour
-	requestDelay   = 3 * time.Second
-	startTime      = 5 * time.Hour
-	endTime        = 24 * time.Hour
-	beijingTime    = 8 * time.Hour
+	requestDelay = 3 * time.Second
+	beijingTime  = 8 * time.Hour
+	startTime    = 5 * time.Hour
+	endTime      = 22 * time.Hour
+	day          = 24 * time.Hour
 )
 
 var (
@@ -36,14 +37,14 @@ func scheduleTask(task func()) {
 		)
 		if now.Before(today.Add(startTime)) {
 			nextRun = today.Add(startTime)
-		} else if now.After(today.Add(endTime - repeatInterval)) {
+		} else if now.After(today.Add(endTime)) {
 			nextRun = today.Add(startTime + day)
-		} else {
-			nextRun = now.Truncate(repeatInterval).Add(repeatInterval)
 		}
-		log.Info().Msgf("next scheduled run: %v", nextRun)
-		time.Sleep(time.Until(nextRun))
 		task()
+		if !nextRun.IsZero() {
+			log.Info().Msgf("next scheduled run: %v", nextRun)
+			time.Sleep(time.Until(nextRun))
+		}
 	}
 }
 
@@ -67,7 +68,7 @@ func scanTask(b adapters.Bureau, tx *sql.Tx) {
 		// for other bureau adapters, it would be more than sufficient to scan
 		// the whole key space once a day to discover recently added vehicles.
 		// let's run it during the possessive intervals in the train diagrams.
-		if now.After(today.Add(endTime - repeatInterval)) {
+		if now.After(today.Add(endTime)) {
 			scanForNewVehicles = true
 		}
 	}
@@ -106,8 +107,22 @@ func iterateBureaus(task func(adapters.Bureau, *sql.Tx), bureaus ...string) {
 		}
 	}
 
+	// commit database changes on keyboard interrupts
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+	go func() {
+		if <-sigChan != nil {
+			defer os.Exit(0)
+		}
+		tx.Commit()
+		log.Info().Msg("transaction committed")
+		wg.Done()
+	}()
+
 	wg.Wait()
-	tx.Commit()
+	wg.Add(1)
+	sigChan <- nil
+	wg.Wait()
 }
 
 // checkLocalTimezone prints a warning if the server timezone settings is
