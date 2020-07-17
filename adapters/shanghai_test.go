@@ -4,6 +4,11 @@ import (
 	"github.com/arnie97/emu-log/adapters"
 )
 
+func ExampleShanghai_BruteForce() {
+	assertBruteForceRegExp(adapters.Shanghai{}, `^PQ\d{7}$`)
+	// Output:
+}
+
 func ExampleShanghai_TrainNo() {
 	printTrainNo(
 		adapters.Shanghai{},

@@ -70,8 +70,6 @@ func parseResult(resp *http.Response, resultPtr interface{}) (err error) {
 		msg    = common.GetField(resultPtr, "Msg")
 	)
 	switch status.(type) {
-	case string:
-		ok = status == "ok"
 	case int:
 		ok = status == 200 || status == 0
 	default:

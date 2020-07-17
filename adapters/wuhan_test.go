@@ -4,6 +4,11 @@ import (
 	"github.com/arnie97/emu-log/adapters"
 )
 
+func ExampleWuhan_BruteForce() {
+	assertBruteForceRegExp(adapters.Wuhan{}, `^\d{3}$`)
+	// Output:
+}
+
 func ExampleWuhan_TrainNo() {
 	printTrainNo(
 		adapters.Wuhan{},

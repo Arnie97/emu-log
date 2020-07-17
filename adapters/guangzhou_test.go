@@ -4,6 +4,11 @@ import (
 	"github.com/arnie97/emu-log/adapters"
 )
 
+func ExampleGuangzhou_BruteForce() {
+	assertBruteForceRegExp(adapters.Guangzhou{}, `^\d{3}$`)
+	// Output:
+}
+
 func ExampleGuangzhou_TrainNo() {
 	printTrainNo(
 		adapters.Guangzhou{},

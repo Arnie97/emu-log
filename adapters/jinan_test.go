@@ -30,6 +30,11 @@ func ExampleJinan_PKCS7Padding() {
 	// []
 }
 
+func ExampleJinan_BruteForce() {
+	assertBruteForceRegExp(adapters.Jinan{}, `^K1001\d{9}$`)
+	// Output:
+}
+
 func ExampleJinan_TrainNo() {
 	printTrainNo(
 		adapters.Jinan{},

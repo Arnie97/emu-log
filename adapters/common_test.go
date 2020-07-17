@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
@@ -45,6 +46,23 @@ func mockHTTPClientRespBodyFromFile(mockFile string) {
 	content, err := ioutil.ReadFile(filepath.Join("testdata", mockFile))
 	common.Must(err)
 	common.MockHTTPClientRespBody(string(content))
+}
+
+func assertBruteForce(b adapters.Bureau, assert func(string) bool) {
+	serials := make(chan string, 1024)
+	go func() {
+		b.BruteForce(serials)
+		close(serials)
+	}()
+	for s := range serials {
+		if !assert(s) {
+			fmt.Printf("[%s] invalid serial number pattern: %s\n", b.Code(), s)
+		}
+	}
+}
+
+func assertBruteForceRegExp(b adapters.Bureau, pattern string) {
+	assertBruteForce(b, regexp.MustCompile(pattern).MatchString)
 }
 
 func printTrainNo(b adapters.Bureau, mockFiles ...string) {
