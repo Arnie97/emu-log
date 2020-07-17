@@ -12,7 +12,7 @@ func ExampleWuhan_TrainNo() {
 		"wuhan_invalid.html",
 	)
 	// Output:
-	// "G6856"        false ""
+	// "G1730"        false ""
 	// ""             true  ""
 	// ""             true  ""
 }
@@ -25,7 +25,7 @@ func ExampleWuhan_VehicleNo() {
 		"wuhan_invalid.html",
 	)
 	// Output:
-	// "CRH380A2900"  false
+	// "CR400AF2151"  false
 	// "CRH380D1545"  false
 	// ""             true
 }

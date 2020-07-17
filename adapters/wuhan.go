@@ -80,6 +80,8 @@ func (b Wuhan) VehicleNo(info jsonObject) (vehicleNo string, err error) {
 	vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
 	if strings.HasPrefix(vehicleNo, "380") {
 		vehicleNo = "CRH" + vehicleNo
+	} else if strings.HasPrefix(vehicleNo, "CRH400") {
+		vehicleNo = strings.Replace(vehicleNo, "CRH", "CR", 1)
 	}
 	return
 }

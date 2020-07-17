@@ -26,6 +26,6 @@ func ExampleZhengzhou_VehicleNo() {
 	)
 	// Output:
 	// "CRH5G5194"    false
-	// "CHR380B3667"  false
+	// "CRH380B3667"  false
 	// ""             true
 }
