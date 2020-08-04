@@ -1,6 +1,7 @@
 package adapters_test
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/arnie97/emu-log/adapters"
@@ -28,6 +29,14 @@ func ExampleJinan_PKCS7Padding() {
 	// [97 98 99 100 101 102 103 104 8 8 8 8 8 8 8 8]
 	// [97 98 99 100 101 102 103 9 9 9 9 9 9 9 9 9]
 	// []
+}
+
+func ExampleJinan_Signature() {
+	var exampleInput map[string]interface{}
+	json.Unmarshal(readMockFile("jinan_input.json"), &exampleInput)
+	fmt.Println(adapters.Jinan{}.Signature(exampleInput) == exampleInput["sign"])
+	// Output:
+	// true
 }
 
 func ExampleJinan_BruteForce() {

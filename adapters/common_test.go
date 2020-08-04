@@ -36,16 +36,14 @@ func ExampleParseURL() {
 }
 
 func urlTestCases() (testCases [][]string) {
-	content, err := ioutil.ReadFile("testdata/url.json")
-	common.Must(err)
-	common.Must(json.Unmarshal(content, &testCases))
+	common.Must(json.Unmarshal(readMockFile("url.json"), &testCases))
 	return
 }
 
-func mockHTTPClientRespBodyFromFile(mockFile string) {
+func readMockFile(mockFile string) (content []byte) {
 	content, err := ioutil.ReadFile(filepath.Join("testdata", mockFile))
 	common.Must(err)
-	common.MockHTTPClientRespBody(string(content))
+	return
 }
 
 func assertBruteForce(b adapters.Bureau, assert func(string) bool) {
@@ -67,7 +65,7 @@ func assertBruteForceRegExp(b adapters.Bureau, pattern string) {
 
 func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
-		mockHTTPClientRespBodyFromFile(mockFile)
+		common.MockHTTPClientRespBody(string(readMockFile(mockFile)))
 		info, err := b.Info("")
 		trainNo, date, err := b.TrainNo(info)
 		fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
@@ -76,7 +74,7 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 
 func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
-		mockHTTPClientRespBodyFromFile(mockFile)
+		common.MockHTTPClientRespBody(string(readMockFile(mockFile)))
 		info, err := b.Info("")
 		vehicleNo, err := b.VehicleNo(info)
 		fmt.Printf("%#-14v %-5v\n", vehicleNo, err != nil)

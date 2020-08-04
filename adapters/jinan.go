@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/arnie97/emu-log/common"
@@ -14,6 +18,7 @@ import (
 var (
 	jinanKey = []byte("prod_CrgtKey2019")
 	jinanIV  = []byte("prod_iv20191001H")
+	jinanApp = "wxc33f19505fa37f4e"
 )
 
 type Jinan struct{}
@@ -40,10 +45,13 @@ func (Jinan) BruteForce(serials chan<- string) {
 func (b Jinan) Info(serial string) (info jsonObject, err error) {
 	const api = "https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list"
 	values := jsonObject{
-		"params": b.SerialEncrypt(serial),
-		"token":  common.Conf(b.Code()),
-		"isSign": 1,
+		"params":    b.SerialEncrypt(serial),
+		"timeStamp": time.Now().UnixNano() / 1000000,
+		"cguid":     "",
+		"token":     common.Conf(b.Code()),
+		"isSign":    2,
 	}
+	values["sign"] = b.Signature(values)
 
 	jsonBytes, err := json.Marshal(values)
 	if err != nil {
@@ -102,6 +110,21 @@ func (b Jinan) PKCS7Padding(input []byte, blockSize int) (buf []byte) {
 	copy(buf, input)
 	copy(buf[len(input):], bytes.Repeat([]byte{byte(pad)}, pad))
 	return
+}
+
+// Signature serializes the message in a deterministic manner,
+// and generates its hexadecimal encoded MD5 digest.
+func (b Jinan) Signature(values jsonObject) string {
+	message := fmt.Sprintf(
+		"%s%s%v%s%s",
+		jinanApp,
+		values["token"],
+		values["timeStamp"],
+		base64.StdEncoding.EncodeToString(jinanKey),
+		values["params"],
+	)
+	hash := md5.Sum([]byte(message))
+	return strings.ToUpper(hex.EncodeToString(hash[:]))
 }
 
 func (b Jinan) TrainNo(info jsonObject) (trainNo, date string, err error) {
