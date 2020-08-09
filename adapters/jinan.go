@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -58,7 +59,15 @@ func (b Jinan) Info(serial string) (info jsonObject, err error) {
 		return
 	}
 	buf := bytes.NewBuffer(jsonBytes)
-	resp, err := common.HTTPClient().Post(api, common.ContentType, buf)
+	req, err := http.NewRequest("POST", api, buf)
+	if err != nil {
+		return
+	}
+	req.Header.Set("Content-Type", common.ContentType)
+	req.Header.Set("Referer", fmt.Sprintf(
+		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
+	))
+	resp, err := common.HTTPClient().Do(req)
 	if err != nil {
 		return
 	}
@@ -67,10 +76,13 @@ func (b Jinan) Info(serial string) (info jsonObject, err error) {
 	var result struct {
 		Status int    `json:"code"`
 		Msg    string `json:"errmsg"`
-		Data   jsonObject
+		Data   string `json:"data"`
 	}
 	err = parseResult(resp, &result)
-	info = result.Data
+	if err != nil {
+		return
+	}
+	err = b.InfoDecrypt(result.Data, &info)
 	return
 }
 
@@ -83,25 +95,48 @@ func (b Jinan) SerialEncrypt(serial string) string {
 	}{serial})
 	common.Must(err)
 
-	cipherText := b.AESEncrypt(plainText, jinanKey, jinanIV)
+	cipherText := AESEncrypt(plainText, jinanKey, jinanIV)
 	return base64.StdEncoding.EncodeToString(cipherText)
+}
+
+// InfoDecrypt decrypts the base64 encoded cipher text with AES-CBC-128,
+// and unmarshals the plain text result into the given structure.
+func (b Jinan) InfoDecrypt(src string, dest interface{}) (err error) {
+	cipherText, err := base64.StdEncoding.DecodeString(src)
+	if err != nil {
+		return
+	}
+
+	plainText := AESDecrypt(cipherText, jinanKey, jinanIV)
+	return json.Unmarshal(plainText, dest)
 }
 
 // AESEncrypt encrypts the plain text with PKCS #7 padding, block chaining
 // mode of operation, and a predefined initial vector.
-func (b Jinan) AESEncrypt(plainText, key, iv []byte) (cipherText []byte) {
+func AESEncrypt(plainText, key, iv []byte) (cipherText []byte) {
 	block, err := aes.NewCipher(key)
 	common.Must(err)
-	plainText = b.PKCS7Padding(plainText, len(iv))
+	plainText = PKCS7Padding(plainText, len(iv))
 	cipherText = make([]byte, len(plainText))
 	blockMode := cipher.NewCBCEncrypter(block, iv)
 	blockMode.CryptBlocks(cipherText, plainText)
 	return
 }
 
+// AESDecrypt is the counterpart of AESEncrypt; it decrypts the cipher text
+// and strips the PKCS #7 padding bytes off the end of the plain text.
+func AESDecrypt(cipherText, key, iv []byte) (plainText []byte) {
+	block, err := aes.NewCipher(key)
+	common.Must(err)
+	plainText = make([]byte, len(cipherText))
+	blockMode := cipher.NewCBCDecrypter(block, iv)
+	blockMode.CryptBlocks(plainText, cipherText)
+	return PKCS7Unpadding(plainText)
+}
+
 // PKCS7Padding pads the input octet vector to a multiple of blockSize octets
 // with the scheme defined in RFC 2315.
-func (b Jinan) PKCS7Padding(input []byte, blockSize int) (buf []byte) {
+func PKCS7Padding(input []byte, blockSize int) (buf []byte) {
 	if len(input) == 0 || blockSize < 1 || blockSize > 255 {
 		return
 	}
@@ -110,6 +145,16 @@ func (b Jinan) PKCS7Padding(input []byte, blockSize int) (buf []byte) {
 	copy(buf, input)
 	copy(buf[len(input):], bytes.Repeat([]byte{byte(pad)}, pad))
 	return
+}
+
+// PKCS7Unpadding removes the padded bytes from the decrypted text
+// according to the last decrypted byte to recover the original payload.
+func PKCS7Unpadding(padded []byte) []byte {
+	length := len(padded)
+	if length == 0 {
+		return nil
+	}
+	return padded[:length-int(padded[length-1])]
 }
 
 // Signature serializes the message in a deterministic manner,

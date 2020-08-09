@@ -42,7 +42,7 @@ func (Wuhan) BruteForce(serials chan<- string) {
 }
 
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf(b.URL(), serial), nil)
+	req, err := http.NewRequest("GET", BuildURL(b, serial), nil)
 	if err != nil {
 		return
 	}
