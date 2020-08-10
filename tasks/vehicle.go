@@ -39,6 +39,7 @@ func scanVehicleNo(b adapters.Bureau, tx *sql.Tx) {
 		if serial == serialFromDB {
 			continue
 		}
+		time.Sleep(requestDelay)
 		addVehicleBySerial(b, tx, serial)
 	}
 	log.Info().Msgf("[%s] finished scanning", b.Code())
@@ -49,7 +50,6 @@ func scanVehicleNo(b adapters.Bureau, tx *sql.Tx) {
 func addVehicleBySerial(b adapters.Bureau, tx *sql.Tx, serial string) {
 	// handle errors
 	var e common.LogEntry
-	time.Sleep(requestDelay)
 	info, err := b.Info(serial)
 	if err == nil {
 		e.VehicleNo, err = b.VehicleNo(info)

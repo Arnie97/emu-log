@@ -38,17 +38,25 @@ func CmdParser(args ...string) {
 		iterateBureaus(scanTrainNo, args[2:]...)
 	case "v", "vehicleNo":
 		iterateBureaus(scanVehicleNo, args[2:]...)
-	case "i", "info":
+	case "i", "info", "a", "add":
 		if len(args) < 3 {
 			log.Fatal().Msg("missing argument: BUREAU_CODE [QR_CODE ...]")
 		}
 
 		b := adapters.MustGetBureauByCode(args[2])
 		for _, qrCode := range args[3:] {
-			info, err := b.Info(qrCode)
-			common.PrettyPrint(info)
-			common.Must(err)
+			if args[1][0] == 'i' {
+				info, err := b.Info(qrCode)
+				common.PrettyPrint(info)
+				common.Must(err)
+			} else {
+				tx, err := common.DB().Begin()
+				common.Must(err)
+				addVehicleBySerial(b, tx, qrCode)
+				common.Must(tx.Commit())
+			}
 		}
+
 	default:
 		log.Fatal().Msgf(helpMsg, "invalid TASK_TYPE: "+args[1], args[0])
 	}
