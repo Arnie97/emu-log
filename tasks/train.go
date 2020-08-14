@@ -72,10 +72,16 @@ func addTrainOperationLog(e *common.LogEntry, tx *sql.Tx) {
 		e.Date, e.VehicleNo, e.TrainNo,
 	)
 	common.Must(err)
-	logID, err := res.LastInsertId()
+
+	affected, err := res.RowsAffected()
 	common.Must(err)
+	if affected == 0 {
+		return
+	}
 
 	// update the materialized view: last used vehicle for each train number
+	logID, err := res.LastInsertId()
+	common.Must(err)
 	for _, singleTrainNo := range common.NormalizeTrainNo(e.TrainNo) {
 		_, err = tx.Exec(
 			`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,

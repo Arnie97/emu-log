@@ -13,15 +13,15 @@ import (
 func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNo := chi.URLParam(r, "trainNo")
 	rows, err := common.DB().Query(`
-		SELECT *
-		FROM emu_log
-		WHERE train_no = ?
-			OR train_no LIKE ?
-			OR train_no LIKE ?
-			OR train_no LIKE ?
-		ORDER BY date DESC
+		SELECT z.date, z.emu_no, z.train_no
+		FROM emu_latest AS x
+		INNER JOIN emu_log AS y
+		INNER JOIN emu_log AS z
+		ON x.log_id = y.rowid AND y.train_no = z.train_no
+		WHERE x.train_no = ?
+		ORDER BY z.date DESC
 		LIMIT 30;
-	`, trainNo, trainNo+"/%", "%/"+trainNo+"/%", "%/"+trainNo)
+	`, trainNo)
 	common.Must(err)
 	defer rows.Close()
 	serializeLogEntries(rows, w)

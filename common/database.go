@@ -29,6 +29,7 @@ const dbSchema = `
 		UNIQUE(emu_bureau, emu_qrcode)
 	);
 	CREATE INDEX IF NOT EXISTS idx_emu_no ON emu_log(emu_no);
+	CREATE INDEX IF NOT EXISTS idx_train_no ON emu_log(train_no);
 `
 
 type (
