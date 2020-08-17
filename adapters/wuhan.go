@@ -13,6 +13,7 @@ import (
 
 var (
 	htmlVehicleRegExp = regexp.MustCompile(`<p class="schedule">.+:(\w+)-6-6D/F</p>`)
+	htmlTrainNoRegExp = regexp.MustCompile(`<p class="train-title">(\w+)随车购</p>`)
 	jsonVehicleRegExp = regexp.MustCompile(`var locomotive_info = (\{.+\});`)
 	jsonCompanyRegExp = regexp.MustCompile(`var company_info = (\{.+\});`)
 )
@@ -42,12 +43,24 @@ func (Wuhan) BruteForce(serials chan<- string) {
 }
 
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {
-	req, err := http.NewRequest("GET", BuildURL(b, serial), nil)
+	const (
+		landingPage  = "https://wechat.lvtudiandian.com/index.php/QrSweepCode/index?locomotiveId=%s&openid=%s&qrCodeType=2&carriage=6&seatRow=6&seatNo=D%%2FF&userOrder=&shop=&min_openid=&partner_name=&memtrainend=&memtrainstart="
+		orderingPage = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index.html?is_redirect=1"
+	)
+
+	url := fmt.Sprintf(landingPage, serial, common.Conf(b.Code()))
+	resp, err := common.HTTPClient().Get(url)
 	if err != nil {
 		return
 	}
-	req.Header.Set("Cookie", common.Conf(b.Code()))
-	resp, err := common.HTTPClient().Do(req)
+	resp.Body.Close()
+
+	req, err := http.NewRequest("GET", orderingPage, nil)
+	if err != nil {
+		return
+	}
+	req.Header.Set("Cookie", "OpenId="+common.Conf(b.Code()))
+	resp, err = common.HTTPClient().Do(req)
 	if err != nil {
 		return
 	}
@@ -62,6 +75,9 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 		json.Unmarshal(match[1], &info)
 	} else if match := htmlVehicleRegExp.FindSubmatch(bytes); match != nil {
 		info = jsonObject{"locomotive_code": string(match[1])}
+		if match = htmlTrainNoRegExp.FindSubmatch(bytes); match != nil {
+			info["partner_name"] = string(match[1])
+		}
 	}
 	if match := jsonCompanyRegExp.FindSubmatch(bytes); match != nil {
 		json.Unmarshal(match[1], &info)

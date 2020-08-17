@@ -29,7 +29,7 @@ type (
 )
 
 func (setDefaultHeaders) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("User-Agent", UserAgent)
+	req.Header.Set("User-Agent", UserAgent)
 	return http.DefaultTransport.RoundTrip(req)
 }
 
