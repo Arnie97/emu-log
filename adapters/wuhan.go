@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -43,24 +42,7 @@ func (Wuhan) BruteForce(serials chan<- string) {
 }
 
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {
-	const (
-		landingPage  = "https://wechat.lvtudiandian.com/index.php/QrSweepCode/index?locomotiveId=%s&openid=%s&qrCodeType=2&carriage=6&seatRow=6&seatNo=D%%2FF&userOrder=&shop=&min_openid=&partner_name=&memtrainend=&memtrainstart="
-		orderingPage = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index.html?is_redirect=1"
-	)
-
-	url := fmt.Sprintf(landingPage, serial, common.Conf(b.Code()))
-	resp, err := common.HTTPClient().Get(url)
-	if err != nil {
-		return
-	}
-	resp.Body.Close()
-
-	req, err := http.NewRequest("GET", orderingPage, nil)
-	if err != nil {
-		return
-	}
-	req.Header.Set("Cookie", "OpenId="+common.Conf(b.Code()))
-	resp, err = common.HTTPClient().Do(req)
+	resp, err := common.HTTPClient().Get(BuildURL(b, serial))
 	if err != nil {
 		return
 	}
