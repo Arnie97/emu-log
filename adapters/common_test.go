@@ -70,6 +70,14 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 		trainNo, date, err := b.TrainNo(info)
 		fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
 	}
+
+	for _, mockBody := range []string{"", "null", "<html>not json</html>"} {
+		common.MockHTTPClientRespBody(mockBody)
+		info, err := b.Info("")
+		if info != nil && err == nil {
+			fmt.Printf("uncaught error for http response %#v", mockBody)
+		}
+	}
 }
 
 func printVehicleNo(b adapters.Bureau, mockFiles ...string) {

@@ -8,7 +8,6 @@ import (
 )
 
 func ExampleConf() {
-	common.AppPath()
 	file, err := os.Create(common.AppPath() + "/emu-log.json")
 	if err != nil {
 		fmt.Println(err)
@@ -71,10 +70,18 @@ func ExampleStructDecode() {
 	var dest struct {
 		Field []int64 `json:"root"`
 	}
-	common.StructDecode(
+	testCases := []interface{}{
+		func() {},
+		map[string]interface{}{"root": "123"},
 		map[string]interface{}{"root": []float32{1, 2, 3}},
-		&dest,
-	)
-	fmt.Printf("%+v", dest)
-	// Output: {Field:[1 2 3]}
+	}
+
+	for _, testCase := range testCases {
+		err := common.StructDecode(testCase, &dest)
+		fmt.Printf("%+v %v\n", dest, err != nil)
+	}
+	// Output:
+	// {Field:[]} true
+	// {Field:[]} true
+	// {Field:[1 2 3]} false
 }
