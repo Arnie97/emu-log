@@ -91,3 +91,30 @@ func addTrainOperationLog(e *common.LogEntry, tx *sql.Tx) {
 		common.Must(err)
 	}
 }
+
+func rebuildLatest(tx *sql.Tx) {
+	rows, err := tx.Query(`
+		SELECT rowid, emu_no, train_no, date
+		FROM emu_log
+		ORDER BY rowid ASC;
+	`)
+	common.Must(err)
+	defer rows.Close()
+
+	log.Info().Msg("rebuilding materialized view")
+	for rows.Next() {
+		var (
+			logID int64
+			e     common.LogEntry
+		)
+		common.Must(rows.Scan(&logID, &e.VehicleNo, &e.TrainNo, &e.Date))
+		for _, singleTrainNo := range common.NormalizeTrainNo(e.TrainNo) {
+			_, err = tx.Exec(
+				`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,
+				e.Date, e.VehicleNo, singleTrainNo, logID,
+			)
+			common.Must(err)
+		}
+	}
+	log.Info().Msg("commiting changes")
+}
