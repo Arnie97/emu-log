@@ -10,16 +10,14 @@ import (
 )
 
 type mockHTTPClient struct {
-	resp *http.Response
+	body string
 	err  error
 }
 
 func MockHTTPClientRespBody(body string) {
 	confOnce.Do(func() {})
 	httpOnce.Do(func() {})
-	httpClient = &mockHTTPClient{resp: &http.Response{}}
-	mockBody := ioutil.NopCloser(strings.NewReader(body))
-	httpClient.(*mockHTTPClient).resp.Body = mockBody
+	httpClient = &mockHTTPClient{body, nil}
 }
 
 func DisableMockHTTPClient() {
@@ -32,17 +30,19 @@ func DisableMockHTTPClient() {
 }
 
 func (x *mockHTTPClient) Do(*http.Request) (*http.Response, error) {
-	return x.resp, x.err
+	mockBody := ioutil.NopCloser(strings.NewReader(x.body))
+	resp := &http.Response{Body: mockBody}
+	return resp, x.err
 }
 
 func (x *mockHTTPClient) Get(url string) (*http.Response, error) {
-	return x.resp, x.err
+	return x.Do(nil)
 }
 
 func (x *mockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	return x.resp, x.err
+	return x.Do(nil)
 }
 
 func (x *mockHTTPClient) PostForm(url string, data url.Values) (*http.Response, error) {
-	return x.resp, x.err
+	return x.Do(nil)
 }

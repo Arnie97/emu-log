@@ -53,7 +53,15 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	if err != nil {
 		return
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	if strings.HasPrefix(string(bytes), "<script>alert") {
+		return
+	}
 
 	req, err := http.NewRequest("GET", orderingPage, nil)
 	if err != nil {
@@ -66,7 +74,7 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	}
 	defer resp.Body.Close()
 
-	bytes, err := ioutil.ReadAll(resp.Body)
+	bytes, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}

@@ -24,7 +24,7 @@ func ExampleMockHTTPClientRespBody() {
 	fmt.Println("resp body:", string(body))
 
 	// Output:
-	// same resp: true
+	// same resp: false
 	// no errors: true
 	// resp body: CRH6A-4002
 }
