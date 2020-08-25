@@ -44,16 +44,17 @@ func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 			e.TrainNo, e.Date, err = b.TrainNo(info)
 		}
 		if err != nil || e.TrainNo == "" {
-			log.Error().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, err)
+			log.Debug().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, err)
 			continue
 		}
-		addTrainOperationLog(&e, tx)
 
 		vehicleNo, err := b.VehicleNo(info)
 		if vehicleNo == e.VehicleNo || strings.ContainsRune(vehicleNo, '@') {
-			log.Debug().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, e)
+			log.Debug().Msgf("[%s] %s -> %v", b.Code(), vehicleNo, e)
+			addTrainOperationLog(&e, tx)
 		} else {
-			log.Warn().Msgf("[%s] %s -> %v", b.Code(), e.VehicleNo, e)
+			log.Warn().Msgf("[%s] %s -> %v ignored", b.Code(), vehicleNo, e)
+			continue
 		}
 	}
 	log.Info().Msgf("[%s] updates done for known vehicles", b.Code())

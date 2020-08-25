@@ -55,7 +55,7 @@ func addVehicleBySerial(b adapters.Bureau, tx *sql.Tx, serial string) {
 		e.VehicleNo, err = b.VehicleNo(info)
 	}
 	if err != nil || e.VehicleNo == "" {
-		log.Error().Msgf("[%s] %s -> %v", b.Code(), serial, err)
+		log.Debug().Msgf("[%s] %s -> %v", b.Code(), serial, err)
 		return
 	}
 
