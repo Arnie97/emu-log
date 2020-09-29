@@ -49,7 +49,8 @@ func scanTrainNo(b adapters.Bureau, tx *sql.Tx) {
 		}
 
 		vehicleNo, err := b.VehicleNo(info)
-		if vehicleNo == e.VehicleNo || strings.ContainsRune(vehicleNo, '@') {
+		if vehicleNo[len(vehicleNo)-4] == e.VehicleNo[len(e.VehicleNo)-4] ||
+			strings.ContainsRune(vehicleNo, '@') {
 			log.Debug().Msgf("[%s] %s -> %v", b.Code(), vehicleNo, e)
 			addTrainOperationLog(&e, tx)
 		} else {
