@@ -27,21 +27,11 @@ func (Beijing) URL() string {
 }
 
 func (Beijing) BruteForce(qrCodes chan<- string) {
-	for y := 1; y <= 4; y++ {
-		for x := 11000; x < 16000; x += 500 {
-			qrCodes <- fmt.Sprintf("%d%07d", y, x)
-		}
-	}
-	for x := 342000; x < 640000; x += 500 {
+	for x := 1000; x < 990000; x += 500 {
 		qrCodes <- fmt.Sprintf("5%07d", x)
 	}
-	for x := 1000; x < 500000; x += 500 {
+	for x := 1000; x < 700000; x += 500 {
 		qrCodes <- fmt.Sprintf("6%07d", x)
-	}
-	for y := 7; y <= 9; y++ {
-		for x := 11000; x < 16000; x += 500 {
-			qrCodes <- fmt.Sprintf("%d%07d", y, x)
-		}
 	}
 }
 
