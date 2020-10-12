@@ -26,11 +26,17 @@ func (Beijing) URL() string {
 	return "https://aymaoto.jtlf.cn/page/oto/index?QR=%s"
 }
 
+var (
+	turn  int
+	shift = []int{0, 1000, 500, 1500}
+)
+
 func (Beijing) BruteForce(qrCodes chan<- string) {
-	for x := 1000; x < 990000; x += 500 {
+	turn = (turn + 1) % 4
+	for x := shift[turn]; x < 990000; x += 2000 {
 		qrCodes <- fmt.Sprintf("5%07d", x)
 	}
-	for x := 1000; x < 700000; x += 500 {
+	for x := shift[turn]; x < 700000; x += 2000 {
 		qrCodes <- fmt.Sprintf("6%07d", x)
 	}
 }
