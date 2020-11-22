@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
@@ -35,10 +36,39 @@ func singleVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	serializeLogEntries(rows, w)
 }
 
-// multiVehicleNoHandler takes an incomplete part of the vehicle number,
+// multiVehicleNoHandler takes multiple exact vehicles numbers,
+// and returns the most recent log item for each of them.
+func multiVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
+	vehicleNoList := strings.Split(chi.URLParam(r, "vehicleNo"), ",")
+	vehicleNoArgs := make([]interface{}, len(vehicleNoList))
+	vehicleNoPlaceHolder := strings.Repeat(", ?", len(vehicleNoList))[2:]
+	for i := range vehicleNoList {
+		vehicleNoArgs[i] = vehicleNoList[i]
+	}
+	rows, err := common.DB().Query(`
+		SELECT *
+		FROM emu_log
+		WHERE rowid IN (
+			SELECT MAX(rowid)
+			FROM emu_log
+			WHERE emu_no IN (
+				SELECT DISTINCT emu_no
+				FROM emu_qrcode
+				WHERE emu_no IN (`+vehicleNoPlaceHolder+`)
+			)
+			GROUP BY emu_no
+			LIMIT 30
+		)
+	`, vehicleNoArgs...)
+	common.Must(err)
+	defer rows.Close()
+	serializeLogEntries(rows, w)
+}
+
+// fuzzyVehicleNoHandler takes an incomplete part of the vehicle number,
 // and returns the most recent occurance for the first 30 vehicles
 // in lexicographical order that matches the given fuzzy pattern.
-func multiVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
+func fuzzyVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := common.DB().Query(`
 		SELECT *
 		FROM emu_log

@@ -27,8 +27,7 @@ func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	serializeLogEntries(rows, w)
 }
 
-// multiTrainNoHandler returns the last used vehicle for the first train
-// numbers in lexicographical order that matches the given fuzzy pattern.
+// multiTrainNoHandler returns the last used vehicle for multiple trains.
 func multiTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNoList := strings.Split(chi.URLParam(r, "trainNo"), ",")
 	trainNoArgs := make([]interface{}, len(trainNoList))
