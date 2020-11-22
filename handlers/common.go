@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/arnie97/emu-log/common"
+	"github.com/arnie97/emu-log/models"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
@@ -32,9 +33,9 @@ func NewRouter() *chi.Mux {
 
 // serializeLogEntries converts database query results to a JSON array.
 func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
-	results := make([]common.LogEntry, 0)
+	results := make([]models.LogModel, 0)
 	for rows.Next() {
-		var e common.LogEntry
+		var e models.LogModel
 		common.Must(rows.Scan(&e.Date, &e.VehicleNo, &e.TrainNo))
 		results = append(results, e)
 	}

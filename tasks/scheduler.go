@@ -1,15 +1,13 @@
 package tasks
 
 import (
-	"database/sql"
-	"os"
-	"os/signal"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
+	"github.com/arnie97/emu-log/models"
 	"github.com/rs/zerolog/log"
 )
 
@@ -49,7 +47,7 @@ func scheduleTask(task func()) {
 }
 
 // scanTask is a combination of scanVehicleNo() and scanTrainNo().
-func scanTask(b adapters.Bureau, tx *sql.Tx) {
+func scanTask(b adapters.Bureau) {
 	scanForNewVehicles := false
 
 	// these bureau adapters return nothing when online ordering is disabled,
@@ -75,53 +73,35 @@ func scanTask(b adapters.Bureau, tx *sql.Tx) {
 
 	if scanForNewVehicles {
 		wg.Add(1)
-		defer scanVehicleNo(b, tx)
+		defer scanVehicleNo(b)
 	}
-	scanTrainNo(b, tx)
+	scanTrainNo(b)
 }
 
 // iterateBureaus parallelizes scanning requests for different railway
 // companies with goroutines.
-func iterateBureaus(task func(adapters.Bureau, *sql.Tx), bureaus ...string) {
+func iterateBureaus(task func(adapters.Bureau), bureaus ...string) {
 	once.Do(func() {
 		checkLocalTimezone()
 		checkInternetConnection()
+		checkDatabase()
 	})
-
-	tx, err := common.DB().Begin()
-	common.Must(err)
-	defer tx.Rollback()
 
 	// support both joined bureau codes and space separated bureau codes
 	bureauCodes := strings.Join(bureaus, "")
 	if len(bureauCodes) == 0 {
 		for _, b := range adapters.Bureaus {
 			wg.Add(1)
-			go task(b, tx)
+			go task(b)
 		}
 	} else {
 		for _, code := range bureauCodes {
 			b := adapters.MustGetBureauByCode(string(code))
 			wg.Add(1)
-			go task(b, tx)
+			go task(b)
 		}
 	}
 
-	// commit database changes on keyboard interrupts
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
-	go func() {
-		if <-sigChan != nil {
-			defer os.Exit(0)
-		}
-		tx.Commit()
-		log.Info().Msg("transaction committed")
-		wg.Done()
-	}()
-
-	wg.Wait()
-	wg.Add(1)
-	sigChan <- nil
 	wg.Wait()
 }
 
@@ -152,11 +132,11 @@ func checkInternetConnection() {
 func checkDatabase() {
 	log.Info().Msgf(
 		"found %d log records in the database",
-		common.CountRecords("emu_log"),
+		models.CountRecords("emu_log"),
 	)
 	log.Info().Msgf(
 		"found %d vehicles and %d qr codes in the database",
-		common.CountRecords("emu_qrcode", "DISTINCT emu_no"),
-		common.CountRecords("emu_qrcode"),
+		models.CountRecords("emu_qrcode", "DISTINCT emu_no"),
+		models.CountRecords("emu_qrcode"),
 	)
 }

@@ -38,11 +38,6 @@ func CmdParser(args ...string) {
 		iterateBureaus(scanTrainNo, args[2:]...)
 	case "v", "vehicleNo":
 		iterateBureaus(scanVehicleNo, args[2:]...)
-	case "r", "rebuild":
-		tx, err := common.DB().Begin()
-		common.Must(err)
-		rebuildLatest(tx)
-		common.Must(tx.Commit())
 	case "i", "info", "a", "add":
 		if len(args) < 3 {
 			log.Fatal().Msg("missing argument: BUREAU_CODE [QR_CODE ...]")
@@ -55,10 +50,7 @@ func CmdParser(args ...string) {
 				common.PrettyPrint(info)
 				common.Must(err)
 			} else {
-				tx, err := common.DB().Begin()
-				common.Must(err)
-				addVehicleBySerial(b, tx, qrCode)
-				common.Must(tx.Commit())
+				addVehicleBySerial(b, qrCode)
 			}
 		}
 

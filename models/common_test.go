@@ -1,17 +1,17 @@
-package common_test
+package models_test
 
 import (
 	"fmt"
 
-	"github.com/arnie97/emu-log/common"
+	"github.com/arnie97/emu-log/models"
 )
 
 func ExampleDB() {
-	x := common.DB()
-	y := common.DB()
+	x := models.DB()
+	y := models.DB()
 	_, err := x.Exec(`SELECT 1;`)
-	c1 := common.CountRecords("emu_qrcode")
-	c2 := common.CountRecords("emu_log", "date")
+	c1 := models.CountRecords("emu_qrcode")
+	c2 := models.CountRecords("emu_log", "date")
 
 	fmt.Println("x == y:  ", x == y)
 	fmt.Println("x != nil:", x != nil)

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/arnie97/emu-log/common"
+	"github.com/arnie97/emu-log/models"
 	"github.com/go-chi/chi"
 )
 
@@ -12,35 +12,13 @@ import (
 // for the 30 most recent log items that matches the given train number.
 func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNo := chi.URLParam(r, "trainNo")
-	rows, err := common.DB().Query(`
-		SELECT z.date, z.emu_no, z.train_no
-		FROM emu_latest AS x
-		INNER JOIN emu_log AS y
-		INNER JOIN emu_log AS z
-		ON x.log_id = y.rowid AND y.train_no = z.train_no
-		WHERE x.train_no = ?
-		ORDER BY z.date DESC
-		LIMIT 30;
-	`, trainNo)
-	common.Must(err)
-	defer rows.Close()
-	serializeLogEntries(rows, w)
+	results := models.ListVehiclesForSingleTrain(trainNo)
+	jsonResponse(results, w)
 }
 
 // multiTrainNoHandler returns the last used vehicle for multiple trains.
 func multiTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNoList := strings.Split(chi.URLParam(r, "trainNo"), ",")
-	trainNoArgs := make([]interface{}, len(trainNoList))
-	trainNoArgsPlaceHolder := strings.Repeat(", ?", len(trainNoList))[2:]
-	for i := range trainNoList {
-		trainNoArgs[i] = trainNoList[i]
-	}
-	rows, err := common.DB().Query(`
-		SELECT date, emu_no, train_no
-		FROM emu_latest
-		WHERE train_no IN (`+trainNoArgsPlaceHolder+`)
-	`, trainNoArgs...)
-	common.Must(err)
-	defer rows.Close()
-	serializeLogEntries(rows, w)
+	results := models.ListLatestVehicleForMultiTrains(trainNoList)
+	jsonResponse(results, w)
 }
