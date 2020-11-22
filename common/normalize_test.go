@@ -21,3 +21,15 @@ func ExampleNormalizeVehicleNo() {
 	fmt.Println(common.NormalizeVehicleNo("CRH_6-002A"))
 	// Output: CRH6002A
 }
+
+func ExampleApproxEqualVehicleNo() {
+	fmt.Println(
+		common.ApproxEqualVehicleNo("CRH380B3626", "CHR380B3626"),
+		common.ApproxEqualVehicleNo("CR400BF5033", "5033"),
+		common.ApproxEqualVehicleNo("CRH5A5124", "CRH5A15124"),
+		common.ApproxEqualVehicleNo("CRH2E2462", "CR8+8-0@459"),
+		common.ApproxEqualVehicleNo("CRH2A2002", "CRH6A4002"),
+		common.ApproxEqualVehicleNo("CR", "CR"),
+	)
+	// Output: true true true true false true
+}

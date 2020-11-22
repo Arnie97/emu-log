@@ -36,3 +36,18 @@ func NormalizeTrainNo(trainNo string) (results []string) {
 func NormalizeVehicleNo(vehicleNo string) string {
 	return normalizer.Replace(vehicleNo)
 }
+
+// ApproxEqualVehicleNo compares whether the proposed vehicle number
+// is approximately the same as the original one.
+func ApproxEqualVehicleNo(original, proposed string) bool {
+	if strings.ContainsRune(proposed, '@') {
+		return true
+	}
+	if len(original) > 4 {
+		original = original[len(original)-4:]
+	}
+	if len(proposed) > 4 {
+		proposed = proposed[len(proposed)-4:]
+	}
+	return original == proposed
+}

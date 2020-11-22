@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/arnie97/emu-log/adapters"
+	"github.com/arnie97/emu-log/common"
 	"github.com/arnie97/emu-log/models"
 	"github.com/rs/zerolog/log"
 )
@@ -17,7 +18,7 @@ func scanTrainNo(b adapters.Bureau) {
 	defer wg.Done()
 	for _, serialModel := range models.ListLatestSerialForMultiVehicles(b) {
 		if !strings.HasPrefix(serialModel.VehicleNo, "CR") {
-			log.Debug().Msgf("[%s] %s -> ignored", b.Code(), serialModel.VehicleNo)
+			log.Debug().Msgf("[%s] %v -> ignored", b.Code(), serialModel)
 			continue
 		}
 		time.Sleep(requestDelay)
@@ -28,16 +29,15 @@ func scanTrainNo(b adapters.Bureau) {
 			logModel.TrainNo, logModel.Date, err = b.TrainNo(info)
 		}
 		if err != nil || logModel.TrainNo == "" {
-			log.Debug().Msgf("[%s] %s -> %v", b.Code(), logModel.VehicleNo, err)
+			log.Debug().Msgf("[%s] %v -> %v", b.Code(), serialModel, err)
 			continue
 		}
 
 		logModel.VehicleNo, err = b.VehicleNo(info)
-		if serialModel.VehicleNo[len(serialModel.VehicleNo)-4] ==
-			logModel.VehicleNo[len(logModel.VehicleNo)-4] ||
-			strings.ContainsRune(logModel.VehicleNo, '@') {
-			logModel.Add()
+		if common.ApproxEqualVehicleNo(serialModel.VehicleNo, logModel.VehicleNo) {
 			log.Debug().Msgf("[%s] %v -> %v", b.Code(), serialModel, logModel)
+			logModel.VehicleNo = serialModel.VehicleNo
+			logModel.Add()
 		} else {
 			log.Warn().Msgf("[%s] %v -> %v ignored", b.Code(), serialModel, logModel)
 			continue

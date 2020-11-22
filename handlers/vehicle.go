@@ -17,8 +17,8 @@ type urlWrapper struct {
 // singleVehicleNoHandler takes an exact vehicle number,
 // and returns the 30 most recent log items for the vehicle.
 func singleVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
-	vehicleNo := chi.URLParam(r, "vehicleNo")
-	results := models.ListTrainsForSingleVehicle(vehicleNo)
+	vehicleNo := common.NormalizeVehicleNo(chi.URLParam(r, "vehicleNo"))
+	results := models.ListTrainsForSingleVehicle("%" + vehicleNo)
 	jsonResponse(results, w)
 }
 
@@ -34,7 +34,7 @@ func multiVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
 // and returns the most recent occurance for the first 30 vehicles
 // in lexicographical order that matches the given fuzzy pattern.
 func fuzzyVehicleNoHandler(w http.ResponseWriter, r *http.Request) {
-	vehicleNo := chi.URLParam(r, "vehicleNo")
+	vehicleNo := common.NormalizeVehicleNo(chi.URLParam(r, "vehicleNo"))
 	results := models.ListLatestTrainForMatchedVehicles(vehicleNo)
 	jsonResponse(results, w)
 }
