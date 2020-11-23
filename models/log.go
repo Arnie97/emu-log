@@ -11,7 +11,6 @@ type LogModel struct {
 	Date      string `json:"date"`
 	VehicleNo string `json:"emu_no"`
 	TrainNo   string `json:"train_no"`
-	RowID     int64  `json:"-"`
 }
 
 func (LogModel) Schema() string {
@@ -59,18 +58,18 @@ func (logModel LogModel) Add() {
 		return
 	}
 
-	logModel.RowID, err = res.LastInsertId()
+	logID, err := res.LastInsertId()
 	common.Must(err)
-	logModel.Materialize()
+	logModel.Materialize(logID)
 }
 
 // Materialize updates the materialized view,
 // which stores the last used vehicle for each half of train numbers.
-func (logModel LogModel) Materialize() {
+func (logModel LogModel) Materialize(logID int64) {
 	for _, singleTrainNo := range common.NormalizeTrainNo(logModel.TrainNo) {
 		_, err := DB().Exec(
 			`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,
-			logModel.Date, logModel.VehicleNo, singleTrainNo, logModel.RowID,
+			logModel.Date, logModel.VehicleNo, singleTrainNo, logID,
 		)
 		common.Must(err)
 	}

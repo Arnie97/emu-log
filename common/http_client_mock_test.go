@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/arnie97/emu-log/common"
 )
 
-func ExampleMockHTTPClientRespBody() {
-	common.MockHTTPClientRespBody("CRH6A-4002")
+func ExampleMockHTTPClientRespBodyFromFile() {
+	os.Mkdir("testdata", 0750)
+	ioutil.WriteFile("testdata/hello", []byte("CRH6A-4002"), 0640)
+	common.MockHTTPClientRespBodyFromFile("hello")
 	x := common.HTTPClient()
 
 	a, e := x.Do(nil)

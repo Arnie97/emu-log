@@ -5,9 +5,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"sync"
 )
+
+func ReadMockFile(mockFile string) (content []byte) {
+	content, err := ioutil.ReadFile(filepath.Join("testdata", mockFile))
+	Must(err)
+	return content
+}
 
 type mockHTTPClient struct {
 	body string
@@ -18,6 +25,10 @@ func MockHTTPClientRespBody(body string) {
 	confOnce.Do(func() {})
 	httpOnce.Do(func() {})
 	httpClient = &mockHTTPClient{body, nil}
+}
+
+func MockHTTPClientRespBodyFromFile(mockFile string) {
+	MockHTTPClientRespBody(string(ReadMockFile(mockFile)))
 }
 
 func DisableMockHTTPClient() {

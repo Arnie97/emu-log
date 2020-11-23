@@ -7,6 +7,7 @@ import (
 	"math/rand"
 
 	"github.com/arnie97/emu-log/adapters"
+	"github.com/arnie97/emu-log/common"
 )
 
 func ExampleJinan_SerialEncrypt() {
@@ -63,7 +64,7 @@ func ExamplePKCS7Unpadding() {
 
 func ExampleJinan_Signature() {
 	var exampleInput map[string]interface{}
-	json.Unmarshal(readMockFile("jinan_input.json"), &exampleInput)
+	json.Unmarshal(common.ReadMockFile("jinan_input.json"), &exampleInput)
 	fmt.Println(adapters.Jinan{}.Signature(exampleInput) == exampleInput["sign"])
 	// Output:
 	// true
