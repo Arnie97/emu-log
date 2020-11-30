@@ -30,7 +30,7 @@ func (Guangzhou) BruteForce(serials chan<- string) {
 	for x := 1; x < 90; x++ {
 		serials <- fmt.Sprintf("%03d", x)
 	}
-	for x := 220; x < 600; x++ {
+	for x := 220; x < 550; x++ {
 		serials <- fmt.Sprintf("%03d", x)
 	}
 }

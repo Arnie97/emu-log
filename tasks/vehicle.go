@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// scanVehicleNo trys each unknown QR code in the brute force key space to see
+// scanVehicleNo tries each unknown QR code in the brute force key space to see
 // if any of these serial numbers was recently (or is currently) put in to use.
 func scanVehicleNo(b adapters.Bureau) {
 	log.Info().Msgf("[%s] started scanning for new vehicles", b.Code())
@@ -20,15 +20,14 @@ func scanVehicleNo(b adapters.Bureau) {
 		close(serials)
 	}()
 
-	serialsFromDB := models.ListSerials(b)
+	var index int
+	serialModels := models.ListSerials(b)
 	for serial := range serials {
-		// skip existing codes in the database
-		var serialFromDB string
-		for serial > serialFromDB && len(serialsFromDB) > 0 {
-			serialFromDB = serialsFromDB[0].SerialNo
-			serialsFromDB = serialsFromDB[1:]
+		// skip existing serial numbers in the database
+		for index < len(serialModels) && serialModels[index].SerialNo < serial {
+			index++
 		}
-		if serial == serialFromDB {
+		if index < len(serialModels) && serialModels[index].SerialNo == serial {
 			continue
 		}
 		time.Sleep(requestDelay)
