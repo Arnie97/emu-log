@@ -39,6 +39,7 @@ func urlTestCases() (testCases [][]string) {
 }
 
 func assertBruteForce(b adapters.Bureau, assert func(string) bool) {
+	b.AlwaysOn()
 	serials := make(chan string, 1024)
 	go func() {
 		b.BruteForce(serials)
@@ -56,6 +57,8 @@ func assertBruteForceRegExp(b adapters.Bureau, pattern string) {
 }
 
 func printTrainNo(b adapters.Bureau, mockFiles ...string) {
+	b.Name()
+
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
 		info, err := b.Info("")

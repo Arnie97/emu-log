@@ -29,6 +29,10 @@ func (Zhengzhou) URL() string {
 func (Zhengzhou) BruteForce(serials chan<- string) {
 }
 
+func (Zhengzhou) AlwaysOn() bool {
+	return false
+}
+
 func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
 	req, err := http.NewRequest("POST", api, nil)

@@ -15,9 +15,23 @@ type (
 	Bureau interface {
 		Code() string
 		Name() string
+
+		// URL returns the URL pattern contained in the QR codes,
+		// with the serial number replaced by the placeholder "%s".
 		URL() string
-		BruteForce(chan<- string)
-		Info(serial string) (info jsonObject, err error)
+
+		// BruteForce takes a channel, and sends all possibly valid
+		// serial numbers into the channel in lexicographical order.
+		BruteForce(serialNo chan<- string)
+
+		// AlwaysOn means the bureau adapter still returns some basic
+		// description even if online ordering is currently disabled
+		// for a vehicle. Otherwise unallocated serial numbers cannot
+		// be differentiated from serials assigned to offline vehicles,
+		// and the unknown serials have to be visited in each scan.
+		AlwaysOn() bool
+
+		Info(serialNo string) (info jsonObject, err error)
 		TrainNo(info jsonObject) (trainNo, date string, err error)
 		VehicleNo(info jsonObject) (vehicleNo string, err error)
 	}
@@ -33,7 +47,6 @@ func Register(b Bureau) {
 		common.Must(fmt.Errorf("[%s] bureau was redeclared in the adapters package", b.Code()))
 	}
 	Bureaus[b.Code()] = b
-	log.Debug().Msgf("[%s] bureau adapter registered: %s", b.Code(), b.Name())
 }
 
 func MustGetBureauByCode(bureauCode string) (b Bureau) {

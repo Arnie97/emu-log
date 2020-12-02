@@ -42,6 +42,10 @@ func (Wuhan) BruteForce(serials chan<- string) {
 	}
 }
 
+func (Wuhan) AlwaysOn() bool {
+	return true
+}
+
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	const (
 		landingPage  = "https://wechat.lvtudiandian.com/index.php/QrSweepCode/index?locomotiveId=%s&openid=%s&qrCodeType=2&carriage=6&seatRow=6&seatNo=D%%2FF&userOrder=&shop=&min_openid=&partner_name=&memtrainend=&memtrainstart="

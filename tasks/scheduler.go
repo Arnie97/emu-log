@@ -48,26 +48,19 @@ func scheduleTask(task func()) {
 
 // scanTask is a combination of scanVehicleNo() and scanTrainNo().
 func scanTask(b adapters.Bureau) {
-	scanForNewVehicles := false
-
-	// these bureau adapters return nothing when online ordering is disabled,
-	// so we cannot distinguish nonexistent barcodes from offline vehicles,
-	// and should always scan the whole key space.
-	const bureausAlwaysScanAll = "PQ"
-	if strings.Contains(bureausAlwaysScanAll, b.Code()) {
-		scanForNewVehicles = true
-	} else {
+	scanForNewVehicles := true
+	if b.AlwaysOn() {
 		now := time.Now()
 		today := time.Date(
 			now.Year(), now.Month(), now.Day(),
 			0, 0, 0, 0, time.Local,
 		)
 
-		// for other bureau adapters, it would be more than sufficient to scan
+		// for "always on" adapters, it would be more than sufficient to scan
 		// the whole key space once a day to discover recently added vehicles.
 		// let's run it during the possessive intervals in the train diagrams.
-		if now.After(today.Add(endTime)) {
-			scanForNewVehicles = true
+		if !now.After(today.Add(endTime)) {
+			scanForNewVehicles = false
 		}
 	}
 

@@ -35,6 +35,10 @@ func (Guangzhou) BruteForce(serials chan<- string) {
 	}
 }
 
+func (Guangzhou) AlwaysOn() bool {
+	return false
+}
+
 func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://sj-api.yishizongheng.com/shejian/api/train/getByQrcode?qrcode=%s"
 	url := fmt.Sprintf(api, strings.TrimLeft(serial, "0"))

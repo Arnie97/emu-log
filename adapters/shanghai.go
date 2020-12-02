@@ -29,9 +29,13 @@ func (Shanghai) BruteForce(pqCodes chan<- string) {
 	for i := 2000; i < 11000; i += 200 {
 		pqCodes <- fmt.Sprintf("PQ%07d", i)
 	}
-	for i := 11000; i < 1700000; i += 500 {
+	for i := 11000; i < 1800000; i += 500 {
 		pqCodes <- fmt.Sprintf("PQ%07d", i)
 	}
+}
+
+func (Shanghai) AlwaysOn() bool {
+	return true
 }
 
 func (Shanghai) Info(pqCode string) (info jsonObject, err error) {
