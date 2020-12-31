@@ -25,8 +25,8 @@ type (
 		BruteForce(serialNo chan<- string)
 
 		// AlwaysOn means the bureau adapter still returns some basic
-		// description even if online ordering is currently disabled
-		// for a vehicle. Otherwise unallocated serial numbers cannot
+		// information even if meal ordering service is currently not
+		// available. Otherwise, unallocated serial numbers cannot
 		// be differentiated from serials assigned to offline vehicles,
 		// and the unknown serials have to be visited in each scan.
 		AlwaysOn() bool
@@ -82,9 +82,11 @@ func parseResult(resp *http.Response, resultPtr interface{}) (err error) {
 		status = common.GetField(resultPtr, "Status")
 		msg    = common.GetField(resultPtr, "Msg")
 	)
-	switch status.(type) {
+	switch status := status.(type) {
 	case int:
-		ok = status == 200 || status == 0
+		ok = status == 0 || status == 200 || status == 257
+	case bool:
+		ok = status
 	default:
 		ok = false
 	}
