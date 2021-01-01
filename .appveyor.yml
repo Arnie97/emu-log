@@ -23,8 +23,8 @@ test_script:
 
 stack:
 - go 1.8
-- go 1.10
-- go 1.14
+- go 1.13
+- go 1.15
 
 image:
 - MacOS
@@ -37,14 +37,12 @@ matrix:
     stack: go 1.8
   - image: Visual Studio 2019
     stack: go 1.8
-  - image: Visual Studio 2019
-    stack: go 1.10
 
 for:
 - matrix:
     only:
     - image: MacOS
-      stack: go 1.10
+      stack: go 1.13
   init:
   - sw_vers
   before_test:
@@ -53,7 +51,7 @@ for:
 - matrix:
     only:
     - image: MacOS
-      stack: go 1.14
+      stack: go 1.15
   init:
   - sw_vers
   before_test:
