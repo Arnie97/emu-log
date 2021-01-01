@@ -21,10 +21,10 @@ type (
 		Post(url, contentType string, body io.Reader) (*http.Response, error)
 		PostForm(url string, data url.Values) (*http.Response, error)
 	}
-	setDefaultHeaders struct{}
+	IntervalTransport struct{}
 )
 
-func (setDefaultHeaders) RoundTrip(req *http.Request) (*http.Response, error) {
+func (IntervalTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	time.Sleep(RequestInterval)
 	req.Header.Set("user-agent", UserAgentWeChat)
 	return http.DefaultTransport.RoundTrip(req)
@@ -35,7 +35,7 @@ func HTTPClient(roundTripper ...http.RoundTripper) httpRequester {
 		return mockHTTPClientInstance
 	}
 	if roundTripper == nil {
-		roundTripper = []http.RoundTripper{setDefaultHeaders{}}
+		roundTripper = []http.RoundTripper{IntervalTransport{}}
 	}
 	return &http.Client{
 		Timeout:   RequestTimeout,

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -48,10 +47,8 @@ func (Wuhan) AlwaysOn() bool {
 }
 
 func (b Wuhan) RoundTrip(req *http.Request) (*http.Response, error) {
-	time.Sleep(common.RequestInterval)
-	req.Header.Set("user-agent", common.UserAgentWeChat)
 	req.Header.Set("cookie", "OpenId="+common.Conf(b.Code()))
-	return http.DefaultTransport.RoundTrip(req)
+	return common.IntervalTransport{}.RoundTrip(req)
 }
 
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {

@@ -3,11 +3,22 @@ package adapters_test
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"regexp"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
 )
+
+func ExampleRoundTripper() {
+	req, _ := http.NewRequest(http.MethodGet, "", nil)
+	for _, b := range adapters.Bureaus {
+		if transport, ok := b.(http.RoundTripper); ok {
+			transport.RoundTrip(req)
+		}
+	}
+	// Output:
+}
 
 func ExampleBuildURL() {
 	for _, testCase := range urlTestCases() {

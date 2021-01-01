@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -41,9 +40,8 @@ func (Guangzhou) AlwaysOn() bool {
 }
 
 func (b Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
-	time.Sleep(common.RequestInterval)
 	req.Header.Set("authorization", common.Conf(b.Code()))
-	return http.DefaultTransport.RoundTrip(req)
+	return common.IntervalTransport{}.RoundTrip(req)
 }
 
 func (b Guangzhou) Info(serial string) (info jsonObject, err error) {

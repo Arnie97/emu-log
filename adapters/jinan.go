@@ -48,12 +48,10 @@ func (Jinan) AlwaysOn() bool {
 }
 
 func (Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
-	time.Sleep(common.RequestInterval)
-	req.Header.Set("user-agent", common.UserAgentWeChat)
 	req.Header.Set("referer", fmt.Sprintf(
 		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
 	))
-	return http.DefaultTransport.RoundTrip(req)
+	return common.IntervalTransport{}.RoundTrip(req)
 }
 
 func (b Jinan) Info(serial string) (info jsonObject, err error) {
