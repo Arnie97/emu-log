@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -55,7 +54,7 @@ func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 
 	var result struct {
 		Status bool   `json:"status"`
-		Msg    string `json:"errMsg"`
+		Msg    string `json:"errorMsg"`
 		Data   struct {
 			TrainQrcodeInfo jsonObject
 		}
@@ -67,7 +66,13 @@ func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 
 func (b Zhengzhou) OAuth(serial string) (err error) {
 	var resp *http.Response
-	if resp, err = common.HTTPClient(b).Get(b.AuthURL(serial)); err != nil {
+	if resp, err = common.HTTPClient(b).Get(BuildURL(b, serial)); err != nil {
+		return
+	}
+
+	authURL := resp.Request.URL
+	authURL.Path = authURL.Path + "_fbs"
+	if resp, err = common.HTTPClient(b).Get(authURL.String()); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -84,23 +89,6 @@ func (b Zhengzhou) OAuth(serial string) (err error) {
 		return
 	}
 	defer resp.Body.Close()
-	return
-}
-
-func (b Zhengzhou) AuthURL(serial string) (authURL string) {
-	authURL = strings.Replace(BuildURL(b, serial), "/init", "/jd", 1)
-	authURL = url.QueryEscape(url.QueryEscape(authURL))
-	authURL = "https://mobile.12306.cn/weixin/jd/auth?redirect=" + authURL
-	authURL = "https://jauth.jd.com/entrance_fbs?" + url.Values{
-		"response_type": {"code"},
-		"appid":         {"jd8c6431caca1f6602"},
-		"scope":         {"scope.mobile,scope.userInfo"},
-		"redirect_uri":  {authURL},
-		"cancel_uri":    {""},
-		"act_type":      {"2"},
-		"state":         {"12306weixin"},
-		"show_title":    {"1"},
-	}.Encode()
 	return
 }
 

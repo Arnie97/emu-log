@@ -37,20 +37,22 @@ func DisableMockHTTPClient() {
 	mockHTTPClientInstance = nil
 }
 
-func (x *mockHTTPClient) Do(*http.Request) (*http.Response, error) {
+func (x *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	mockBody := ioutil.NopCloser(strings.NewReader(x.body))
-	resp := &http.Response{Body: mockBody}
+	resp := &http.Response{Body: mockBody, Request: req}
 	return resp, x.err
 }
 
 func (x *mockHTTPClient) Get(url string) (*http.Response, error) {
-	return x.Do(nil)
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	return x.Do(req)
 }
 
 func (x *mockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
-	return x.Do(nil)
+	req, _ := http.NewRequest(http.MethodPost, url, body)
+	return x.Do(req)
 }
 
 func (x *mockHTTPClient) PostForm(url string, data url.Values) (*http.Response, error) {
-	return x.Do(nil)
+	return x.Post(url, "application/x-www-form-urlencoded", strings.NewReader(data.Encode()))
 }
