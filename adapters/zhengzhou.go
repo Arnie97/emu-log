@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -33,19 +34,21 @@ func (Zhengzhou) AlwaysOn() bool {
 	return true
 }
 
+func (b Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
+	time.Sleep(common.RequestInterval)
+	req.Header.Set("user-agent", common.UserAgentJDPay)
+	req.Header.Set("cookie", common.Conf(b.Code()))
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
 	if err = b.OAuth(serial); err != nil {
 		return
 	}
 
-	req, err := http.NewRequest("POST", api, nil)
-	if err != nil {
-		return
-	}
-	req.Header.Set("Cookie", common.Conf(b.Code()))
-	resp, err := common.HTTPClient().Do(req)
-	if err != nil {
+	var resp *http.Response
+	if resp, err = common.HTTPClient(b).PostForm(api, nil); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -63,13 +66,8 @@ func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 }
 
 func (b Zhengzhou) OAuth(serial string) (err error) {
-	req, err := http.NewRequest("GET", b.AuthURL(serial), nil)
-	if err != nil {
-		return
-	}
-	req.Header.Set("Cookie", common.Conf(b.Code()))
-	resp, err := common.HTTPClient().Do(req)
-	if err != nil {
+	var resp *http.Response
+	if resp, err = common.HTTPClient(b).Get(b.AuthURL(serial)); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -82,11 +80,7 @@ func (b Zhengzhou) OAuth(serial string) (err error) {
 	if err = parseResult(resp, &result); err != nil {
 		return
 	}
-	if req, err = http.NewRequest("GET", result.URL, nil); err != nil {
-		return
-	}
-	req.Header.Set("Cookie", common.Conf(b.Code()))
-	if resp, err = common.HTTPClient().Do(req); err != nil {
+	if resp, err = common.HTTPClient(b).Get(result.URL); err != nil {
 		return
 	}
 	defer resp.Body.Close()

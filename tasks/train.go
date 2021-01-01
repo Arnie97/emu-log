@@ -2,7 +2,6 @@ package tasks
 
 import (
 	"strings"
-	"time"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
@@ -21,7 +20,6 @@ func scanTrainNo(b adapters.Bureau) {
 			log.Debug().Msgf("[%s] %v -> ignored", b.Code(), serialModel)
 			continue
 		}
-		time.Sleep(requestDelay)
 		info, err := b.Info(serialModel.SerialNo)
 
 		var logModel models.LogModel

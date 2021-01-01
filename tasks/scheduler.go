@@ -12,11 +12,10 @@ import (
 )
 
 const (
-	requestDelay = 3 * time.Second
-	beijingTime  = 8 * time.Hour
-	startTime    = 5 * time.Hour
-	endTime      = 22 * time.Hour
-	day          = 24 * time.Hour
+	startTime = 5 * time.Hour
+	endTime   = 22 * time.Hour
+	day       = 24 * time.Hour
+	tzBeijing = 8 * time.Hour
 )
 
 var (
@@ -102,7 +101,7 @@ func iterateBureaus(task func(adapters.Bureau), bureaus ...string) {
 // different from China Railways (UTC+08).
 func checkLocalTimezone() {
 	tzName, tzOffset := time.Now().Zone()
-	if time.Duration(tzOffset)*time.Second != beijingTime {
+	if time.Duration(tzOffset)*time.Second != tzBeijing {
 		log.Warn().Msgf(
 			"expected Beijing Timezone (UTC+08), but found %s (UTC%s)",
 			tzName, time.Now().Format("-07"),

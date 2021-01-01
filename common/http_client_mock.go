@@ -21,10 +21,11 @@ type mockHTTPClient struct {
 	err  error
 }
 
+var mockHTTPClientInstance *mockHTTPClient
+
 func MockHTTPClientRespBody(body string) {
 	confOnce.Do(func() {})
-	httpOnce.Do(func() {})
-	httpClient = &mockHTTPClient{body, nil}
+	mockHTTPClientInstance = &mockHTTPClient{body, nil}
 }
 
 func MockHTTPClientRespBodyFromFile(mockFile string) {
@@ -33,11 +34,7 @@ func MockHTTPClientRespBodyFromFile(mockFile string) {
 
 func DisableMockHTTPClient() {
 	confOnce = sync.Once{}
-	httpOnce = sync.Once{}
-	httpClient = &http.Client{
-		Timeout:   RequestTimeout,
-		Transport: &setDefaultHeaders{},
-	}
+	mockHTTPClientInstance = nil
 }
 
 func (x *mockHTTPClient) Do(*http.Request) (*http.Response, error) {

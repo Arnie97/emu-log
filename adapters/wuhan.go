@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -46,6 +47,13 @@ func (Wuhan) AlwaysOn() bool {
 	return true
 }
 
+func (b Wuhan) RoundTrip(req *http.Request) (*http.Response, error) {
+	time.Sleep(common.RequestInterval)
+	req.Header.Set("user-agent", common.UserAgentWeChat)
+	req.Header.Set("cookie", "OpenId="+common.Conf(b.Code()))
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	const (
 		landingPage  = "https://wechat.lvtudiandian.com/index.php/QrSweepCode/index?locomotiveId=%s&openid=%s&qrCodeType=2&carriage=6&seatRow=6&seatNo=D%%2FF&userOrder=&shop=&min_openid=&partner_name=&memtrainend=&memtrainstart="
@@ -53,33 +61,26 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	)
 
 	url := fmt.Sprintf(landingPage, serial, common.Conf(b.Code()))
-	resp, err := common.HTTPClient().Get(url)
-	if err != nil {
+	var resp *http.Response
+	if resp, err = common.HTTPClient(b).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()
 
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
+	var bytes []byte
+	if bytes, err = ioutil.ReadAll(resp.Body); err != nil {
 		return
 	}
 	if strings.HasPrefix(string(bytes), "<script>alert") {
 		return
 	}
 
-	req, err := http.NewRequest("GET", orderingPage, nil)
-	if err != nil {
-		return
-	}
-	req.Header.Set("Cookie", "OpenId="+common.Conf(b.Code()))
-	resp, err = common.HTTPClient().Do(req)
-	if err != nil {
+	if resp, err = common.HTTPClient(b).Get(orderingPage); err != nil {
 		return
 	}
 	defer resp.Body.Close()
 
-	bytes, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
+	if bytes, err = ioutil.ReadAll(resp.Body); err != nil {
 		return
 	}
 

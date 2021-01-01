@@ -3,6 +3,7 @@ package adapters
 import (
 	"crypto/md5"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/arnie97/emu-log/common"
@@ -50,8 +51,9 @@ func (Beijing) Info(qrCode string) (info jsonObject, err error) {
 	const key = "qrcode=%s&key=ltRsjkiM8IRbC80Ni1jzU5jiO6pJvbKd"
 	sign := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(key, qrCode))))
 	form := url.Values{"qrCode": {qrCode}, "sign": {sign}}
-	resp, err := common.HTTPClient().PostForm(api, form)
-	if err != nil {
+
+	var resp *http.Response
+	if resp, err = common.HTTPClient().PostForm(api, form); err != nil {
 		return
 	}
 	defer resp.Body.Close()

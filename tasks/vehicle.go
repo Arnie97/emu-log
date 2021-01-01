@@ -1,8 +1,6 @@
 package tasks
 
 import (
-	"time"
-
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/models"
 	"github.com/rs/zerolog/log"
@@ -30,7 +28,6 @@ func scanVehicleNo(b adapters.Bureau) {
 		if index < len(serialModels) && serialModels[index].SerialNo == serial {
 			continue
 		}
-		time.Sleep(requestDelay)
 		addVehicleBySerial(b, serial)
 	}
 	log.Info().Msgf("[%s] finished scanning", b.Code())

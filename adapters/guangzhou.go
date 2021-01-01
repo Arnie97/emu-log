@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -39,16 +40,18 @@ func (Guangzhou) AlwaysOn() bool {
 	return false
 }
 
+func (b Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
+	time.Sleep(common.RequestInterval)
+	req.Header.Set("authorization", common.Conf(b.Code()))
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://sj-api.yishizongheng.com/shejian/api/train/getByQrcode?qrcode=%s"
 	url := fmt.Sprintf(api, strings.TrimLeft(serial, "0"))
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return
-	}
-	req.Header.Set("authorization", common.Conf(b.Code()))
-	resp, err := common.HTTPClient().Do(req)
-	if err != nil {
+
+	var resp *http.Response
+	if resp, err = common.HTTPClient(b).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()

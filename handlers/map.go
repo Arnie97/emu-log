@@ -27,7 +27,7 @@ func railMapHandler(w http.ResponseWriter, r *http.Request) {
 	if len(stationName) > 2 {
 		keyword = strings.TrimSuffix(stationName, "所")
 	}
-	resp, err := common.HTTPClient().Get(fmt.Sprintf(
+	resp, err := common.HTTPClient(http.DefaultTransport).Get(fmt.Sprintf(
 		"%s/api/v1/match_feature/%s?locale=zhcn", site, keyword,
 	))
 	if err != nil {

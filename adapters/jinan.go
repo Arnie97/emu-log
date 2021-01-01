@@ -47,6 +47,15 @@ func (Jinan) AlwaysOn() bool {
 	return true
 }
 
+func (Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
+	time.Sleep(common.RequestInterval)
+	req.Header.Set("user-agent", common.UserAgentWeChat)
+	req.Header.Set("referer", fmt.Sprintf(
+		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
+	))
+	return http.DefaultTransport.RoundTrip(req)
+}
+
 func (b Jinan) Info(serial string) (info jsonObject, err error) {
 	const api = "https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list"
 	values := jsonObject{
@@ -58,21 +67,14 @@ func (b Jinan) Info(serial string) (info jsonObject, err error) {
 	}
 	values["sign"] = b.Signature(values)
 
-	jsonBytes, err := json.Marshal(values)
-	if err != nil {
+	var jsonBytes []byte
+	if jsonBytes, err = json.Marshal(values); err != nil {
 		return
 	}
 	buf := bytes.NewBuffer(jsonBytes)
-	req, err := http.NewRequest("POST", api, buf)
-	if err != nil {
-		return
-	}
-	req.Header.Set("Content-Type", common.ContentType)
-	req.Header.Set("Referer", fmt.Sprintf(
-		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
-	))
-	resp, err := common.HTTPClient().Do(req)
-	if err != nil {
+
+	var resp *http.Response
+	if resp, err = common.HTTPClient(b).Post(api, common.ContentType, buf); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -82,8 +84,7 @@ func (b Jinan) Info(serial string) (info jsonObject, err error) {
 		Msg    string `json:"errmsg"`
 		Data   string `json:"data"`
 	}
-	err = parseResult(resp, &result)
-	if err != nil {
+	if err = parseResult(resp, &result); err != nil {
 		return
 	}
 	err = b.InfoDecrypt(result.Data, &info)

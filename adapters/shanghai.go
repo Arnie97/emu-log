@@ -2,7 +2,7 @@ package adapters
 
 import (
 	"fmt"
-	"net/url"
+	"net/http"
 
 	"github.com/arnie97/emu-log/common"
 )
@@ -38,11 +38,12 @@ func (Shanghai) AlwaysOn() bool {
 	return true
 }
 
-func (Shanghai) Info(pqCode string) (info jsonObject, err error) {
-	const api = "https://g.xiuxiu365.cn/railway_api/web/index/train"
-	query := url.Values{"pqCode": {pqCode}}.Encode()
-	resp, err := common.HTTPClient().Get(api + "?" + query)
-	if err != nil {
+func (Shanghai) Info(serial string) (info jsonObject, err error) {
+	const api = "https://g.xiuxiu365.cn/railway_api/web/index/train?pqCode=%s"
+	url := fmt.Sprintf(api, serial)
+
+	var resp *http.Response
+	if resp, err = common.HTTPClient().Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()

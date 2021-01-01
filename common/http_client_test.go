@@ -27,10 +27,10 @@ func ExampleHTTPClient() {
 	err = json.Unmarshal(body, &s)
 	fmt.Println("load err:", err)
 
-	fmt.Println("ua equal:", s.UserAgent == common.UserAgent)
+	fmt.Println("ua equal:", s.UserAgent == common.UserAgentWeChat)
 
 	// Output:
-	// x == y:   true
+	// x == y:   false
 	// x != nil: true
 	// get err:  <nil>
 	// read err: <nil>
