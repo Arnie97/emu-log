@@ -42,16 +42,6 @@ for:
 - matrix:
     only:
     - image: MacOS
-      stack: go 1.13
-  init:
-  - sw_vers
-  before_test:
-  - sudo systemsetup -settimezone $TZ
-
-- matrix:
-    only:
-    - image: MacOS
-      stack: go 1.15
   init:
   - sw_vers
   before_test:

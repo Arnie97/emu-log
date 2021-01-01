@@ -1,6 +1,7 @@
 package adapters
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -36,18 +37,27 @@ func (Zhengzhou) AlwaysOn() bool {
 func (b Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
 	time.Sleep(common.RequestInterval)
 	req.Header.Set("user-agent", common.UserAgentJDPay)
-	req.Header.Set("cookie", common.Conf(b.Code()))
+	if len(req.Cookies()) == 0 {
+		req.Header.Set("cookie", common.Conf(b.Code()))
+	}
 	return http.DefaultTransport.RoundTrip(req)
 }
 
 func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
-	if err = b.OAuth(serial); err != nil {
+	var (
+		cookie *http.Cookie
+		req    *http.Request
+		resp   *http.Response
+	)
+	if cookie, err = b.OAuth(serial); err != nil {
 		return
 	}
-
-	var resp *http.Response
-	if resp, err = common.HTTPClient(b).PostForm(api, nil); err != nil {
+	if req, err = http.NewRequest(http.MethodPost, api, nil); err != nil {
+		return
+	}
+	req.Header.Set("cookie", cookie.Name+"="+cookie.Value)
+	if resp, err = common.HTTPClient(b).Do(req); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -64,7 +74,7 @@ func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	return
 }
 
-func (b Zhengzhou) OAuth(serial string) (err error) {
+func (b Zhengzhou) OAuth(serial string) (cookie *http.Cookie, err error) {
 	var resp *http.Response
 	if resp, err = common.HTTPClient(b).Get(BuildURL(b, serial)); err != nil {
 		return
@@ -89,6 +99,13 @@ func (b Zhengzhou) OAuth(serial string) (err error) {
 		return
 	}
 	defer resp.Body.Close()
+	for _, each := range resp.Cookies() {
+		if each.Name == "JSESSIONID" {
+			cookie = each
+			return
+		}
+	}
+	err = fmt.Errorf("failed to acquire user session ID with OAuth")
 	return
 }
 

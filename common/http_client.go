@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	MaxRedirect     = 2
 	RequestInterval = 3 * time.Second
 	RequestTimeout  = 10 * time.Second
 	UserAgentWeChat = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/7.0.8(0x17000820) NetType/4G Language/zh_CN"
@@ -40,5 +41,11 @@ func HTTPClient(roundTripper ...http.RoundTripper) httpRequester {
 	return &http.Client{
 		Timeout:   RequestTimeout,
 		Transport: roundTripper[0],
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) == MaxRedirect {
+				return http.ErrUseLastResponse
+			}
+			return nil
+		},
 	}
 }

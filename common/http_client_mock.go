@@ -38,8 +38,11 @@ func DisableMockHTTPClient() {
 }
 
 func (x *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	mockBody := ioutil.NopCloser(strings.NewReader(x.body))
-	resp := &http.Response{Body: mockBody, Request: req}
+	resp := &http.Response{
+		Request: req,
+		Body:    ioutil.NopCloser(strings.NewReader(x.body)),
+		Header:  http.Header{"Set-Cookie": {"JSESSIONID=1234"}},
+	}
 	return resp, x.err
 }
 
