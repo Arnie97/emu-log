@@ -1,7 +1,6 @@
 package adapters
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -9,10 +8,12 @@ import (
 	"github.com/arnie97/emu-log/common"
 )
 
-type Zhengzhou struct{}
+type Zhengzhou struct {
+	cookies []*http.Cookie
+}
 
 func init() {
-	Register(Zhengzhou{})
+	Register(&Zhengzhou{})
 }
 
 func (Zhengzhou) Code() string {
@@ -34,30 +35,26 @@ func (Zhengzhou) AlwaysOn() bool {
 	return true
 }
 
-func (b Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
+func (b *Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
 	time.Sleep(common.RequestInterval)
-	req.Header.Set("user-agent", common.UserAgentJDPay)
-	if len(req.Cookies()) == 0 {
-		req.Header.Set("cookie", common.Conf(b.Code()))
+	common.SetUserAgent(req, common.UserAgentJDPay)
+	common.SetCookies(req, b.cookies)
+	resp, err := http.DefaultTransport.RoundTrip(req)
+
+	// stop further redirects and collect crucial cookies
+	if err == nil && resp != nil && resp.StatusCode == http.StatusFound {
+		switch req.URL.Path {
+		case "/cgi-bin/app/appjmp", "/tservice/catering/jd":
+			b.cookies = resp.Cookies()
+			resp.StatusCode = http.StatusOK
+		}
 	}
-	return http.DefaultTransport.RoundTrip(req)
+	return resp, err
 }
 
-func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
-	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
-	var (
-		cookie *http.Cookie
-		req    *http.Request
-		resp   *http.Response
-	)
-	if cookie, err = b.OAuth(serial); err != nil {
-		return
-	}
-	if req, err = http.NewRequest(http.MethodPost, api, nil); err != nil {
-		return
-	}
-	req.Header.Set("cookie", cookie.Name+"="+cookie.Value)
-	if resp, err = common.HTTPClient(b).Do(req); err != nil {
+func (b *Zhengzhou) Info(serial string) (info jsonObject, err error) {
+	var resp *http.Response
+	if resp, err = b.OAuth(serial); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -74,8 +71,26 @@ func (b Zhengzhou) Info(serial string) (info jsonObject, err error) {
 	return
 }
 
-func (b Zhengzhou) OAuth(serial string) (cookie *http.Cookie, err error) {
-	var resp *http.Response
+// RefreshToken applies for a new access token from JD pay
+// if the cached access token has already been expired.
+func (b *Zhengzhou) RefreshToken() (resp *http.Response, err error) {
+	if len(b.cookies) > 0 {
+		return
+	}
+
+	// the access tokens will be saved by the custom round tripper
+	const api = "https://ms.jr.jd.com/jrmserver/base/user/getNewTokenJumpUrl"
+	return common.HTTPClient(b).Get(api + common.Conf(b.Code()))
+}
+
+// OAuth obtains a new authorization code from JD pay,
+// and start a new session on 12306 servers with it.
+// This is required for each run, since each session is bound
+// to an immutable vehicle serial number.
+func (b *Zhengzhou) OAuth(serial string) (resp *http.Response, err error) {
+	if resp, err = b.RefreshToken(); err != nil {
+		return
+	}
 	if resp, err = common.HTTPClient(b).Get(BuildURL(b, serial)); err != nil {
 		return
 	}
@@ -93,23 +108,26 @@ func (b Zhengzhou) OAuth(serial string) (cookie *http.Cookie, err error) {
 		URL    string `json:"return_url"`
 	}
 	if err = parseResult(resp, &result); err != nil {
-		return
-	}
-	if resp, err = common.HTTPClient(b).Get(result.URL); err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	for _, each := range resp.Cookies() {
-		if each.Name == "JSESSIONID" {
-			cookie = each
-			return
+		// refresh the expiry access token and try again
+		if result.Status == 256 {
+			b.cookies = nil
+			return b.OAuth(serial)
 		}
+		return
 	}
-	err = fmt.Errorf("failed to acquire user session ID with OAuth")
-	return
+
+	// fork into a new session
+	session := *b
+	// the session ID will be saved by the custom round tripper
+	if resp, err = common.HTTPClient(&session).Get(result.URL); err != nil {
+		return
+	}
+
+	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
+	return common.HTTPClient(&session).PostForm(api, nil)
 }
 
-func (b Zhengzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Zhengzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
 	defer common.Catch(&err)
 	trainNo = info["trainCode"].(string)
 	date = info["startDay"].(string)
@@ -117,7 +135,7 @@ func (b Zhengzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
 	return
 }
 
-func (b Zhengzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Zhengzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["carCode"].(string))
 	if strings.HasPrefix(vehicleNo, "CHR") {

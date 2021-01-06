@@ -6,7 +6,7 @@ import (
 
 func ExampleZhengzhou_TrainNo() {
 	printTrainNo(
-		adapters.Zhengzhou{},
+		&adapters.Zhengzhou{},
 		"zhengzhou_full.json",
 		"zhengzhou_basic.json",
 		"zhengzhou_invalid.json",
@@ -19,7 +19,7 @@ func ExampleZhengzhou_TrainNo() {
 
 func ExampleZhengzhou_VehicleNo() {
 	printVehicleNo(
-		adapters.Zhengzhou{},
+		&adapters.Zhengzhou{},
 		"zhengzhou_full.json",
 		"zhengzhou_basic.json",
 		"zhengzhou_invalid.json",

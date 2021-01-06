@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	startTime = 5 * time.Hour
+	startTime = 6 * time.Hour
 	endTime   = 22 * time.Hour
 	day       = 24 * time.Hour
 	tzBeijing = 8 * time.Hour

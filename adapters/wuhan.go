@@ -47,7 +47,10 @@ func (Wuhan) AlwaysOn() bool {
 }
 
 func (b Wuhan) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("cookie", "OpenId="+common.Conf(b.Code()))
+	common.SetCookies(req, []*http.Cookie{{
+		Name:  "OpenId",
+		Value: common.Conf(b.Code()),
+	}})
 	return common.IntervalTransport{}.RoundTrip(req)
 }
 
