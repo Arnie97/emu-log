@@ -8,10 +8,11 @@ import (
 
 func ExampleCatch() {
 	fmt.Println(panicFree())
-	// Output: BOOM!
+	// Output:
+	// panic: BOOM!
 }
 
 func panicFree() (err error) {
 	defer common.Catch(&err)
-	panic(fmt.Errorf("BOOM!"))
+	panic("BOOM!")
 }

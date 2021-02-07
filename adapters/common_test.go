@@ -36,7 +36,7 @@ func ExampleParseURL() {
 	for _, testCase := range urlTestCases() {
 		bCode, serial, url := testCase[0], testCase[1], testCase[2]
 		if b, s := adapters.ParseURL(url); s != serial || b.Code() != bCode {
-			fmt.Println(b, s)
+			fmt.Println(b.Name(), s)
 		}
 	}
 
@@ -47,6 +47,16 @@ func ExampleParseURL() {
 func urlTestCases() (testCases [][]string) {
 	common.Must(json.Unmarshal(common.ReadMockFile("url.json"), &testCases))
 	return
+}
+
+func getMockSerialNo(b adapters.Bureau) string {
+	for _, testCase := range urlTestCases() {
+		bureauCode, serial, _ := testCase[0], testCase[1], testCase[2]
+		if bureauCode == b.Code() {
+			return serial
+		}
+	}
+	return ""
 }
 
 func assertBruteForce(b adapters.Bureau, assert func(string) bool) {
@@ -72,14 +82,14 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		info, err := b.Info("")
+		info, err := b.Info(getMockSerialNo(b))
 		trainNo, date, err := b.TrainNo(info)
 		fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
 	}
 
 	for _, mockBody := range []string{"", "null", "<html>not json</html>"} {
 		common.MockHTTPClientRespBody(mockBody)
-		info, err := b.Info("")
+		info, err := b.Info(getMockSerialNo(b))
 		if info != nil && err == nil {
 			fmt.Printf("uncaught error for http response %#v", mockBody)
 		}
@@ -89,7 +99,7 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		info, err := b.Info("")
+		info, err := b.Info(getMockSerialNo(b))
 		vehicleNo, err := b.VehicleNo(info)
 		fmt.Printf("%#-14v %-5v\n", vehicleNo, err != nil)
 	}

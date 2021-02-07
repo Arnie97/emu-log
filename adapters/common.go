@@ -62,7 +62,7 @@ func BuildURL(b Bureau, serial string) (url string) {
 
 func ParseURL(url string) (b Bureau, serial string) {
 	for _, b = range Bureaus {
-		urlPattern := fmt.Sprintf(regexp.QuoteMeta(b.URL()), `(\w+)`)
+		urlPattern := fmt.Sprintf(regexp.QuoteMeta(b.URL()), `([\w,]+)`)
 		urlRegExp := regexp.MustCompile(urlPattern)
 		if match := urlRegExp.FindStringSubmatch(url); match != nil {
 			return b, match[1]

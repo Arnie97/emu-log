@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -15,7 +16,7 @@ func init() {
 // Catch captures a possible panic and return it as an error.
 func Catch(err *error) {
 	if r := recover(); r != nil {
-		*err = r.(error)
+		*err = fmt.Errorf("panic: %v", r)
 	}
 }
 
