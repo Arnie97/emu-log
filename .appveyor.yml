@@ -3,18 +3,15 @@ shallow_clone: true
 
 environment:
   TZ: Asia/Shanghai
+  GO15VENDOREXPERIMENT: 1
   GO111MODULE: on
-  GOPATH: "$HOME/go"
 
-clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
-
-before_build:
+install:
 - uname -a
 - go version
 - gcc --version
 
 build_script:
-- go get -d ./...
 - go build -v -ldflags="-s -w"
 
 test_script:
@@ -55,6 +52,10 @@ for:
     - image: Ubuntu
   init:
   - lsb_release -a
+  clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
+  before_build:
+  - export GOPATH=$HOME/go
+  - (export GOROOT=$HOME/.gvm/gos/go1.12.17; $GOROOT/bin/go mod vendor; unset GOROOT)
 
 - matrix:
     only:
