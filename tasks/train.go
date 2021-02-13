@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/arnie97/emu-log/adapters"
-	"github.com/arnie97/emu-log/common"
 	"github.com/arnie97/emu-log/models"
 	"github.com/rs/zerolog/log"
 )
@@ -21,25 +20,10 @@ func scanTrainNo(b adapters.Bureau) {
 			continue
 		}
 		info, err := b.Info(serialModel.SerialNo)
-
-		var logModel models.LogModel
-		if err == nil {
-			logModel.TrainNo, logModel.Date, err = b.TrainNo(info)
-		}
-		if err != nil || logModel.TrainNo == "" {
+		if err != nil {
 			log.Debug().Msgf("[%s] %v -> %v", b.Code(), serialModel, err)
-			continue
 		}
-
-		logModel.VehicleNo, err = b.VehicleNo(info)
-		if common.ApproxEqualVehicleNo(serialModel.VehicleNo, logModel.VehicleNo) {
-			log.Debug().Msgf("[%s] %v -> %v", b.Code(), serialModel, logModel)
-			logModel.VehicleNo = serialModel.VehicleNo
-			logModel.Add()
-		} else {
-			log.Warn().Msgf("[%s] %v -> %v ignored", b.Code(), serialModel, logModel)
-			continue
-		}
+		serialModel.AddTrainOperationLogs(info)
 	}
 	log.Info().Msgf("[%s] updates done for known vehicles", b.Code())
 }

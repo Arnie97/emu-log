@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
+	"github.com/rs/zerolog/log"
 )
 
 type SerialModel struct {
@@ -33,6 +34,30 @@ func (s SerialModel) Add() {
 		s.VehicleNo, s.BureauCode, s.SerialNo,
 	)
 	common.Must(err)
+}
+
+// AddTrainOperationLogs creates related operation log records if possible.
+func (s SerialModel) AddTrainOperationLogs(info adapters.JSONObject) {
+	b := adapters.MustGetBureauByCode(s.BureauCode)
+	trains, err := b.TrainNo(info)
+	if err != nil || len(trains) == 0 {
+		log.Debug().Msgf("[%s] %v -> %v", b.Code(), s, err)
+		return
+	}
+
+	var logModel LogModel
+	logModel.VehicleNo, _ = b.VehicleNo(info)
+	for _, train := range trains {
+		logModel.TrainNo = train.TrainNo
+		logModel.Date = train.Date
+		if !common.ApproxEqualVehicleNo(s.VehicleNo, logModel.VehicleNo) {
+			log.Warn().Msgf("[%s] %v -> %v ignored", b.Code(), s, logModel)
+			return
+		}
+		log.Debug().Msgf("[%s] %v -> %v", b.Code(), s, logModel)
+		logModel.VehicleNo = s.VehicleNo
+		logModel.Add()
+	}
 }
 
 // Query executes a SQL statement and returns all the result rows.

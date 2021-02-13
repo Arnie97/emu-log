@@ -54,9 +54,9 @@ func (Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
 	return common.IntervalTransport{}.RoundTrip(req)
 }
 
-func (b Jinan) Info(serial string) (info jsonObject, err error) {
+func (b Jinan) Info(serial string) (info JSONObject, err error) {
 	const api = "https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list"
-	values := jsonObject{
+	values := JSONObject{
 		"params":    b.SerialEncrypt(serial),
 		"timeStamp": time.Now().UnixNano() / 1000000,
 		"cguid":     "",
@@ -162,7 +162,7 @@ func PKCS7Unpadding(padded []byte) []byte {
 
 // Signature serializes the message in a deterministic manner,
 // and generates its hexadecimal encoded MD5 digest.
-func (b Jinan) Signature(values jsonObject) string {
+func (b Jinan) Signature(values JSONObject) string {
 	message := fmt.Sprintf(
 		"%s%s%v%s%s",
 		jinanApp,
@@ -175,7 +175,7 @@ func (b Jinan) Signature(values jsonObject) string {
 	return strings.ToUpper(hex.EncodeToString(hash[:]))
 }
 
-func (b Jinan) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (b Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	var (
 		infoList []struct {
 			TrainInfo struct {
@@ -187,20 +187,25 @@ func (b Jinan) TrainNo(info jsonObject) (trainNo, date string, err error) {
 	if err = common.StructDecode(info["trainInfos"], &infoList); err != nil {
 		return
 	}
+	if len(infoList) == 0 {
+		return
+	}
 
+	var train TrainSchedule
 	for i, elem := range infoList {
 		if i == 0 {
 			timestamp := elem.TrainInfo.StartTimestamp
-			date = time.Unix(timestamp, 0).Format(common.ISODate)
+			train.Date = time.Unix(timestamp, 0).Format(common.ISODate)
 		} else {
-			trainNo += "/"
+			train.TrainNo += "/"
 		}
-		trainNo += elem.TrainInfo.TrainNumber
+		train.TrainNo += elem.TrainInfo.TrainNumber
 	}
+	trains = []TrainSchedule{train}
 	return
 }
 
-func (b Jinan) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Jinan) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["czNo"].(string))
 	return

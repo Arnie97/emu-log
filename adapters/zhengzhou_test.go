@@ -12,9 +12,13 @@ func ExampleZhengzhou_TrainNo() {
 		"zhengzhou_invalid.json",
 	)
 	// Output:
-	// "D2751"        false "2020-07-12"
-	// ""             true  ""
-	// ""             true  ""
+	//
+	// false
+	// "D2751"        "2020-07-12"
+	//
+	// true
+	//
+	// true
 }
 
 func ExampleZhengzhou_VehicleNo() {

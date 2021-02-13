@@ -54,7 +54,7 @@ func (b Wuhan) RoundTrip(req *http.Request) (*http.Response, error) {
 	return common.IntervalTransport{}.RoundTrip(req)
 }
 
-func (b Wuhan) Info(serial string) (info jsonObject, err error) {
+func (b Wuhan) Info(serial string) (info JSONObject, err error) {
 	const (
 		landingPage  = "https://wechat.lvtudiandian.com/index.php/QrSweepCode/index?locomotiveId=%s&openid=%s&qrCodeType=2&carriage=6&seatRow=6&seatNo=D%%2FF&userOrder=&shop=&min_openid=&partner_name=&memtrainend=&memtrainstart="
 		orderingPage = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index.html?is_redirect=1"
@@ -87,7 +87,7 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	if match := jsonVehicleRegExp.FindSubmatch(bytes); match != nil {
 		json.Unmarshal(match[1], &info)
 	} else if match := htmlVehicleRegExp.FindSubmatch(bytes); match != nil {
-		info = jsonObject{"locomotive_code": string(match[1])}
+		info = JSONObject{"locomotive_code": string(match[1])}
 		if match = htmlTrainNoRegExp.FindSubmatch(bytes); match != nil {
 			info["partner_name"] = string(match[1])
 		}
@@ -98,13 +98,15 @@ func (b Wuhan) Info(serial string) (info jsonObject, err error) {
 	return
 }
 
-func (b Wuhan) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Wuhan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
-	trainNo = info["partner_name"].(string)
+	trains = []TrainSchedule{{
+		TrainNo: info["partner_name"].(string),
+	}}
 	return
 }
 
-func (b Wuhan) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Wuhan) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
 	if strings.HasPrefix(vehicleNo, "380") {

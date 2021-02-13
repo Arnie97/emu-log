@@ -38,7 +38,7 @@ func (Shanghai) AlwaysOn() bool {
 	return true
 }
 
-func (Shanghai) Info(serial string) (info jsonObject, err error) {
+func (Shanghai) Info(serial string) (info JSONObject, err error) {
 	const api = "https://g.xiuxiu365.cn/railway_api/web/index/train?pqCode=%s"
 	url := fmt.Sprintf(api, serial)
 
@@ -51,20 +51,25 @@ func (Shanghai) Info(serial string) (info jsonObject, err error) {
 	var result struct {
 		Status int `json:"code"`
 		Msg    string
-		Data   jsonObject
+		Data   JSONObject
 	}
 	err = parseResult(resp, &result)
 	info = result.Data
 	return
 }
 
-func (b Shanghai) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Shanghai) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
-	trainNo = info["trainName"].(string)
+	train := TrainSchedule{
+		TrainNo: info["trainName"].(string),
+	}
+	if len(train.TrainNo) != 0 {
+		trains = []TrainSchedule{train}
+	}
 	return
 }
 
-func (b Shanghai) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Shanghai) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
 	return

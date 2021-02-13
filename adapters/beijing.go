@@ -46,7 +46,7 @@ func (Beijing) AlwaysOn() bool {
 	return false
 }
 
-func (Beijing) Info(qrCode string) (info jsonObject, err error) {
+func (Beijing) Info(qrCode string) (info JSONObject, err error) {
 	const api = "https://aymaoto.jtlf.cn/webapi/otoshopping/ewh_getqrcodetrainnoinfo"
 	const key = "qrcode=%s&key=ltRsjkiM8IRbC80Ni1jzU5jiO6pJvbKd"
 	sign := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(key, qrCode))))
@@ -62,7 +62,7 @@ func (Beijing) Info(qrCode string) (info jsonObject, err error) {
 		Status int `json:"state"`
 		Msg    string
 		Data   struct {
-			TrainInfo jsonObject
+			TrainInfo JSONObject
 			URLStr    string
 		}
 	}
@@ -71,14 +71,17 @@ func (Beijing) Info(qrCode string) (info jsonObject, err error) {
 	return
 }
 
-func (b Beijing) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Beijing) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
-	trainNo = info["TrainnoId"].(string)
-	date = info["TrainnoDate"].(string)
+	train := TrainSchedule{
+		TrainNo: info["TrainnoId"].(string),
+		Date:    info["TrainnoDate"].(string),
+	}
+	trains = []TrainSchedule{train}
 	return
 }
 
-func (b Beijing) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Beijing) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["TrainId"].(string))
 	return

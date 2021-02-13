@@ -82,8 +82,11 @@ func ExampleJinan_TrainNo() {
 		"jinan_basic.json",
 	)
 	// Output:
-	// "G297/G300"    false "2020-08-10"
-	// ""             false ""
+	//
+	// false
+	// "G297/G300"    "2020-08-10"
+	//
+	// false
 }
 
 func ExampleJinan_VehicleNo() {

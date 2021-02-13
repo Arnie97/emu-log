@@ -16,8 +16,11 @@ func ExampleBeijing_TrainNo() {
 		"beijing_invalid.json",
 	)
 	// Output:
-	// "G666"         false "2020-07-10"
-	// ""             true  ""
+	//
+	// false
+	// "G666"         "2020-07-10"
+	//
+	// true
 }
 
 func ExampleBeijing_VehicleNo() {

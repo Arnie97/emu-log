@@ -48,7 +48,7 @@ func (Chengdu) AlwaysOn() bool {
 	return false
 }
 
-func (b Chengdu) Info(serial string) (info jsonObject, err error) {
+func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 	const api = "https://kyd.cd-rail.com/KYDMS_S/WeixinServlet"
 
 	var (
@@ -66,7 +66,7 @@ func (b Chengdu) Info(serial string) (info jsonObject, err error) {
 	defer resp.Body.Close()
 
 	info = map[string]interface{}{b.URL(): vehicleNo}
-	result := []*jsonObject{&info}
+	result := []*JSONObject{&info}
 	if err = b.InfoDecrypt(resp.Body, &result); err != nil {
 		return
 	}
@@ -160,7 +160,7 @@ func DESDecrypt(cipherText, key []byte) (plainText []byte) {
 	return PKCS7Unpadding(plainText)
 }
 
-func (b Chengdu) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Chengdu) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
 
 	var (
@@ -171,13 +171,15 @@ func (b Chengdu) TrainNo(info jsonObject) (trainNo, date string, err error) {
 		return
 	}
 	for _, pair := range trainList {
-		trainNo = pair[0]
-		date = strings.Replace(pair[1], "/", "-", 2)
+		trains = append(trains, TrainSchedule{
+			TrainNo: pair[0],
+			Date:    strings.Replace(pair[1], "/", "-", 2),
+		})
 	}
 	return
 }
 
-func (b Chengdu) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (b Chengdu) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	retrievedVehicleNo, _ := info["TRAIN_UNDER"].(string)
 	if len(retrievedVehicleNo) == 0 {
 		return

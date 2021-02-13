@@ -16,8 +16,11 @@ func ExampleGuangzhou_TrainNo() {
 		"guangzhou_invalid.json",
 	)
 	// Output:
-	// "G1363"        false ""
-	// ""             true  ""
+	//
+	// false
+	// "G1363"        ""
+	//
+	// true
 }
 
 func ExampleGuangzhou_VehicleNo() {

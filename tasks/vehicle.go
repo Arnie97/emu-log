@@ -50,13 +50,5 @@ func addVehicleBySerial(b adapters.Bureau, serial string) {
 		return
 	}
 	serialModel.Add()
-
-	// also add a activity log record if the train number is available
-	var logModel models.LogModel
-	logModel.TrainNo, logModel.Date, err = b.TrainNo(info)
-	if err == nil && logModel.TrainNo != "" {
-		logModel.VehicleNo = serialModel.VehicleNo
-		logModel.Add()
-	}
-	log.Debug().Msgf("[%s] %s -> %v", b.Code(), serial, logModel)
+	serialModel.AddTrainOperationLogs(info)
 }

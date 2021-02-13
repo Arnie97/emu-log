@@ -52,7 +52,7 @@ func (b *Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-func (b *Zhengzhou) Info(serial string) (info jsonObject, err error) {
+func (b *Zhengzhou) Info(serial string) (info JSONObject, err error) {
 	var resp *http.Response
 	if resp, err = b.OAuth(serial); err != nil {
 		return
@@ -63,7 +63,7 @@ func (b *Zhengzhou) Info(serial string) (info jsonObject, err error) {
 		Status bool   `json:"status"`
 		Msg    string `json:"errorMsg"`
 		Data   struct {
-			TrainQrcodeInfo jsonObject
+			TrainQrcodeInfo JSONObject
 		}
 	}
 	err = parseResult(resp, &result)
@@ -127,15 +127,17 @@ func (b *Zhengzhou) OAuth(serial string) (resp *http.Response, err error) {
 	return common.HTTPClient(&session).PostForm(api, nil)
 }
 
-func (Zhengzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Zhengzhou) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
-	trainNo = info["trainCode"].(string)
-	date = info["startDay"].(string)
-	date = date[:4] + "-" + date[4:6] + "-" + date[6:8]
+	shortDate := info["startDay"].(string)
+	trains = []TrainSchedule{{
+		TrainNo: info["trainCode"].(string),
+		Date:    shortDate[:4] + "-" + shortDate[4:6] + "-" + shortDate[6:8],
+	}}
 	return
 }
 
-func (Zhengzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Zhengzhou) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["carCode"].(string))
 	if strings.HasPrefix(vehicleNo, "CHR") {

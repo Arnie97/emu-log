@@ -31,11 +31,12 @@ type (
 		// and the unknown serials have to be visited in each scan.
 		AlwaysOn() bool
 
-		Info(serialNo string) (info jsonObject, err error)
-		TrainNo(info jsonObject) (trainNo, date string, err error)
-		VehicleNo(info jsonObject) (vehicleNo string, err error)
+		Info(serialNo string) (info JSONObject, err error)
+		TrainNo(info JSONObject) ([]TrainSchedule, error)
+		VehicleNo(info JSONObject) (vehicleNo string, err error)
 	}
-	jsonObject map[string]interface{}
+	JSONObject    map[string]interface{}
+	TrainSchedule struct{ TrainNo, Date string }
 )
 
 var (

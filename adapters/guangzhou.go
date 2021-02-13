@@ -44,7 +44,7 @@ func (b Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
 	return common.IntervalTransport{}.RoundTrip(req)
 }
 
-func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
+func (b Guangzhou) Info(serial string) (info JSONObject, err error) {
 	const api = "https://sj-api.yishizongheng.com/shejian/api/train/getByQrcode?qrcode=%s"
 	url := fmt.Sprintf(api, strings.TrimLeft(serial, "0"))
 
@@ -57,7 +57,7 @@ func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
 	var result struct {
 		Status int    `json:"code"`
 		Msg    string `json:"message"`
-		Data   jsonObject
+		Data   JSONObject
 	}
 	err = parseResult(resp, &result)
 	info = result.Data
@@ -68,13 +68,15 @@ func (b Guangzhou) Info(serial string) (info jsonObject, err error) {
 	return
 }
 
-func (b Guangzhou) TrainNo(info jsonObject) (trainNo, date string, err error) {
+func (Guangzhou) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
-	trainNo = info["train"].(string)
+	trains = []TrainSchedule{{
+		TrainNo: info["train"].(string),
+	}}
 	return
 }
 
-func (b Guangzhou) VehicleNo(info jsonObject) (vehicleNo string, err error) {
+func (Guangzhou) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = fmt.Sprintf(
 		"CR%s-%.0f@%s",

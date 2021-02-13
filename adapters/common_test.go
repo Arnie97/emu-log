@@ -83,8 +83,11 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
 		info, err := b.Info(getMockSerialNo(b))
-		trainNo, date, err := b.TrainNo(info)
-		fmt.Printf("%#-14v %-5v %#v\n", trainNo, err != nil, date)
+		trains, err := b.TrainNo(info)
+		fmt.Printf("\n%v\n", err != nil)
+		for _, train := range trains {
+			fmt.Printf("%#-14v %#v\n", train.TrainNo, train.Date)
+		}
 	}
 
 	for _, mockBody := range []string{"", "null", "<html>not json</html>"} {

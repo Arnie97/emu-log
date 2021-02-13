@@ -17,9 +17,13 @@ func ExampleShanghai_TrainNo() {
 		"shanghai_invalid.json",
 	)
 	// Output:
-	// "D3074/D3071"  false ""
-	// ""             false ""
-	// ""             true  ""
+	//
+	// false
+	// "D3074/D3071"  ""
+	//
+	// false
+	//
+	// true
 }
 
 func ExampleShanghai_VehicleNo() {

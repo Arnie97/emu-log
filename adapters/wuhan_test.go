@@ -18,10 +18,16 @@ func ExampleWuhan_TrainNo() {
 		"wuhan_invalid.html",
 	)
 	// Output:
-	// "G1730"        false ""
-	// "G551"         false ""
-	// ""             true  ""
-	// ""             true  ""
+	//
+	// false
+	// "G1730"        ""
+	//
+	// false
+	// "G551"         ""
+	//
+	// true
+	//
+	// true
 }
 
 func ExampleWuhan_VehicleNo() {

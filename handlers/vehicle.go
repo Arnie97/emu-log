@@ -104,15 +104,8 @@ func vehicleParseURLHandler(w http.ResponseWriter, r *http.Request) {
 
 	// case 4: vehicle number matches user input
 	serialModel.Add()
+	serialModel.AddTrainOperationLogs(info)
 
-	// also add a activity log record if the train number is available
-	var logModel models.LogModel
-	logModel.TrainNo, logModel.Date, err = b.TrainNo(info)
-	if err == nil && logModel.TrainNo != "" {
-		logModel.VehicleNo = serialModel.VehicleNo
-		logModel.Add()
-	}
-	log.Debug().Msgf("[%s] %s -> %v", b.Code(), serial, logModel)
 	results = models.ListTrainsForSingleVehicle(serialModel.VehicleNo)
 	return
 }
