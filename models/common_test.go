@@ -29,8 +29,9 @@ func ExampleDB() {
 func ExampleListLatestTrainByCondition() {
 	resetTestDB()
 
-	models.SerialModel{VehicleNo: "CRH6A4002", BureauCode: "N", SerialNo: "002"}.Add()
-	fmt.Println(models.ListSerials(adapters.MustGetBureauByCode("N")))
+	serialModel := models.SerialModel{VehicleNo: "CRH6A4002", BureauCode: "F", SerialNo: "002"}
+	serialModel.Add()
+	fmt.Println(models.ListSerials(adapters.MustGetBureauByCode("F")))
 	fmt.Println(models.ListSerialsForSingleVehicle("%J2015"))
 	fmt.Println(models.ListLatestSerialForMultiVehicles(adapters.MustGetBureauByCode("P")))
 	fmt.Println(models.ListVehiclesForSingleTrain("D5461"))
@@ -46,8 +47,19 @@ func ExampleListLatestTrainByCondition() {
 	fmt.Println(models.ListLatestTrainForMultiVehicles([]string{"CRH6A4002", "CR200J2040", "CRH2A2460"}))
 	fmt.Println(models.ListLatestTrainForMatchedVehicles("%A%02%"))
 
+	mockInfo := adapters.JSONObject{}
+	serialModel.AddTrainOperationLogs(mockInfo)
+	mockInfo["trainCode"] = "C1040"
+	mockInfo["startDay"] = "20210212"
+	mockInfo["carCode"] = "CRH6A-A-0002"
+	serialModel.AddTrainOperationLogs(mockInfo)
+	mockInfo["carCode"] = "CRH6A-4002"
+	serialModel.AddTrainOperationLogs(mockInfo)
+	fmt.Println(models.ListTrainsForSingleVehicle("CRH6AA0002"))
+	fmt.Println(models.ListTrainsForSingleVehicle("CRH6A4002"))
+
 	// Output:
-	// [{CRH6A4002 N 002} {CH001 N 053} {CRH2650 N 111} {CRH5A5075 N 472}]
+	// [{CRH6A4002 F 002} {CH001 F 053} {CRH2650 F 111} {CRH5A5075 F 472}]
 	// [{CR200J2015 H PQ0916500} {CR200J2015 H PQ0916000}]
 	// [{CR400AF0207 P 50704500} {CR400AF2015 P 50880000}]
 	// [{2020-11-16 CR200J2015 D5464/1/4} {2020-11-14 CR200J2015 D5464/1/4} {2020-11-13 CR200J2040 D5464/1/4}]
@@ -58,6 +70,8 @@ func ExampleListLatestTrainByCondition() {
 	// 3
 	// [{2020-11-13 CR200J2040 D5464/1/4} {2020-11-20 CRH6A4002 D5464/1/4}]
 	// [{2020-11-15 CR400AF0207 G8907} {2020-11-20 CRH6A4002 D5464/1/4}]
+	// []
+	// [{2021-02-12 CRH6A4002 C1040} {2020-11-20 CRH6A4002 D5464/1/4}]
 }
 
 func resetTestDB() {

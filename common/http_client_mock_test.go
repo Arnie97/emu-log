@@ -26,8 +26,13 @@ func ExampleMockHTTPClientRespBodyFromFile() {
 	fmt.Println("no errors:", e == f && f == g && g == h && h == i && i == j)
 	fmt.Println("resp body:", string(body))
 
+	common.MockHTTPClientError(fmt.Errorf("my sample error"))
+	k, m := common.HTTPClient().Do(nil)
+	fmt.Printf("err  mock: %v, %v", k.Body, m)
+
 	// Output:
 	// same resp: false
 	// no errors: true
 	// resp body: CRH6A-4002
+	// err  mock: <nil>, my sample error
 }

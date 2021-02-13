@@ -25,11 +25,16 @@ var mockHTTPClientInstance *mockHTTPClient
 
 func MockHTTPClientRespBody(body string) {
 	confOnce.Do(func() {})
-	mockHTTPClientInstance = &mockHTTPClient{body, nil}
+	mockHTTPClientInstance = &mockHTTPClient{body: body}
 }
 
 func MockHTTPClientRespBodyFromFile(mockFile string) {
 	MockHTTPClientRespBody(string(ReadMockFile(mockFile)))
+}
+
+func MockHTTPClientError(err error) {
+	confOnce.Do(func() {})
+	mockHTTPClientInstance = &mockHTTPClient{err: err}
 }
 
 func DisableMockHTTPClient() {
@@ -40,8 +45,10 @@ func DisableMockHTTPClient() {
 func (x *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	resp := &http.Response{
 		Request: req,
-		Body:    ioutil.NopCloser(strings.NewReader(x.body)),
 		Header:  http.Header{"Set-Cookie": {"JSESSIONID=1234"}},
+	}
+	if x.err == nil {
+		resp.Body = ioutil.NopCloser(strings.NewReader(x.body))
 	}
 	return resp, x.err
 }

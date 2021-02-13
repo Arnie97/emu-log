@@ -97,6 +97,12 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 			fmt.Printf("uncaught error for http response %#v", mockBody)
 		}
 	}
+
+	common.MockHTTPClientError(fmt.Errorf("mock http error"))
+	info, err := b.Info(getMockSerialNo(b))
+	if info != nil && err == nil {
+		fmt.Printf("uncaught error for http error")
+	}
 }
 
 func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
