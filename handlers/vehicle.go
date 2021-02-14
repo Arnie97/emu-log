@@ -51,6 +51,7 @@ func vehicleBuildURLHandler(w http.ResponseWriter, r *http.Request) {
 		if b := adapters.Bureaus[s.BureauCode]; b != nil {
 			url := adapters.BuildURL(b, s.SerialNo)
 			results.URL = &url
+			break
 		}
 	}
 	jsonResponse(results, w)
