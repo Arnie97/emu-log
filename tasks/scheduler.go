@@ -112,7 +112,7 @@ func checkLocalTimezone() {
 // checkInternetConnection prints the RTT for a HTTP connection.
 func checkInternetConnection() {
 	start := time.Now()
-	_, err := adapters.Bureaus["H"].Info("PQ0123456")
+	_, err := adapters.Bureaus["H"].Info("PQ1234567")
 	common.Must(err)
 	log.Info().Msgf(
 		"internet connection ok, round-trip delay %v",

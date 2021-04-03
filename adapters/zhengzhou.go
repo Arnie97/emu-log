@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/arnie97/emu-log/common"
+	"github.com/rs/zerolog/log"
 )
 
 type Zhengzhou struct {
@@ -44,7 +45,10 @@ func (b *Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
 	// stop further redirects and collect crucial cookies
 	if err == nil && resp != nil && resp.StatusCode == http.StatusFound {
 		switch req.URL.Path {
-		case "/cgi-bin/app/appjmp", "/tservice/catering/jd":
+		case "/cgi-bin/app/appjmp":
+			log.Info().Msgf("%v %+v", resp.Status, resp.Cookies())
+			fallthrough
+		case "/tservice/catering/jd":
 			b.cookies = resp.Cookies()
 			resp.StatusCode = http.StatusOK
 		}
