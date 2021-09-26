@@ -1,0 +1,36 @@
+package common
+
+import (
+	"time"
+)
+
+const (
+	// ISODate is the date layout defined in ISO 8601 or RFC 3339.
+	ISODate = "2006-01-02"
+)
+
+var mockWallClock func() time.Time
+
+// UnixMilli backports time.UnixMilli() from Go 1.17 and later versions.
+func UnixMilli(args ...time.Time) int64 {
+	var t time.Time
+
+	switch {
+	case mockWallClock != nil:
+		t = mockWallClock()
+	case len(args) == 0:
+		t = time.Now()
+	case len(args) == 1:
+		t = args[0]
+	default:
+		panic("Invalid argument length")
+	}
+
+	return t.UnixNano() / 1e6
+}
+
+func MockStaticUnixMilli(t int64) {
+	mockWallClock = func() time.Time {
+		return time.Unix(t/1e3, t%1e3*1e6)
+	}
+}

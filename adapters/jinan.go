@@ -56,7 +56,7 @@ func (b Jinan) Info(serial string) (info JSONObject, err error) {
 	const api = "https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list"
 	values := JSONObject{
 		"params":    b.SerialEncrypt(serial),
-		"timeStamp": time.Now().UnixNano() / 1000000,
+		"timeStamp": common.UnixMilli(),
 		"cguid":     "",
 		"token":     common.Conf(b.Code()),
 		"isSign":    2,

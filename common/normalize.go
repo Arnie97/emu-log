@@ -5,10 +5,6 @@ import (
 	"strings"
 )
 
-const (
-	ISODate = "2006-01-02"
-)
-
 var (
 	normalizer    = strings.NewReplacer("-", "", "_", "")
 	trainNoRegExp = regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)

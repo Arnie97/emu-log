@@ -18,7 +18,7 @@ func (ShanghaiLegacy) Code() string {
 }
 
 func (ShanghaiLegacy) Name() string {
-	return "中国铁路上海局集团有限公司"
+	return "中国铁路上海局集团有限公司（华东印记）"
 }
 
 func (ShanghaiLegacy) URL() string {
