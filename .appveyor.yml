@@ -12,7 +12,7 @@ install:
 - gcc --version
 
 build_script:
-- go mod download || true
+- go mod tidy || true
 - go build -v -ldflags="-s -w"
 
 test_script:
@@ -22,7 +22,7 @@ test_script:
 stack:
 - go 1.8
 - go 1.13
-- go 1.16
+- go 1.17
 
 image:
 - MacOS
@@ -54,7 +54,7 @@ for:
     - image: Ubuntu
   init:
   - lsb_release -a
-  - gvm install go1.16
+  - gvm install go1.17
   clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
   before_build:
   - export GOPATH=$HOME/go
