@@ -10,7 +10,7 @@ import (
 
 const (
 	RequestInterval = 3 * time.Second
-	RequestTimeout  = 10 * time.Second
+	RequestTimeout  = 20 * time.Second
 	UserAgentWeChat = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.2(0x1800022c) NetType/4G Language/zh_CN"
 	UserAgentJDPay  = "Mozilla/5.0 (Linux; Android 7.1.2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 Mobile Safari/537.36/application=JDJR-App&clientType=android&#@jdPaySDK*#@"
 )

@@ -9,9 +9,9 @@ import (
 	"github.com/andreburgaud/crypt2go/ecb"
 )
 
-// DESEncrypt encrypts the plain text with PKCS #7 padding and
+// DesEcbEncrypt encrypts the plain text with PKCS #7 padding and
 // electronic codebook mode of operation.
-func DESEncrypt(plainText, key []byte) (cipherText []byte) {
+func DesEcbEncrypt(plainText, key []byte) (cipherText []byte) {
 	block, err := des.NewCipher(key)
 	Must(err)
 	plainText = PKCS7Padding(plainText, len(key))
@@ -21,9 +21,9 @@ func DESEncrypt(plainText, key []byte) (cipherText []byte) {
 	return
 }
 
-// DESDecrypt is the counterpart of DESEncrypt; it decrypts the cipher text
-// and strips the PKCS #7 padding bytes off the end of the plain text.
-func DESDecrypt(cipherText, key []byte) (plainText []byte) {
+// DesEcbDecrypt is the counterpart of DesEcbEncrypt; it decrypts the cipher
+// text and strips the PKCS #7 padding bytes off the end of the plain text.
+func DesEcbDecrypt(cipherText, key []byte) (plainText []byte) {
 	block, err := des.NewCipher(key)
 	Must(err)
 	plainText = make([]byte, len(cipherText))
@@ -32,9 +32,21 @@ func DESDecrypt(cipherText, key []byte) (plainText []byte) {
 	return PKCS7Unpadding(plainText)
 }
 
-// AESEncrypt encrypts the plain text with PKCS #7 padding, block chaining
+// AesEcbEncrypt encrypts the plain text with PKCS #7 padding and
+// electronic codebook mode of operation.
+func AesEcbEncrypt(plainText, key []byte) (cipherText []byte) {
+	block, err := aes.NewCipher(key)
+	Must(err)
+	plainText = PKCS7Padding(plainText, len(key))
+	cipherText = make([]byte, len(plainText))
+	blockMode := ecb.NewECBEncrypter(block)
+	blockMode.CryptBlocks(cipherText, plainText)
+	return
+}
+
+// AesCbcEncrypt encrypts the plain text with PKCS #7 padding, block chaining
 // mode of operation, and a predefined initial vector.
-func AESEncrypt(plainText, key, iv []byte) (cipherText []byte) {
+func AesCbcEncrypt(plainText, key, iv []byte) (cipherText []byte) {
 	block, err := aes.NewCipher(key)
 	Must(err)
 	plainText = PKCS7Padding(plainText, len(iv))
@@ -44,9 +56,9 @@ func AESEncrypt(plainText, key, iv []byte) (cipherText []byte) {
 	return
 }
 
-// AESDecrypt is the counterpart of AESEncrypt; it decrypts the cipher text
-// and strips the PKCS #7 padding bytes off the end of the plain text.
-func AESDecrypt(cipherText, key, iv []byte) (plainText []byte) {
+// AesCbcDecrypt is the counterpart of AesCbcEncrypt; it decrypts the cipher
+// text and strips the PKCS #7 padding bytes off the end of the plain text.
+func AesCbcDecrypt(cipherText, key, iv []byte) (plainText []byte) {
 	block, err := aes.NewCipher(key)
 	Must(err)
 	plainText = make([]byte, len(cipherText))

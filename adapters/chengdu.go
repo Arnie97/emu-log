@@ -100,7 +100,7 @@ func (b Chengdu) SerialEncrypt(api, serial string) (vehicleNo string, ret url.Va
 
 	base64Encrypt := func(data string) string {
 		return base64.StdEncoding.EncodeToString(
-			common.DESEncrypt([]byte(data), []byte(chengduKey)))
+			common.DesEcbEncrypt([]byte(data), []byte(chengduKey)))
 	}
 	ret = url.Values{
 		"code":  {base64Encrypt(chengduCode)},
@@ -131,7 +131,7 @@ func (b Chengdu) InfoDecrypt(src io.Reader, dest interface{}) (err error) {
 		return
 	}
 
-	plainText := common.DESDecrypt(cipherText, []byte(chengduKey))
+	plainText := common.DesEcbDecrypt(cipherText, []byte(chengduKey))
 	return json.Unmarshal(plainText, dest)
 }
 

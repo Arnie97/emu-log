@@ -96,7 +96,7 @@ func (b Jinan) SerialEncrypt(serial string) string {
 	}{serial})
 	common.Must(err)
 
-	cipherText := common.AESEncrypt(plainText, jinanKey, jinanIV)
+	cipherText := common.AesCbcEncrypt(plainText, jinanKey, jinanIV)
 	return base64.StdEncoding.EncodeToString(cipherText)
 }
 
@@ -108,7 +108,7 @@ func (b Jinan) InfoDecrypt(src string, dest interface{}) (err error) {
 		return
 	}
 
-	plainText := common.AESDecrypt(cipherText, jinanKey, jinanIV)
+	plainText := common.AesCbcDecrypt(cipherText, jinanKey, jinanIV)
 	return json.Unmarshal(plainText, dest)
 }
 
