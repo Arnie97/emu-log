@@ -1,7 +1,6 @@
 package adapters
 
 import (
-	"crypto/des"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -13,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/andreburgaud/crypt2go/ecb"
 	"github.com/arnie97/emu-log/common"
 )
 
@@ -102,7 +100,7 @@ func (b Chengdu) SerialEncrypt(api, serial string) (vehicleNo string, ret url.Va
 
 	base64Encrypt := func(data string) string {
 		return base64.StdEncoding.EncodeToString(
-			DESEncrypt([]byte(data), []byte(chengduKey)))
+			common.DESEncrypt([]byte(data), []byte(chengduKey)))
 	}
 	ret = url.Values{
 		"code":  {base64Encrypt(chengduCode)},
@@ -133,31 +131,8 @@ func (b Chengdu) InfoDecrypt(src io.Reader, dest interface{}) (err error) {
 		return
 	}
 
-	plainText := DESDecrypt(cipherText, []byte(chengduKey))
+	plainText := common.DESDecrypt(cipherText, []byte(chengduKey))
 	return json.Unmarshal(plainText, dest)
-}
-
-// DESEncrypt encrypts the plain text with PKCS #7 padding and
-// electronic codebook mode of operation.
-func DESEncrypt(plainText, key []byte) (cipherText []byte) {
-	block, err := des.NewCipher(key)
-	common.Must(err)
-	plainText = PKCS7Padding(plainText, len(key))
-	cipherText = make([]byte, len(plainText))
-	blockMode := ecb.NewECBEncrypter(block)
-	blockMode.CryptBlocks(cipherText, plainText)
-	return
-}
-
-// DESDecrypt is the counterpart of DESEncrypt; it decrypts the cipher text
-// and strips the PKCS #7 padding bytes off the end of the plain text.
-func DESDecrypt(cipherText, key []byte) (plainText []byte) {
-	block, err := des.NewCipher(key)
-	common.Must(err)
-	plainText = make([]byte, len(cipherText))
-	blockMode := ecb.NewECBDecrypter(block)
-	blockMode.CryptBlocks(plainText, cipherText)
-	return PKCS7Unpadding(plainText)
 }
 
 func (Chengdu) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
@@ -186,6 +161,7 @@ func (b Chengdu) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	}
 
 	vehicleNo, _ = info[b.URL()].(string)
+	vehicleNo = strings.Replace(vehicleNo, "CRH400", "CR400", 1)
 	if strings.HasSuffix(vehicleNo, retrievedVehicleNo) {
 		return
 	}

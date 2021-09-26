@@ -1,10 +1,6 @@
 package adapters_test
 
 import (
-	"bytes"
-	"fmt"
-	"math/rand"
-
 	"github.com/arnie97/emu-log/adapters"
 )
 
@@ -47,22 +43,4 @@ func ExampleChengdu_VehicleNo() {
 	// "CRH3A3089"    false
 	// "CRH@1582"     false
 	// ""             false
-}
-
-func ExampleDESEncrypt() {
-	fmt.Println(adapters.DESEncrypt(
-		[]byte("Arnie97"),
-		[]byte("P@$$w0rd"),
-	))
-	// Output: [175 255 31 191 150 239 19 134]
-}
-
-func ExampleDESDecrypt() {
-	entropy := make([]byte, 100)
-	rand.Read(entropy)
-	key, text := entropy[:8], entropy[8:]
-	cipherText := adapters.DESEncrypt(text, key)
-	fmt.Println(bytes.Compare(adapters.DESDecrypt(cipherText, key), text))
-	// Output:
-	// 0
 }
