@@ -7,25 +7,25 @@ import (
 	"github.com/arnie97/emu-log/common"
 )
 
-type Shanghai struct{}
+type ShanghaiLegacy struct{}
 
 func init() {
-	Register(Shanghai{})
+	Register(ShanghaiLegacy{})
 }
 
-func (Shanghai) Code() string {
+func (ShanghaiLegacy) Code() string {
 	return "H"
 }
 
-func (Shanghai) Name() string {
+func (ShanghaiLegacy) Name() string {
 	return "中国铁路上海局集团有限公司"
 }
 
-func (Shanghai) URL() string {
+func (ShanghaiLegacy) URL() string {
 	return "http://portal.xiuxiu365.cn/portal/qrcode/%s"
 }
 
-func (Shanghai) BruteForce(pqCodes chan<- string) {
+func (ShanghaiLegacy) BruteForce(pqCodes chan<- string) {
 	for i := 2000; i < 11000; i += 200 {
 		pqCodes <- fmt.Sprintf("PQ%07d", i)
 	}
@@ -34,11 +34,11 @@ func (Shanghai) BruteForce(pqCodes chan<- string) {
 	}
 }
 
-func (Shanghai) AlwaysOn() bool {
+func (ShanghaiLegacy) AlwaysOn() bool {
 	return true
 }
 
-func (Shanghai) Info(serial string) (info JSONObject, err error) {
+func (ShanghaiLegacy) Info(serial string) (info JSONObject, err error) {
 	const api = "https://g.xiuxiu365.cn/railway_api/web/index/train?pqCode=%s"
 	url := fmt.Sprintf(api, serial)
 
@@ -58,7 +58,7 @@ func (Shanghai) Info(serial string) (info JSONObject, err error) {
 	return
 }
 
-func (Shanghai) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
+func (ShanghaiLegacy) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
 	train := TrainSchedule{
 		TrainNo: info["trainName"].(string),
@@ -69,7 +69,7 @@ func (Shanghai) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Shanghai) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (ShanghaiLegacy) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
 	return
