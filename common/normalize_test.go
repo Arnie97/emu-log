@@ -18,8 +18,23 @@ func ExampleNormalizeTrainNo() {
 }
 
 func ExampleNormalizeVehicleNo() {
-	fmt.Println(common.NormalizeVehicleNo("CRH_6-002A"))
-	// Output: CRH6002A
+	for _, vehicleNo := range []string{
+		"CRH_6-002A",
+		"CRH5A1-5028",
+		"CHR380B-3770",
+		"CRH400AF-2140",
+		"CR400BFB-1-5097",
+	} {
+		fmt.Println(common.NormalizeVehicleNo(vehicleNo))
+	}
+
+	// Output:
+	//
+	// CRH6002A
+	// CRH5A5028
+	// CRH380B3770
+	// CR400AF2140
+	// CR400BFB5097
 }
 
 func ExampleApproxEqualVehicleNo() {

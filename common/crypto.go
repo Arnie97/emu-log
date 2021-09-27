@@ -44,6 +44,17 @@ func AesEcbEncrypt(plainText, key []byte) (cipherText []byte) {
 	return
 }
 
+// AesEcbDecrypt is the counterpart of AesEcbEncrypt; it decrypts the cipher
+// text and strips the PKCS #7 padding bytes off the end of the plain text.
+func AesEcbDecrypt(cipherText, key []byte) (plainText []byte) {
+	block, err := aes.NewCipher(key)
+	Must(err)
+	plainText = make([]byte, len(cipherText))
+	blockMode := ecb.NewECBDecrypter(block)
+	blockMode.CryptBlocks(plainText, cipherText)
+	return PKCS7Unpadding(plainText)
+}
+
 // AesCbcEncrypt encrypts the plain text with PKCS #7 padding, block chaining
 // mode of operation, and a predefined initial vector.
 func AesCbcEncrypt(plainText, key, iv []byte) (cipherText []byte) {

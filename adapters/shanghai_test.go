@@ -27,22 +27,29 @@ func ExampleShanghai_Signature() {
 func ExampleShanghai_TrainNo() {
 	printTrainNo(
 		adapters.Shanghai{},
+		"shanghai_full.json",
 		"shanghai_basic.json",
 		"shanghai_invalid.json",
 	)
 	// Output:
 	//
 	// false
+	// "G8"           "2021-09-27 13:27:00"
 	//
-	// false
+	// true
+	//
+	// true
 }
 
 func ExampleShanghai_VehicleNo() {
 	printVehicleNo(adapters.Shanghai{},
+		"shanghai_full.json",
 		"shanghai_basic.json",
 		"shanghai_invalid.json",
 	)
 	// Output:
-	// ""             false
-	// ""             false
+	//
+	// "CR400BFB5097" false
+	// ""             true
+	// ""             true
 }

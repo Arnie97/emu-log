@@ -161,8 +161,7 @@ func (b Chengdu) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	}
 
 	vehicleNo, _ = info[b.URL()].(string)
-	vehicleNo = strings.Replace(vehicleNo, "CRH400", "CR400", 1)
-	if strings.HasSuffix(vehicleNo, retrievedVehicleNo) {
+	if common.ApproxEqualVehicleNo(vehicleNo, retrievedVehicleNo) {
 		return
 	}
 

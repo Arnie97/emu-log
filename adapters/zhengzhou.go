@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/arnie97/emu-log/common"
@@ -144,8 +143,5 @@ func (Zhengzhou) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 func (Zhengzhou) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["carCode"].(string))
-	if strings.HasPrefix(vehicleNo, "CHR") {
-		vehicleNo = strings.Replace(vehicleNo, "CHR", "CRH", 1)
-	}
 	return
 }

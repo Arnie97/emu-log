@@ -110,6 +110,6 @@ func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
 		info, err := b.Info(getMockSerialNo(b))
 		vehicleNo, err := b.VehicleNo(info)
-		fmt.Printf("%#-14v %-5v\n", vehicleNo, err != nil)
+		fmt.Printf("%#-14v %v\n", vehicleNo, err != nil)
 	}
 }

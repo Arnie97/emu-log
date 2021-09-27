@@ -60,10 +60,14 @@ func (b Shanghai) Info(serial string) (info JSONObject, err error) {
 	var result struct {
 		Code   string `json:"returnCode"`
 		Msg    string `json:"returnMsg"`
-		Data   string `json:"data"`
+		Data   []byte `json:"data"`
 		Status bool   `json:"success"`
 	}
-	err = parseResult(resp, &result)
+	err = parseResult(resp, &result) // implies base64 decode
+	if err != nil || len(result.Data) == 0 {
+		return
+	}
+	err = b.InfoDecrypt(result.Data, &info)
 	return
 }
 
@@ -115,12 +119,30 @@ func (b Shanghai) Signature(message interface{}) string {
 	return sha1SumHex[6:26]
 }
 
+// InfoDecrypt decrypts the hexadecimal encoded cipher text with AES-ECB-128,
+// and unmarshals the plain text result into the given structure.
+func (b Shanghai) InfoDecrypt(src []byte, dest interface{}) (err error) {
+	cipherTextLength, err := hex.Decode(src, src)
+	if err != nil {
+		return
+	}
+	cipherText := src[:cipherTextLength]
+
+	plainText := common.AesEcbDecrypt(cipherText, []byte(shanghaiKey))
+	return json.Unmarshal(plainText, dest)
+}
+
 func (Shanghai) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
+	trains = []TrainSchedule{{
+		TrainNo: info["train"].(string),
+		Date:    info["arriveTime"].(string),
+	}}
 	return
 }
 
 func (Shanghai) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
 	return
 }

@@ -6,7 +6,13 @@ import (
 )
 
 var (
-	normalizer    = strings.NewReplacer("-", "", "_", "")
+	normalizer = strings.NewReplacer(
+		"CRH400", "CR400",
+		"CHR", "CRH",
+		"1-", "",
+		"-", "",
+		"_", "",
+	)
 	trainNoRegExp = regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
 )
 

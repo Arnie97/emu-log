@@ -34,6 +34,16 @@ func ExampleAesEcbEncrypt() {
 	// Output: [65 104 5 194 136 199 209 10 240 48 109 82 11 205 74 176]
 }
 
+func ExampleAesEcbDecrypt() {
+	entropy := make([]byte, 100)
+	rand.Read(entropy)
+	key, text := entropy[:32], entropy[32:]
+	cipherText := common.AesEcbEncrypt(text, key)
+	fmt.Println(bytes.Compare(common.AesEcbDecrypt(cipherText, key), text))
+	// Output:
+	// 0
+}
+
 func ExampleAesCbcEncrypt() {
 	fmt.Println(common.AesCbcEncrypt(
 		[]byte("Arnie97"),
