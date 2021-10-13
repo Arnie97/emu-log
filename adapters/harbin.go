@@ -5,13 +5,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"time"
 
 	"github.com/arnie97/emu-log/common"
 )
 
 var (
-	harbinTrainNoRegExp = regexp.MustCompile(`<div class="cczi">(\w+)`)
+	harbinTrainNoRegExp = regexp.MustCompile(`<div class="cczi">([\w/]+)&nbsp;<font>([-\w/]*)</font></div>`)
 )
 
 type Harbin struct {
@@ -57,7 +56,11 @@ func (b Harbin) Info(serial string) (info JSONObject, err error) {
 	var bytes []byte
 	bytes, err = ioutil.ReadAll(resp.Body)
 	if match := harbinTrainNoRegExp.FindSubmatch(bytes); match != nil {
-		info = JSONObject{b.Code(): string(match[1])}
+		info = JSONObject{
+			"serial": serial,
+			"train":  string(match[1]),
+			"seat":   string(match[2]),
+		}
 	}
 	return
 }
@@ -65,13 +68,13 @@ func (b Harbin) Info(serial string) (info JSONObject, err error) {
 func (b Harbin) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
 	trains = []TrainSchedule{{
-		TrainNo: info[b.Code()].(string),
-		Date:    time.Now().Format(common.ISODate),
+		TrainNo: info["train"].(string),
 	}}
 	return
 }
 
 func (Harbin) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
+	vehicleNo = fmt.Sprintf("CRH5A@%s", info["serial"].(string)[:3])
 	return
 }

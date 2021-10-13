@@ -21,9 +21,10 @@ func ExampleNormalizeVehicleNo() {
 	for _, vehicleNo := range []string{
 		"CRH_6-002A",
 		"CRH5A1-5028",
+		"CR200J2-4001",
 		"CHR380B-3770",
-		"CRH400AF-2140",
 		"CR400BFB-1-5097",
+		"CR400AFBZ2-2249",
 	} {
 		fmt.Println(common.NormalizeVehicleNo(vehicleNo))
 	}
@@ -32,9 +33,10 @@ func ExampleNormalizeVehicleNo() {
 	//
 	// CRH6002A
 	// CRH5A5028
+	// CR200J4001
 	// CRH380B3770
-	// CR400AF2140
 	// CR400BFB5097
+	// CR400AFBZ2249
 }
 
 func ExampleApproxEqualVehicleNo() {
@@ -45,6 +47,8 @@ func ExampleApproxEqualVehicleNo() {
 		common.ApproxEqualVehicleNo("CRH2E2462", "CR8+8-0@459"),
 		common.ApproxEqualVehicleNo("CRH2A2002", "CRH6A4002"),
 		common.ApproxEqualVehicleNo("CR", "CR"),
+		common.ApproxEqualVehicleNo("CRH6C2145", ""),
+		common.ApproxEqualVehicleNo("", "CRH2C2150"),
 	)
-	// Output: true true true true false true
+	// Output: true true true true false true false true
 }

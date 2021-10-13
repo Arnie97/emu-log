@@ -8,18 +8,23 @@ func ExampleHarbin_TrainNo() {
 	printTrainNo(
 		adapters.Harbin{},
 		"harbin_basic.html",
+		"harbin_invalid.html",
 	)
 	// Output:
 	//
 	// false
-	// "D28"          "2021-09-28"
+	// "G1206/7"      ""
+	//
+	// true
 }
 
 func ExampleHarbin_VehicleNo() {
 	printVehicleNo(adapters.Harbin{},
 		"harbin_basic.html",
+		"harbin_invalid.html",
 	)
 	// Output:
 	//
-	// ""             false
+	// "CRH5A@42s"    false
+	// ""             true
 }

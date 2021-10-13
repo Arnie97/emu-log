@@ -91,7 +91,7 @@ func (b Chengdu) SerialEncrypt(api, serial string) (vehicleNo string, ret url.Va
 	}
 
 	// save the vehicle number in the QR code for later comparison
-	vehicleNo = common.NormalizeVehicleNo(vehicleModel + vehicleDigits)
+	vehicleNo = common.NormalizeVehicleNo(vehicleModel + "-" + vehicleDigits)
 
 	sqlParamsTuple := []interface{}{vehicleDigits, seatCoach, today, vehicleModel}
 	if sqlParams, err = json.Marshal(sqlParamsTuple); err != nil {

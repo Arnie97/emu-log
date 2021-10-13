@@ -10,6 +10,8 @@ var (
 		"CRH400", "CR400",
 		"CHR", "CRH",
 		"1-", "",
+		"2-", "",
+		"3-", "",
 		"-", "",
 		"_", "",
 	)
@@ -42,7 +44,7 @@ func NormalizeVehicleNo(vehicleNo string) string {
 // ApproxEqualVehicleNo compares whether the proposed vehicle number
 // is approximately the same as the original one.
 func ApproxEqualVehicleNo(original, proposed string) bool {
-	if strings.ContainsRune(proposed, '@') {
+	if len(original) == 0 || strings.ContainsRune(proposed, '@') {
 		return true
 	}
 	if len(original) > 4 {

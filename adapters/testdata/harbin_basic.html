@@ -45,22 +45,22 @@ if (typeof WeixinJSBridge == "undefined"){
 <div class="toppic"> <img src="images/top.png" width="100%"/></div>
 <section class="main" >
  
- <div class="cczi">D28&nbsp;<font>4-6-F</font></div>
+ <div class="cczi">G1206/7&nbsp;<font>2-1-C</font></div>
 </section>
 
 <section class="main">
   <div class="xtb"><a href="javascript:void(0)" class="service"  data-id="1" data-tit="您确定需要购票或者办理席位提等、延长到站？" onFocus="this.blur()"><img src="images/biao02.png" /><br>
     补张票</a></div>
-  <div class="xtb"><a href="javascript:void(0)" class="service" data-id="12" data-tit="您确定受到噪音、异味、设备不良、挤占空间等干扰？" onFocus="this.blur()"><img src="images/biao018.png" /><br>
+  <div class="xtb"><a href="javascript:void(0)" class="service" data-id="12" data-tit="您确定受到噪音、异味、设备不良、挤占空间、周边旅客不戴口罩等干扰？" onFocus="this.blur()"><img src="images/biao018.png" /><br>
     排干扰</a></div>
   <div class="xtb"><a href="javascript:void(0)" class="service" data-id="7" data-tit="您确定需要调整车内温度或者调整空调出风量？" onFocus="this.blur()"><img src="images/biao10.png" /><br>
     调温度</a></div>
   <div class="xtb"><a href="javascript:void(0)" class="service" data-id="4" data-tit="您确定需要工作人员提供帮助或者解决问题？" onFocus="this.blur()"><img src="images/biao05.png" /><br>
     帮个忙</a></div>	
-  <div class="xtb"><a href="tel:19904638016" onClick="return confirm('您确定需要立即与列车长通话？')" onFocus="this.blur()"><img src="images/biao12.png"/><br>
+  <div class="xtb"><a href="tel:19904619641" onClick="return confirm('您确定需要立即与列车长通话？')" onFocus="this.blur()"><img src="images/biao12.png"/><br>
     呼叫车长</a></div> 
-  <div class="xtb"><a href="javascript:void(0)" class="service" data-id="11" data-tit="您确定周边存在不戴口罩等违反疫情防控要求的现象？" onFocus="this.blur()"><img src="images/biao019.png"/><br>
-    防疫情</a></div>
+  <div class="xtb"><a href="javascript:void(0)" class="service" data-id="13" data-tit="您确定需要购买饮品、零食？" onFocus="this.blur()"><img src="images/biao04.png"/><br>
+    买东西</a></div>
   <div class="xtb"><a href="javascript:void(0)" class="service" data-id="5" data-tit="您确定需要喝杯水或者提供开水泡茶、泡面？" onFocus="this.blur()"><img src="images/biao06.png" /><br>
     送杯水</a></div>
   <div class="xtb"><a href="javascript:void(0)" class="service" data-id="8" data-tit="您确定需要工作人员前来答疑解惑？" onFocus="this.blur()"><img src="images/biao11.png" /><br>
@@ -71,7 +71,7 @@ if (typeof WeixinJSBridge == "undefined"){
 </section>
 
 <section class="bottoma">
-  <div class="bottomb"><a href="cczx.asp?id=42sprsam7sa" onFocus="this.blur()">
+  <div class="bottomb"><a href="cczx.asp?id=243xse8brhea" onFocus="this.blur()">
   <strong>乘车资讯</strong></a></div>
   <div class="bottomb"><a href="ts.html" onFocus="this.blur()">
   <strong>投诉建议</strong></a></div>
@@ -92,12 +92,12 @@ $(".service").on("click",function() {
 //		}
 		var data = {};
 		data['id']=$(this).attr("data-id");
-		data['rwmid']='42sprsam7sa';
+		data['rwmid']='243xse8brhea';
 		data['dialogue']=1;
-		data['reportid']=1988;
+		data['reportid']=4978;
 		data['wechatid']=36974;
 		if($(this).attr("data-id")==2){
-			$.post("http://k.jeehon.com/wbpg/app/api/openid.asp",{tel:'19904638016',ctime:'2021-08-27'},function(o){
+			$.post("http://k.jeehon.com/wbpg/app/api/openid.asp",{tel:'19904619641',ctime:'2021-10-13'},function(o){
 			  data['openid']=o;
 			});
 		}
@@ -127,3 +127,4 @@ $(".service").on("click",function() {
 })
 </script>
 </html>
+

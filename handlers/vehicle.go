@@ -96,6 +96,9 @@ func vehicleParseURLHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		serialModel.VehicleNo, err = b.VehicleNo(info)
 	}
+	if len(vehicleNo) == 0 {
+		vehicleNo = serialModel.VehicleNo
+	}
 	if !common.ApproxEqualVehicleNo(serialModel.VehicleNo, vehicleNo) {
 		serialModel.VehicleNo = "-" + vehicleNo + "@" + serialModel.VehicleNo
 		serialModel.Add()

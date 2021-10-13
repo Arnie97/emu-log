@@ -1,0 +1,44 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>旅客服务系统</title>
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+<link href="css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="weui_style/weui.css"/>
+<script type="text/javascript" src="weui_style/weui.min.js"></script>
+<script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+<script type="text/javascript">
+//限制页面只能在微信浏览器打开
+var ua = navigator.userAgent.toLowerCase();
+var isWeixin = ua.indexOf('micromessenger') != -1;
+if (!isWeixin) {
+	window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=888"
+}
+function onBridgeReady(){
+ //显示分享等按钮
+ //WeixinJSBridge.call('showOptionMenu');
+ //隐藏分享等按钮
+ WeixinJSBridge.call('hideOptionMenu');
+ //显示底部工具栏
+ //WeixinJSBridge.call('showToolbar'); 
+ //隐藏底部工具栏
+ //WeixinJSBridge.call('hideToolbar');
+}
+if (typeof WeixinJSBridge == "undefined"){
+	if( document.addEventListener ){
+		document.addEventListener('WeixinJSBridgeReady', onBridgeReady, false);
+	}else if(document.attachEvent){
+		document.attachEvent('WeixinJSBridgeReady', onBridgeReady); 
+		document.attachEvent('onWeixinJSBridgeReady', onBridgeReady);
+	}
+}else{
+	onBridgeReady();
+}	
+</script>
+</head>
+<body>
+<script>setTimeout("weui.alert('对不起,该二维码尚未启用！',function(){wx.closeWindow();});",500);</script>
