@@ -22,15 +22,12 @@ func (Guangzhou) Name() string {
 	return "中国铁路广州局集团有限公司"
 }
 
-func (Guangzhou) URL() string {
-	return "http://sj.yishizongheng.com/?code=%s"
+func (Guangzhou) URL() (pattern string, mockValue interface{}) {
+	return "https://sj-wake.yishizongheng.com/scanOrder?code=%s&carriage=%d&site=%v", "1F"
 }
 
 func (Guangzhou) BruteForce(serials chan<- string) {
-	for x := 1; x < 90; x++ {
-		serials <- fmt.Sprintf("%03d", x)
-	}
-	for x := 220; x < 550; x++ {
+	for x := 1; x < 560; x++ {
 		serials <- fmt.Sprintf("%03d", x)
 	}
 }

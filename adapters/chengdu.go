@@ -35,8 +35,8 @@ func (Chengdu) Name() string {
 	return "中国铁路成都局集团有限公司"
 }
 
-func (Chengdu) URL() string {
-	return "https://kyd.cd-rail.com?code=%s"
+func (Chengdu) URL() (pattern string, mockValue interface{}) {
+	return "https://kyd.cd-rail.com?code=%s", nil
 }
 
 func (Chengdu) BruteForce(serials chan<- string) {
@@ -63,7 +63,7 @@ func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 	}
 	defer resp.Body.Close()
 
-	info = map[string]interface{}{b.URL(): vehicleNo}
+	info = map[string]interface{}{b.Code(): vehicleNo}
 	result := []*JSONObject{&info}
 	if err = b.InfoDecrypt(resp.Body, &result); err != nil {
 		return
@@ -160,7 +160,7 @@ func (b Chengdu) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 		return
 	}
 
-	vehicleNo, _ = info[b.URL()].(string)
+	vehicleNo, _ = info[b.Code()].(string)
 	if common.ApproxEqualVehicleNo(vehicleNo, retrievedVehicleNo) {
 		return
 	}

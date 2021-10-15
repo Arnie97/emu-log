@@ -21,8 +21,8 @@ func (ShanghaiLegacy) Name() string {
 	return "中国铁路上海局集团有限公司（华东印记）"
 }
 
-func (ShanghaiLegacy) URL() string {
-	return "http://portal.xiuxiu365.cn/portal/qrcode/%s"
+func (ShanghaiLegacy) URL() (pattern string, mockValue interface{}) {
+	return "http://portal.xiuxiu365.cn/portal/qrcode/%s", nil
 }
 
 func (ShanghaiLegacy) BruteForce(pqCodes chan<- string) {

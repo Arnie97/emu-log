@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/arnie97/emu-log/common"
 	"github.com/rs/zerolog/log"
@@ -18,7 +19,7 @@ type (
 
 		// URL returns the URL pattern contained in the QR codes,
 		// with the serial number replaced by the placeholder "%s".
-		URL() string
+		URL() (pattern string, mockValue interface{})
 
 		// BruteForce takes a channel, and sends all possibly valid
 		// serial numbers into the channel in lexicographical order.
@@ -40,6 +41,16 @@ type (
 )
 
 var (
+	printfMap = strings.NewReplacer(
+		"%s", "%[1]v",
+		"%d", "%[2]v",
+		"%v", "%[3]v",
+	)
+	printfRegExps = []interface{}{
+		`([\w,]+)`, // %s
+		`(?:\d+)`,  // %d
+		`(?:.*?)`,  // %v
+	}
 	Bureaus = make(map[string]Bureau)
 )
 
@@ -58,13 +69,15 @@ func MustGetBureauByCode(bureauCode string) (b Bureau) {
 }
 
 func BuildURL(b Bureau, serial string) (url string) {
-	return fmt.Sprintf(b.URL(), serial)
+	urlPattern, urlMockValue := b.URL()
+	return fmt.Sprintf(printfMap.Replace(urlPattern), serial, 6, urlMockValue)
 }
 
 func ParseURL(url string) (b Bureau, serial string) {
 	for _, b = range Bureaus {
-		urlPattern := fmt.Sprintf(regexp.QuoteMeta(b.URL()), `([\w,]+)`)
-		urlRegExp := regexp.MustCompile(urlPattern)
+		urlPattern, _ := b.URL()
+		urlPattern = printfMap.Replace(regexp.QuoteMeta(urlPattern))
+		urlRegExp := regexp.MustCompile(fmt.Sprintf(urlPattern, printfRegExps...))
 		if match := urlRegExp.FindStringSubmatch(url); match != nil {
 			return b, match[1]
 		}

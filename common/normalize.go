@@ -7,7 +7,9 @@ import (
 
 var (
 	normalizer = strings.NewReplacer(
+		"CRH380DV", "CRH380D",
 		"CRH400", "CR400",
+		"CRH5A1", "CRH5A",
 		"CHR", "CRH",
 		"1-", "",
 		"2-", "",

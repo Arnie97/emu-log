@@ -30,8 +30,8 @@ func (Shanghai) Name() string {
 	return "中国铁路上海局集团有限公司（爱上铁）"
 }
 
-func (Shanghai) URL() string {
-	return "https://ky.railshj.cn?CHN=orderfood&type=ARMRSET&qrCode=%s"
+func (Shanghai) URL() (pattern string, mockValue interface{}) {
+	return "https://ky.railshj.cn?CHN=orderfood&type=ARMRSET&qrCode=%s", nil
 }
 
 func (Shanghai) BruteForce(pqCodes chan<- string) {

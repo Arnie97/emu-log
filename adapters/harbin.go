@@ -28,15 +28,15 @@ func (Harbin) Name() string {
 	return "中国铁路哈尔滨局集团有限公司"
 }
 
-func (Harbin) URL() string {
-	return "http://l.jeehon.com/lkfw/api?id=%s"
+func (Harbin) URL() (pattern string, mockValue interface{}) {
+	return "http://l.jeehon.com/lkfw/api?id=%s", nil
 }
 
 func (Harbin) BruteForce(serials chan<- string) {
 }
 
 func (Harbin) AlwaysOn() bool {
-	return true
+	return false
 }
 
 func (b Harbin) RoundTrip(req *http.Request) (*http.Response, error) {

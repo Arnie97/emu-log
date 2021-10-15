@@ -32,8 +32,8 @@ func (Wuhan) Name() string {
 	return "中国铁路武汉局集团有限公司"
 }
 
-func (Wuhan) URL() string {
-	return "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=6&seatRow=6&seatNo=D/F"
+func (Wuhan) URL() (pattern string, mockValue interface{}) {
+	return "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=%d&seatRow=%d&seatNo=%v", "D/F"
 }
 
 func (Wuhan) BruteForce(serials chan<- string) {

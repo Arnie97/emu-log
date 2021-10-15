@@ -35,8 +35,13 @@ func ExampleBuildURL() {
 func ExampleParseURL() {
 	for _, testCase := range urlTestCases() {
 		bCode, serial, url := testCase[0], testCase[1], testCase[2]
-		if b, s := adapters.ParseURL(url); s != serial || b.Code() != bCode {
-			fmt.Println(b.Name(), s)
+		b, s := adapters.ParseURL(url)
+		if b == nil {
+			fmt.Println(url, "->", "?")
+			continue
+		}
+		if b.Code() != bCode || s != serial {
+			fmt.Println(url, "->", b.Name(), s)
 		}
 	}
 

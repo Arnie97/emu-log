@@ -23,8 +23,8 @@ func (Beijing) Name() string {
 	return "中国铁路北京局集团有限公司"
 }
 
-func (Beijing) URL() string {
-	return "https://aymaoto.jtlf.cn/page/oto/index?QR=%s"
+func (Beijing) URL() (pattern string, mockValue interface{}) {
+	return "https://aymaoto.jtlf.cn/page/oto/index?QR=%s", nil
 }
 
 var (
