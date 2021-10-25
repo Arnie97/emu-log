@@ -75,6 +75,6 @@ func (b Harbin) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 
 func (Harbin) VehicleNo(info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = fmt.Sprintf("CRH5A@%s", info["serial"].(string)[:3])
+	vehicleNo = fmt.Sprintf("CRH380BG@%s", info["serial"].(string)[:3])
 	return
 }

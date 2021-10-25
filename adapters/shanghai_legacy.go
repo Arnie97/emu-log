@@ -18,7 +18,7 @@ func (ShanghaiLegacy) Code() string {
 }
 
 func (ShanghaiLegacy) Name() string {
-	return "中国铁路上海局集团有限公司（华东印记）"
+	return "中国铁路上海局集团有限公司（二维火）"
 }
 
 func (ShanghaiLegacy) URL() (pattern string, mockValue interface{}) {
