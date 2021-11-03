@@ -41,14 +41,20 @@ for:
 - matrix:
     only:
     - image: MacOS
+      stack: go 1.17
   init:
   - sw_vers
-  - gvm install go1.16
   before_test:
   - sudo systemsetup -settimezone $TZ
-  on_success:
+  test_script:
   - go test -covermode=count -coverprofile=coverage.txt ./...
-  - bash <(curl -s https://codecov.io/bash)
+  on_success:
+  - curl -fsSL https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --import --no-default-keyring --keyring trustedkeys.gpg
+  - curl -fsSL --remote-name-all https://uploader.codecov.io/latest/macos/codecov{,.SHA256SUM{,.sig}}
+  - gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+  - shasum -a 256 -c codecov.SHA256SUM
+  - chmod +x codecov
+  - ./codecov
 
 - matrix:
     only:
