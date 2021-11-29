@@ -95,14 +95,30 @@ func ListSerialsForSingleVehicle(vehicleNo string) []SerialModel {
 }
 
 // ListLatestSerialForMultiVehicles returns the most recently discovered
-// serial number for each vehicle in the given railway company.
+// serial number for each vehicle in the given railway company, but excluding
+// those with known train schedules.
 func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_no, emu_bureau, emu_qrcode
-		FROM emu_qrcode
-		WHERE emu_bureau = ?
-		GROUP BY emu_no
-		HAVING MAX(rowid)
-		ORDER BY emu_no ASC;
+		SELECT emu_log.emu_no, emu_bureau, emu_qrcode
+		FROM (
+			SELECT emu_no, emu_bureau, emu_qrcode
+			FROM emu_qrcode
+			WHERE emu_bureau = ?
+			GROUP BY emu_no
+			HAVING MAX(rowid)
+			ORDER BY emu_no ASC
+		) AS emu_qrcode
+		LEFT JOIN (
+			SELECT emu_no, date
+			FROM (
+				SELECT rowid, emu_no, date
+				FROM emu_log
+				ORDER BY rowid DESC
+				LIMIT 5000
+			)
+			GROUP BY emu_no
+			HAVING MAX(rowid) AND date < DATETIME('now', 'localtime')
+		) AS emu_log
+		ON emu_qrcode.emu_no = emu_log.emu_no;
 	`, b.Code())
 }
