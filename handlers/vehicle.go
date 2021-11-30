@@ -110,3 +110,53 @@ func vehicleParseURLHandler(w http.ResponseWriter, r *http.Request) {
 	results = models.ListTrainsForSingleVehicle(serialModel.VehicleNo)
 	return
 }
+
+// vehicleParseURLMapHandler tries to parse the URL in the QR code stickers
+// attached to the vehicle and returns a map as result.
+func vehicleParseURLMapHandler(w http.ResponseWriter, r *http.Request) {
+	// case 1: invalid URL
+	var (
+		input   urlWrapper
+		mapResp interface{}
+	)
+	defer func() {
+		jsonResponse(mapResp, w)
+	}()
+	if json.NewDecoder(r.Body).Decode(&input); input.URL == nil {
+		w.WriteHeader(400)
+		return
+	}
+
+	// case 2: unrecognized URL
+	b, serial := adapters.ParseURL(*input.URL)
+	if b == nil {
+		return
+	}
+
+	// case 3: vehicle currently offline
+	serialModel := models.SerialModel{
+		BureauCode: b.Code(),
+		SerialNo:   serial,
+	}
+
+	info, err := b.Info(serial)
+	if err == nil {
+		serialModel.VehicleNo, err = b.VehicleNo(info)
+	}
+	serialModel.Add()
+	serialModel.AddTrainOperationLogs(info)
+
+	mapResp = struct {
+		BureauName string            `json:"name,omitempty"`
+		VehicleNo  string            `json:"emu_no,omitempty"`
+		SerialNo   string            `json:"serial_no,omitempty"`
+		Logs       []models.LogModel `json:"logs,omitempty"`
+	}{
+		BureauName: b.Name(),
+		VehicleNo:  serialModel.VehicleNo,
+		SerialNo:   serial,
+		Logs:       models.ListTrainsForSingleVehicle(serialModel.VehicleNo),
+	}
+	log.Debug().Msgf("[%s] %+v", serialModel.BureauCode, mapResp)
+	return
+}
