@@ -99,7 +99,7 @@ func ListSerialsForSingleVehicle(vehicleNo string) []SerialModel {
 // those with known train schedules.
 func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_log.emu_no, emu_bureau, emu_qrcode
+		SELECT emu_qrcode.emu_no, emu_bureau, emu_qrcode
 		FROM (
 			SELECT emu_no, emu_bureau, emu_qrcode
 			FROM emu_qrcode
@@ -117,8 +117,9 @@ func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
 				LIMIT 5000
 			)
 			GROUP BY emu_no
-			HAVING MAX(rowid) AND date < DATETIME('now', 'localtime')
+			HAVING MAX(rowid)
 		) AS emu_log
-		ON emu_qrcode.emu_no = emu_log.emu_no;
+		ON emu_qrcode.emu_no = emu_log.emu_no
+		WHERE date < DATETIME('now', 'localtime');
 	`, b.Code())
 }

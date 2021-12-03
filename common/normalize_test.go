@@ -23,6 +23,7 @@ func ExampleNormalizeVehicleNo() {
 		"CRH5A1-5028",
 		"CR200J2-4001",
 		"CHR380B-3770",
+		"CRH380DV-1503",
 		"CR400BFB-1-5097",
 		"CR400AFBZ2-2249",
 	} {
@@ -35,6 +36,7 @@ func ExampleNormalizeVehicleNo() {
 	// CRH5A5028
 	// CR200J4001
 	// CRH380B3770
+	// CRH380D1503
 	// CR400BFB5097
 	// CR400AFBZ2249
 }
