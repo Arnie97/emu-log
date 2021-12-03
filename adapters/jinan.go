@@ -20,6 +20,15 @@ var (
 	jinanApp = "wxc33f19505fa37f4e"
 )
 
+type JinanQuery struct {
+	Params    string `json:"params"`
+	Timestamp int64  `json:"timeStamp"`
+	CGUID     string `json:"cguid"`
+	Token     string `json:"token,omitempty"`
+	IsSign    int    `json:"isSign"`
+	Signature string `json:"sign,omitempty"`
+}
+
 type Jinan struct{}
 
 func init() {
@@ -53,18 +62,45 @@ func (Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func (b Jinan) Info(serial string) (info JSONObject, err error) {
-	const api = "https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list"
-	values := JSONObject{
-		"params":    b.SerialEncrypt(serial),
-		"timeStamp": common.UnixMilli(),
-		"cguid":     "",
-		"token":     common.Conf(b.Code()),
-		"isSign":    2,
+	return b.EncryptedQuery(
+		"https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list",
+		struct {
+			SeatCode string `json:"seatCode"`
+		}{serial},
+	)
+}
+
+// RefreshToken generates a new API token based on the user ID.
+func (b Jinan) RefreshToken(userID int32) (token string, err error) {
+	info, err := b.EncryptedQuery(
+		"https://apicloud.ccrgt.com/crgt/user-center/user/thridpart",
+		struct {
+			JSCode string `json:"jscode"`
+			AppID  string `json:"appId"`
+		}{
+			base64.StdEncoding.EncodeToString(jinanKey),
+			jinanApp,
+		},
+	)
+	token, _ = info["token"].(string)
+	return
+}
+
+func (b Jinan) GetToken() string {
+	return common.Conf(b.Code())
+}
+
+func (b Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, err error) {
+	query := JinanQuery{
+		Params:    b.InfoEncrypt(params),
+		Timestamp: common.UnixMilli(),
+		Token:     b.GetToken(),
+		IsSign:    2,
 	}
-	values["sign"] = b.Signature(values)
+	query.Signature = query.Sign()
 
 	var jsonBytes []byte
-	if jsonBytes, err = json.Marshal(values); err != nil {
+	if jsonBytes, err = json.Marshal(query); err != nil {
 		return
 	}
 	buf := bytes.NewBuffer(jsonBytes)
@@ -87,13 +123,10 @@ func (b Jinan) Info(serial string) (info JSONObject, err error) {
 	return
 }
 
-// SerialEncrypt first wraps the serial number in JSON, then encrypts
-// the JSON string with AES-CBC-128 cipher mode, and finally return
+// InfoEncrypt encrypts the JSON string in AES-CBC-128 cipher mode, and return
 // the cipher text encoded with padded base64 encoding scheme.
-func (b Jinan) SerialEncrypt(serial string) string {
-	plainText, err := json.Marshal(struct {
-		SeatCode string `json:"seatCode"`
-	}{serial})
+func (b Jinan) InfoEncrypt(src interface{}) string {
+	plainText, err := json.Marshal(src)
 	common.Must(err)
 
 	cipherText := common.AesCbcEncrypt(plainText, jinanKey, jinanIV)
@@ -112,16 +145,16 @@ func (b Jinan) InfoDecrypt(src string, dest interface{}) (err error) {
 	return json.Unmarshal(plainText, dest)
 }
 
-// Signature serializes the message in a deterministic manner,
+// Sign serializes the message in a deterministic manner,
 // and generates its hexadecimal encoded MD5 digest.
-func (b Jinan) Signature(values JSONObject) string {
+func (q JinanQuery) Sign() string {
 	message := fmt.Sprintf(
 		"%s%s%v%s%s",
 		jinanApp,
-		values["token"],
-		values["timeStamp"],
+		q.Token,
+		q.Timestamp,
 		base64.StdEncoding.EncodeToString(jinanKey),
-		values["params"],
+		q.Params,
 	)
 	hash := md5.Sum([]byte(message))
 	return strings.ToUpper(hex.EncodeToString(hash[:]))

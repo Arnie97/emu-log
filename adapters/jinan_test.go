@@ -8,8 +8,10 @@ import (
 	"github.com/arnie97/emu-log/common"
 )
 
-func ExampleJinan_SerialEncrypt() {
-	fmt.Println(adapters.Jinan{}.SerialEncrypt("K1001641584150"))
+func ExampleJinan_InfoEncrypt() {
+	fmt.Println(adapters.Jinan{}.InfoEncrypt(map[string]string{
+		"seatCode": "K1001641584150",
+	}))
 	// Output: 7x2dNPLNuBHTpL9Bc6z2JiKabX+sFyBLS4w1L0Ulbkw=
 }
 
@@ -23,10 +25,10 @@ func ExampleJinan_InfoDecrypt() {
 	// map[czNo:CRH380BL-5501]
 }
 
-func ExampleJinan_Signature() {
-	var exampleInput map[string]interface{}
+func ExampleJinanQuery_Sign() {
+	var exampleInput adapters.JinanQuery
 	json.Unmarshal(common.ReadMockFile("jinan_input.json"), &exampleInput)
-	fmt.Println(adapters.Jinan{}.Signature(exampleInput) == exampleInput["sign"])
+	fmt.Println(exampleInput.Sign() == exampleInput.Signature)
 	// Output:
 	// true
 }
