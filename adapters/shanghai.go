@@ -31,7 +31,7 @@ func (Shanghai) Name() string {
 }
 
 func (Shanghai) URL() (pattern string, mockValue interface{}) {
-	return "https://ky.railshj.cn?CHN=orderfood&type=ARMRSET&qrCode=%s", nil
+	return "https://ky.railshj.cn?CHN=orderfood&type=%v&qrCode=%s", "ARMRSET"
 }
 
 func (Shanghai) BruteForce(pqCodes chan<- string) {
