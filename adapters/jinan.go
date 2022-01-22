@@ -70,31 +70,11 @@ func (b Jinan) Info(serial string) (info JSONObject, err error) {
 	)
 }
 
-// RefreshToken generates a new API token based on the user ID.
-func (b Jinan) RefreshToken(userID int32) (token string, err error) {
-	info, err := b.EncryptedQuery(
-		"https://apicloud.ccrgt.com/crgt/user-center/user/thridpart",
-		struct {
-			JSCode string `json:"jscode"`
-			AppID  string `json:"appId"`
-		}{
-			base64.StdEncoding.EncodeToString(jinanKey),
-			jinanApp,
-		},
-	)
-	token, _ = info["token"].(string)
-	return
-}
-
-func (b Jinan) GetToken() string {
-	return common.Conf(b.Code())
-}
-
 func (b Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, err error) {
 	query := JinanQuery{
 		Params:    b.InfoEncrypt(params),
 		Timestamp: common.UnixMilli(),
-		Token:     b.GetToken(),
+		Token:     common.Conf(b.Code()),
 		IsSign:    2,
 	}
 	query.Signature = query.Sign()
@@ -179,7 +159,7 @@ func (b Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	var train TrainSchedule
 	for i, elem := range infoList {
 		if i == 0 {
-			timestamp := elem.TrainInfo.StartTimestamp
+			timestamp := elem.TrainInfo.ArriveTimestamp
 			train.Date = time.Unix(timestamp, 0).Format(common.ISODate)
 		} else {
 			train.TrainNo += "/"

@@ -38,7 +38,7 @@ func (Shanghai) BruteForce(pqCodes chan<- string) {
 }
 
 func (Shanghai) AlwaysOn() bool {
-	return false
+	return true
 }
 
 func (b Shanghai) RoundTrip(req *http.Request) (*http.Response, error) {
