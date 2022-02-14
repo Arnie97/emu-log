@@ -6,17 +6,14 @@ import (
 )
 
 var (
-	normalizer = strings.NewReplacer(
-		"CRH380DV", "CRH380D",
-		"CRH400", "CR400",
-		"CRH5A1", "CRH5A",
-		"CHR", "CRH",
-		"1-", "",
-		"2-", "",
-		"3-", "",
-		"-", "",
-		"_", "",
-	)
+	vehicleNoNormalizeRules = []struct{ pattern, replace string }{
+		{`[1-4]-`, ""},
+		{"-", ""},
+		{"_", ""},
+		{"(CRH380D)V", "$1"},
+		{"(CR)H([34]00)", "$1$2"},
+		{"CHR", "CRH"},
+	}
 	trainNoRegExp = regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
 )
 
@@ -40,7 +37,11 @@ func NormalizeTrainNo(trainNo string) (results []string) {
 }
 
 func NormalizeVehicleNo(vehicleNo string) string {
-	return normalizer.Replace(vehicleNo)
+	for _, rule := range vehicleNoNormalizeRules {
+		vehicleNo = regexp.MustCompile(
+			rule.pattern).ReplaceAllString(vehicleNo, rule.replace)
+	}
+	return vehicleNo
 }
 
 // ApproxEqualVehicleNo compares whether the proposed vehicle number
