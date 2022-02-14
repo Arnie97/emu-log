@@ -120,6 +120,6 @@ func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
 			HAVING MAX(rowid)
 		) AS emu_log
 		ON emu_qrcode.emu_no = emu_log.emu_no
-		WHERE date < DATETIME('now', 'localtime');
+		WHERE date IS NULL OR date < DATETIME('now', 'localtime');
 	`, b.Code())
 }
