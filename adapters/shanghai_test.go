@@ -11,6 +11,11 @@ const (
 	shanghaiTestSerial = "PQC47BDAA1B1AC46C2AD545D93B9E30BA3"
 )
 
+func ExampleShanghai_BruteForce() {
+	assertBruteForceRegExp(adapters.Shanghai{}, `^PV\d{10}$`)
+	// Output:
+}
+
 func ExampleShanghai_SerialEncrypt() {
 	common.MockStaticUnixMilli(1632636012773)
 	fmt.Println(string(adapters.Shanghai{}.SerialEncrypt(shanghaiTestSerial)))

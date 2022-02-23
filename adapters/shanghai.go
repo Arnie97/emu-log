@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/arnie97/emu-log/common"
@@ -31,10 +32,13 @@ func (Shanghai) Name() string {
 }
 
 func (Shanghai) URL() (pattern string, mockValue interface{}) {
-	return "https://ky.railshj.cn?CHN=orderfood&type=%v&qrCode=%s", "ARMRSET"
+	return "https://ky.railshj.cn?CHN=orderfood&type=%v&qrCode=%s", "VIRTUAL"
 }
 
 func (Shanghai) BruteForce(pqCodes chan<- string) {
+	for i := 19000; i < 110000; i += 100 {
+		pqCodes <- fmt.Sprintf("PV%010d", i)
+	}
 }
 
 func (Shanghai) AlwaysOn() bool {
