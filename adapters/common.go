@@ -34,7 +34,7 @@ type (
 
 		Info(serialNo string) (info JSONObject, err error)
 		TrainNo(info JSONObject) ([]TrainSchedule, error)
-		VehicleNo(info JSONObject) (vehicleNo string, err error)
+		VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error)
 	}
 	JSONObject    map[string]interface{}
 	TrainSchedule struct{ TrainNo, Date string }

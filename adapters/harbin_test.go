@@ -25,6 +25,6 @@ func ExampleHarbin_VehicleNo() {
 	)
 	// Output:
 	//
-	// "CRH380BG@42s" false
-	// ""             true
+	// "CRH380BG5@42" false
+	// "CRH380BG5@42" true
 }

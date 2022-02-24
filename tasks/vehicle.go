@@ -43,7 +43,7 @@ func addVehicleBySerial(b adapters.Bureau, serial string) {
 	}
 	info, err := b.Info(serial)
 	if err == nil {
-		serialModel.VehicleNo, err = b.VehicleNo(info)
+		serialModel.VehicleNo, err = b.VehicleNo(serial, info)
 	}
 	if err != nil || serialModel.VehicleNo == "" {
 		log.Debug().Msgf("[%s] %s -> %v", b.Code(), serial, err)

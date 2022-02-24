@@ -46,7 +46,7 @@ func (s SerialModel) AddTrainOperationLogs(info adapters.JSONObject) {
 	}
 
 	var logModel LogModel
-	logModel.VehicleNo, _ = b.VehicleNo(info)
+	logModel.VehicleNo, _ = b.VehicleNo(s.SerialNo, info)
 	for _, train := range trains {
 		logModel.TrainNo = train.TrainNo
 		logModel.Date = train.Date

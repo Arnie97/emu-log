@@ -17,7 +17,7 @@ type Harbin struct {
 }
 
 func init() {
-	Register(&Harbin{})
+	Register(Harbin{})
 }
 
 func (Harbin) Code() string {
@@ -57,9 +57,8 @@ func (b Harbin) Info(serial string) (info JSONObject, err error) {
 	bytes, err = ioutil.ReadAll(resp.Body)
 	if match := harbinTrainNoRegExp.FindSubmatch(bytes); match != nil {
 		info = JSONObject{
-			"serial": serial,
-			"train":  string(match[1]),
-			"seat":   string(match[2]),
+			"train": string(match[1]),
+			"seat":  string(match[2]),
 		}
 	}
 	return
@@ -73,8 +72,9 @@ func (b Harbin) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Harbin) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (b Harbin) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = fmt.Sprintf("CRH380BG@%s", info["serial"].(string)[:3])
+	vehicleNo = fmt.Sprintf("CRH380BG5@%s", serialNo[:2])
+	_, err = b.TrainNo(info)
 	return
 }

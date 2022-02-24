@@ -106,7 +106,7 @@ func (Wuhan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Wuhan) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (Wuhan) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
 	if strings.HasPrefix(vehicleNo, "380") {

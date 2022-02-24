@@ -145,7 +145,7 @@ func (Shanghai) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Shanghai) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (Shanghai) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
 	return

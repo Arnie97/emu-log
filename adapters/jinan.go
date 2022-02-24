@@ -170,7 +170,7 @@ func (b Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Jinan) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (Jinan) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["czNo"].(string))
 	return

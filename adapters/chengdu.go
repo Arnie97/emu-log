@@ -49,11 +49,8 @@ func (Chengdu) AlwaysOn() bool {
 func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 	const api = "https://kyd.cd-rail.com/KYDMS_S/WeixinServlet"
 
-	var (
-		vehicleNo string
-		form      url.Values
-	)
-	if vehicleNo, form, err = b.SerialEncrypt(api, serial); err != nil {
+	var form url.Values
+	if form, err = b.SerialEncrypt(api, serial); err != nil {
 		return
 	}
 
@@ -63,7 +60,6 @@ func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 	}
 	defer resp.Body.Close()
 
-	info = map[string]interface{}{b.Code(): vehicleNo}
 	result := []*JSONObject{&info}
 	if err = b.InfoDecrypt(resp.Body, &result); err != nil {
 		return
@@ -73,7 +69,7 @@ func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 
 // SerialEncrypt converts the QR code tuple to a form,
 // and encrypts the form values in DES-ECB cipher mode.
-func (b Chengdu) SerialEncrypt(api, serial string) (vehicleNo string, ret url.Values, err error) {
+func (b Chengdu) SerialEncrypt(api, serial string) (ret url.Values, err error) {
 	components := strings.Split(serial, ",")
 	if len(components) != 6 {
 		err = fmt.Errorf("invalid serial number tuple: %s", serial)
@@ -89,9 +85,6 @@ func (b Chengdu) SerialEncrypt(api, serial string) (vehicleNo string, ret url.Va
 	if seatCoach, err = strconv.Atoi(components[3]); err != nil {
 		return
 	}
-
-	// save the vehicle number in the QR code for later comparison
-	vehicleNo = common.NormalizeVehicleNo(vehicleModel + "-" + vehicleDigits)
 
 	sqlParamsTuple := []interface{}{vehicleDigits, seatCoach, today, vehicleModel}
 	if sqlParams, err = json.Marshal(sqlParamsTuple); err != nil {
@@ -154,13 +147,18 @@ func (Chengdu) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (b Chengdu) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (b Chengdu) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
 	retrievedVehicleNo, _ := info["TRAIN_UNDER"].(string)
 	if len(retrievedVehicleNo) == 0 {
 		return
 	}
 
-	vehicleNo, _ = info[b.Code()].(string)
+	var (
+		components    = strings.Split(serialNo, ",")
+		vehicleModel  = components[1]
+		vehicleDigits = components[2]
+	)
+	vehicleNo = vehicleModel + vehicleDigits
 	if common.ApproxEqualVehicleNo(vehicleNo, retrievedVehicleNo) {
 		return
 	}

@@ -113,8 +113,9 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		info, err := b.Info(getMockSerialNo(b))
-		vehicleNo, err := b.VehicleNo(info)
+		serialNo := getMockSerialNo(b)
+		info, err := b.Info(serialNo)
+		vehicleNo, err := b.VehicleNo(serialNo, info)
 		fmt.Printf("%#-14v %v\n", vehicleNo, err != nil)
 	}
 }

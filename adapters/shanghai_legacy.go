@@ -69,7 +69,7 @@ func (ShanghaiLegacy) TrainNo(info JSONObject) (trains []TrainSchedule, err erro
 	return
 }
 
-func (ShanghaiLegacy) VehicleNo(info JSONObject) (vehicleNo string, err error) {
+func (ShanghaiLegacy) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
 	defer common.Catch(&err)
 	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
 	return
