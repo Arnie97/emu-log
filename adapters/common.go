@@ -47,9 +47,9 @@ var (
 		"%v", "%[3]v",
 	)
 	printfRegExps = []interface{}{
-		`([\w,]+)`, // %s
-		`(?:\d+)`,  // %d
-		`(?:.*?)`,  // %v
+		`([\w\s,]+)`, // %s
+		`(?:\d+)`,    // %d
+		`(?:.*?)`,    // %v
 	}
 	Bureaus = make(map[string]Bureau)
 )

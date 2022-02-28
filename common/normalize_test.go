@@ -25,8 +25,8 @@ func ExampleNormalizeVehicleNo() {
 		"CHR380B-3770",
 		"CRH380DV-1503",
 		"CRH380D-V1-1504",
-		"CR400BFB-1-5097",
-		"CR400AFBZ2-2249",
+		"CR400BFB-1-5097 ",
+		" CR400AFBZ2-2249 ",
 	} {
 		fmt.Println(common.NormalizeVehicleNo(vehicleNo))
 	}

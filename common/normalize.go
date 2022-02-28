@@ -8,8 +8,7 @@ import (
 var (
 	vehicleNoNormalizeRules = []struct{ pattern, replace string }{
 		{`[1-4]-`, ""},
-		{"-", ""},
-		{"_", ""},
+		{`[-\s_]`, ""},
 		{"(CRH380D)V", "$1"},
 		{"(CR)H([34]00)", "$1$2"},
 		{"CHR", "CRH"},
