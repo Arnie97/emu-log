@@ -23,7 +23,7 @@ test_script:
 stack:
 - go 1.8
 - go 1.13
-- go 1.17
+- go 1.18
 
 image:
 - MacOS
@@ -41,11 +41,24 @@ for:
 - matrix:
     only:
     - image: MacOS
-      stack: go 1.17
+      stack: go 1.18
+    - image: Ubuntu
+      stack: go 1.18
   init:
+  - gvm install go1.18
+
+- matrix:
+    only:
+    - image: MacOS
+  before_build:
   - sw_vers
   before_test:
   - sudo systemsetup -settimezone $TZ
+
+- matrix:
+    only:
+    - image: MacOS
+      stack: go 1.18
   test_script:
   - go test -covermode=count -coverprofile=coverage.txt ./...
   on_success:
@@ -59,22 +72,20 @@ for:
 - matrix:
     only:
     - image: Ubuntu
-  init:
-  - lsb_release -a
-  - gvm install go1.17
   clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
   before_build:
+  - lsb_release -a
   - export GOPATH=$HOME/go
   - (export GOROOT=$HOME/.gvm/gos/go1.12.17; $GOROOT/bin/go mod vendor; unset GOROOT)
 
 - matrix:
     only:
     - image: Visual Studio 2019
-  init:
-  - ver
   clone_folder: 'c:\go\src\github.com\arnie97\emu-log'
   environment:
     GOPATH: 'c:\go'
     PATH: 'c:\msys64\mingw64\bin;c:\msys64\bin;%PATH%'
+  before_build:
+  - ver
   before_test:
   - tzutil /s "China Standard Time"
