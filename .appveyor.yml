@@ -10,18 +10,22 @@ environment:
 install:
 - uname -a
 - go version
+- go env
 - gcc --version
 
 build_script:
 - go mod tidy || true
 - go build -v -ldflags="-s -w"
 
+after_build:
+- du emu-log
+
 test_script:
 - go vet ./...
 - go test -v -cover ./...
 
 stack:
-- go 1.8
+- go 1.10
 - go 1.13
 - go 1.18
 
@@ -33,32 +37,23 @@ image:
 matrix:
   exclude:
   - image: MacOS
-    stack: go 1.8
+    stack: go 1.10
   - image: Visual Studio 2019
-    stack: go 1.8
+    stack: go 1.10
+  - image: Visual Studio 2019
+    stack: go 1.13
 
 for:
 - matrix:
     only:
     - image: MacOS
       stack: go 1.18
-    - image: Ubuntu
-      stack: go 1.18
   init:
-  - gvm install go1.18
-
-- matrix:
-    only:
-    - image: MacOS
+  - gvm install go1.18 --binary
   before_build:
   - sw_vers
   before_test:
   - sudo systemsetup -settimezone $TZ
-
-- matrix:
-    only:
-    - image: MacOS
-      stack: go 1.18
   test_script:
   - go test -covermode=count -coverprofile=coverage.txt ./...
   on_success:
@@ -76,7 +71,7 @@ for:
   before_build:
   - lsb_release -a
   - export GOPATH=$HOME/go
-  - (export GOROOT=$HOME/.gvm/gos/go1.12.17; $GOROOT/bin/go mod vendor; unset GOROOT)
+  - (gvm use go1.13 && go mod vendor)
 
 - matrix:
     only:

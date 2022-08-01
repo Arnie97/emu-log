@@ -11,6 +11,7 @@ import (
 
 func ExampleHTTPClient() {
 	common.DisableMockHTTPClient()
+	mockConf()
 
 	x := common.HTTPClient()
 	y := common.HTTPClient(http.DefaultTransport)
@@ -40,7 +41,7 @@ func ExampleHTTPClient() {
 	err = json.Unmarshal(body, &s)
 	fmt.Println("load err:", err)
 
-	fmt.Println("ua equal:", s.Headers.UserAgent == common.UserAgentWeChat)
+	fmt.Println("ua equal:", s.Headers.UserAgent == "Mozilla/5.0")
 	fmt.Println("cookies: ", s.Headers.Cookies == cookies)
 
 	// Output:

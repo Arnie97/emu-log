@@ -21,10 +21,6 @@ type (
 		// with the serial number replaced by the placeholder "%s".
 		URL() (pattern string, mockValue interface{})
 
-		// BruteForce takes a channel, and sends all possibly valid
-		// serial numbers into the channel in lexicographical order.
-		BruteForce(serialNo chan<- string)
-
 		// AlwaysOn means the bureau adapter still returns some basic
 		// information even if meal ordering service is currently not
 		// available. Otherwise, unallocated serial numbers cannot
@@ -67,6 +63,23 @@ func MustGetBureauByCode(bureauCode string) (b Bureau) {
 		log.Fatal().Msgf("[%s] unknown bureau adapter", bureauCode)
 	}
 	return
+}
+
+func AdapterConf(b Bureau) (adapterConf common.AdapterConf) {
+	conf := common.Conf()
+	adapterConf = conf.Adapters[b.Code()]
+	if adapterConf.Request != nil {
+		return
+	} else if conf.Request != nil {
+		adapterConf.Request = conf.Request
+	} else {
+		adapterConf.Request = new(common.RequestConf)
+	}
+	return
+}
+
+func SessionID(b Bureau) string {
+	return AdapterConf(b).Request.SessionID
 }
 
 func BuildURL(b Bureau, serial string) (url string) {

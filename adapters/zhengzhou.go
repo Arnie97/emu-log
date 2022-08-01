@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/arnie97/emu-log/common"
 	"github.com/rs/zerolog/log"
@@ -28,18 +27,13 @@ func (Zhengzhou) URL() (pattern string, mockValue interface{}) {
 	return "https://p.12306.cn/tservice/catering/init?c=%s&w=%v", "h"
 }
 
-func (Zhengzhou) BruteForce(serials chan<- string) {
-}
-
 func (Zhengzhou) AlwaysOn() bool {
 	return true
 }
 
 func (b *Zhengzhou) RoundTrip(req *http.Request) (*http.Response, error) {
-	time.Sleep(common.RequestInterval)
-	common.SetUserAgent(req, common.UserAgentJDPay)
 	common.SetCookies(req, b.cookies)
-	resp, err := http.DefaultTransport.RoundTrip(req)
+	resp, err := AdapterConf(b).Request.RoundTrip(req)
 
 	// stop further redirects and collect crucial cookies
 	if err == nil && resp != nil && resp.StatusCode == http.StatusFound {
@@ -83,7 +77,7 @@ func (b *Zhengzhou) RefreshToken() (resp *http.Response, err error) {
 
 	// the access tokens will be saved by the custom round tripper
 	const api = "https://ms.jr.jd.com/jrmserver/base/user/getNewTokenJumpUrl"
-	return common.HTTPClient(b).Get(api + common.Conf(b.Code()))
+	return common.HTTPClient(b).Get(api + SessionID(b))
 }
 
 // OAuth obtains a new authorization code from JD pay,

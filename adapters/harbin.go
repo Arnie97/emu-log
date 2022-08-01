@@ -32,16 +32,13 @@ func (Harbin) URL() (pattern string, mockValue interface{}) {
 	return "http://l.jeehon.com/lkfw/api?id=%s", nil
 }
 
-func (Harbin) BruteForce(serials chan<- string) {
-}
-
 func (Harbin) AlwaysOn() bool {
 	return false
 }
 
 func (b Harbin) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Cookie", common.Conf(b.Code()))
-	return common.IntervalTransport{}.RoundTrip(req)
+	req.Header.Set("Cookie", SessionID(b))
+	return AdapterConf(b).Request.RoundTrip(req)
 }
 
 func (b Harbin) Info(serial string) (info JSONObject, err error) {

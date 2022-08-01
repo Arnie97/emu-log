@@ -32,16 +32,6 @@ var (
 	shift = []int{0, 1000, 500, 1500}
 )
 
-func (Beijing) BruteForce(qrCodes chan<- string) {
-	turn = (turn + 1) % 4
-	for x := shift[turn]; x < 990000; x += 2000 {
-		qrCodes <- fmt.Sprintf("5%07d", x)
-	}
-	for x := shift[turn]; x < 700000; x += 2000 {
-		qrCodes <- fmt.Sprintf("6%07d", x)
-	}
-}
-
 func (Beijing) AlwaysOn() bool {
 	return false
 }

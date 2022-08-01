@@ -39,9 +39,6 @@ func (Chengdu) URL() (pattern string, mockValue interface{}) {
 	return "https://kyd.cd-rail.com?code=%s", nil
 }
 
-func (Chengdu) BruteForce(serials chan<- string) {
-}
-
 func (Chengdu) AlwaysOn() bool {
 	return false
 }

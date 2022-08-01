@@ -1,0 +1,77 @@
+[request]
+interval = "3s"
+user-agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.25(0x18001929) NetType/4G Language/zh_CN"
+
+[adapters.B.request]
+session-id = "ASPSESSIONIDASCRACRA=JBIJHDLDFPMJCJHHBGGGIEEG; openid=oBsWm6BdZiZ0PBQOeY0TnREvQ0qI"
+
+[adapters.F.request]
+user-agent = "Mozilla/5.0 (Linux; Android 7.1.2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 Mobile Safari/537.36/application=JDJR-App&clientType=android&#@jdPaySDK*#@"
+session-id = "?accessKey=da7c45bd-2f54-403a-9376-ac8b9d8d7fd6&pin=QXJuaWU5Nw%3D%3D&deviceId=012345678904002&clientType=android&a2=AAJf9fuIAED48XcAIENpbm92YSBDUkg2QS1BLTQwMDIgQ2lub3ZhIENSSDZBLUEtNDAwMiBDaW5vdmEgQ1JINkEtQS00MDAy&sign=0123456789abcdef0123456789abcdef&targetUrl=aHR0cHM6Ly9qYXV0aC5qZC5jb20vZW50cmFuY2U%2FcmVzcG9uc2VfdHlwZT1jb2RlJmFwcGlkPWpkOGM2NDMxY2FjYTFmNjYwMiZyZWRpcmVjdF91cmk9aHR0cHMlM0ElMkYlMkZtb2JpbGUuMTIzMDYuY24lMkZ3ZWl4aW4lMkZqZCUyRmF1dGglM0ZyZWRpcmVjdCUzRGh0dHBzJTI1MjUzQSUyNTI1MkYlMjUyNTJGcC4xMjMwNi5jbiUyNTI1MkZ0c2VydmljZSUyNTI1MkZjYXRlcmluZyUyNTI1MkZqZCUyNTI1M0ZjJTI1MjUzREdDUkgzODBBMjUyNTAyMTFBdCUyNTI1MjZ3JTI1MjUzRHQlMjUyNTI2dCUyNTI1M0QxNjE3NTExMzg5OTYwJnNjb3BlPXNjb3BlLm1vYmlsZSxzY29wZS51c2VySW5mbyZhY3RfdHlwZT0yJnN0YXRlPTEyMzA2d2VpeGluJnNob3dfdGl0bGU9MQ%3D%3D"
+
+[[adapters.H.search]]
+format = "PQ%07d"
+min = 2000
+max = 11000
+step = 200
+
+[[adapters.H.search]]
+format = "PQ%07d"
+min = 11000
+max = 2500000
+step = 500
+
+[adapters.K.request]
+interval = "20s"
+session-id = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOiIwMTIzNDU2Nzg5MDAwNjA0MDAyIiwiY29ycElkIjoid3hjMzNmMTk1MDVmYTM3ZjRlIiwibW9iaWxlIjoiMTg5MDEyMzQ1NjciLCJ0eXAiOiJKV1QiLCJleHAiOjE2NjUxODgwMDIsImNvcnBDb2RlIjoiWlNKVEFQUCIsImFsZyI6IkhTMjU2IiwiaWF0IjoxNjYwMDA0MDAyLCJsb2dpblNvdXJjZSI6IjQifQ.TYiyPsMbHT7YSwTMdX9IHk8Mpo7h1NMyTvUBg8C-Sgo"
+
+[[adapters.K.search]]
+format = "K1001%09d"
+min = 867429
+
+[[adapters.M.search]]
+format = "CRH2G-%d"
+min = 2417
+max = 2426
+
+[[adapters.M.search]]
+format = "CRH2G-%d"
+min = 4072
+max = 4081
+
+[[adapters.M.search]]
+format = "CRH2G-%d"
+min = 4106
+max = 4111
+
+[adapters.N.request]
+session-id = "oaIK-wv06uZ7eiOw7Ee-hEp0ox_k"
+
+[[adapters.N.search]]
+format = "%03d"
+max = 500
+
+[[adapters.P.search]]
+format = "%08d"
+min = 51310000
+max = 51950000
+step = 1000
+
+[[adapters.P.search]]
+format = "%08d"
+min = 60650000
+max = 61050000
+step = 1000
+
+[adapters.Q.request]
+session-id = "b2263a4275944323b929c2eea29e4e01"
+
+[[adapters.Q.search]]
+format = "%03d"
+max = 560
+
+[[adapters.U.search]]
+format = "PV%010d"
+min = 20000
+max = 220000
+step = 100

@@ -1,16 +1,30 @@
 package adapters_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
+	"github.com/pelletier/go-toml"
 )
 
-func ExampleRoundTripper() {
+type (
+	AdapterTestFile struct {
+		Adapters map[string]AdapterTestDefinition `toml:"adapters"`
+	}
+	AdapterTestDefinition struct {
+		SerialNoPattern string            `toml:"pattern"`
+		TestCases       []AdapterTestCase `toml:"cases"`
+	}
+	AdapterTestCase struct {
+		SerialNo string `toml:"serial"`
+		URL      string `toml:"url"`
+	}
+)
+
+func ExampleSessionID() {
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
 	for _, b := range adapters.Bureaus {
 		if transport, ok := b.(http.RoundTripper); ok {
@@ -21,27 +35,28 @@ func ExampleRoundTripper() {
 }
 
 func ExampleBuildURL() {
-	for _, testCase := range urlTestCases() {
-		bureauCode, serial, url := testCase[0], testCase[1], testCase[2]
+	for bureauCode, testDef := range getTests() {
 		b := adapters.MustGetBureauByCode(bureauCode)
-		if urlBuilt := adapters.BuildURL(b, serial); urlBuilt != url {
+		item := testDef.TestCases[0]
+		if urlBuilt := adapters.BuildURL(b, item.SerialNo); urlBuilt != item.URL {
 			fmt.Println(urlBuilt)
-			fmt.Println(url)
+			fmt.Println(item.URL)
 		}
 	}
 	// Output:
 }
 
 func ExampleParseURL() {
-	for _, testCase := range urlTestCases() {
-		bCode, serial, url := testCase[0], testCase[1], testCase[2]
-		b, s := adapters.ParseURL(url)
-		if b == nil {
-			fmt.Println(url, "->", "?")
-			continue
-		}
-		if b.Code() != bCode || s != serial {
-			fmt.Println(url, "->", b.Name(), s)
+	for bureauCode, testDef := range getTests() {
+		for _, item := range testDef.TestCases {
+			b, s := adapters.ParseURL(item.URL)
+			if b == nil {
+				fmt.Println(item.URL, "->", "?")
+				continue
+			}
+			if b.Code() != bureauCode || s != item.SerialNo {
+				fmt.Println(item.URL, "->", b.Name(), s)
+			}
 		}
 	}
 
@@ -49,26 +64,23 @@ func ExampleParseURL() {
 	// Output: <nil>
 }
 
-func urlTestCases() (testCases [][]string) {
-	common.Must(json.Unmarshal(common.ReadMockFile("url.json"), &testCases))
-	return
+func getTests() map[string]AdapterTestDefinition {
+	var testFile AdapterTestFile
+	common.Must(toml.Unmarshal(common.ReadMockFile("adapters.toml"), &testFile))
+	return testFile.Adapters
 }
 
 func getMockSerialNo(b adapters.Bureau) string {
-	for _, testCase := range urlTestCases() {
-		bureauCode, serial, _ := testCase[0], testCase[1], testCase[2]
-		if bureauCode == b.Code() {
-			return serial
-		}
-	}
-	return ""
+	return getTests()[b.Code()].TestCases[0].SerialNo
 }
 
 func assertBruteForce(b adapters.Bureau, assert func(string) bool) {
 	b.AlwaysOn()
 	serials := make(chan string, 1024)
 	go func() {
-		b.BruteForce(serials)
+		for _, rule := range adapters.AdapterConf(b).SearchSpace {
+			rule.Emit(serials)
+		}
 		close(serials)
 	}()
 	for s := range serials {

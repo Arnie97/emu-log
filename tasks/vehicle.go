@@ -14,7 +14,9 @@ func scanVehicleNo(b adapters.Bureau) {
 
 	serials := make(chan string)
 	go func() {
-		b.BruteForce(serials)
+		for _, rule := range adapters.AdapterConf(b).SearchSpace {
+			rule.Emit(serials)
+		}
 		close(serials)
 	}()
 

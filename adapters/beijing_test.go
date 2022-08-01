@@ -4,11 +4,6 @@ import (
 	"github.com/arnie97/emu-log/adapters"
 )
 
-func ExampleBeijing_BruteForce() {
-	assertBruteForceRegExp(adapters.Beijing{}, `^\d{8}$`)
-	// Output:
-}
-
 func ExampleBeijing_TrainNo() {
 	printTrainNo(
 		adapters.Beijing{},

@@ -1,0 +1,81 @@
+[adapters.B]
+pattern = '\w{11}'
+
+[[adapters.B.cases]]
+serial = "42sprsam7sa"
+url = "http://l.jeehon.com/lkfw/api?id=42sprsam7sa"
+
+[adapters.F]
+pattern = '[A-Z]+\w+\d{9}[A-CDF]\d'
+
+[[adapters.F.cases]]
+serial = "YCHR380B366704003C0"
+url = "https://p.12306.cn/tservice/catering/init?c=YCHR380B366704003C0&w=h"
+
+[[adapters.F.cases]]
+serial = "JCRH5G519407002Dt"
+url = "https://p.12306.cn/tservice/catering/init?c=JCRH5G519407002Dt&w=t"
+
+[adapters.H]
+pattern = 'PQ\d{7}'
+
+[[adapters.H.cases]]
+serial = "PQ0789123"
+url = "http://portal.xiuxiu365.cn/portal/qrcode/PQ0789123"
+
+[adapters.K]
+pattern = 'K1001\d{9}'
+
+[[adapters.K.cases]]
+serial = "K1001025528172"
+url = "https://static.ccrgt.com/orderMeals?scene=K1001025528172"
+
+[adapters.M]
+pattern = 'CR[-\w]+-\d{4}'
+
+[[adapters.M.cases]]
+serial = "CRH2A-4088"
+url = "https://p.12306.cn/tservice/qr/travel/v1?c=CRH2A-4088-06-06F&w=h"
+
+[adapters.N]
+pattern = '\d{1,3}'
+
+[[adapters.N.cases]]
+serial = "375"
+url = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=375&carriage=6&seatRow=6&seatNo=D/F"
+
+[adapters.P]
+pattern = '\d{8}'
+
+[[adapters.P.cases]]
+serial = "50205200"
+url = "https://aymaoto.jtlf.cn/page/oto/index?QR=50205200"
+
+[adapters.Q]
+pattern = '\d{1,3}'
+
+[[adapters.Q.cases]]
+serial = "9"
+url = "https://sj-wake.yishizongheng.com/scanOrder?code=9&carriage=6&site=1F"
+
+[adapters.U]
+pattern = 'PV\d{10}'
+
+[[adapters.U.cases]]
+serial = "PV0000099100"
+url = "https://ky.railshj.cn?CHN=orderfood&type=VIRTUAL&qrCode=PV0000099100"
+
+[[adapters.U.cases]]
+serial = "PQ7C25C51A63A84D459D53533A07A514FF"
+url = "https://ky.railshj.cn?CHN=orderfood&type=ARMRSET&qrCode=PQ7C25C51A63A84D459D53533A07A514FF"
+
+[adapters.W]
+pattern = '\d+,CR\w+,\d{4},\d+,\d+,[A-CDF]'
+
+[[adapters.W.cases]]
+serial = "1128970,CRH3A,3089,08,08,B"
+url = "https://kyd.cd-rail.com?code=1128970,CRH3A,3089,08,08,B"
+
+[[adapters.W.cases]]
+serial = "1231665 \n,CRH380AN,0206,02,13,A"
+url = "https://kyd.cd-rail.com?code=1231665 \n,CRH380AN,0206,02,13,A"

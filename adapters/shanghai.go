@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/arnie97/emu-log/common"
@@ -35,12 +34,6 @@ func (Shanghai) URL() (pattern string, mockValue interface{}) {
 	return "https://ky.railshj.cn?CHN=orderfood&type=%v&qrCode=%s", "VIRTUAL"
 }
 
-func (Shanghai) BruteForce(pqCodes chan<- string) {
-	for i := 19000; i < 110000; i += 100 {
-		pqCodes <- fmt.Sprintf("PV%010d", i)
-	}
-}
-
 func (Shanghai) AlwaysOn() bool {
 	return true
 }
@@ -48,7 +41,7 @@ func (Shanghai) AlwaysOn() bool {
 func (b Shanghai) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("channel", "MALL-WX-APPLET")
 	req.Header.Set("version", "MALL-WX-APPLET_1.0.7")
-	return common.IntervalTransport{}.RoundTrip(req)
+	return AdapterConf(b).Request.RoundTrip(req)
 }
 
 func (b Shanghai) Info(serial string) (info JSONObject, err error) {

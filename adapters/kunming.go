@@ -27,9 +27,6 @@ func (Kunming) URL() (pattern string, mockValue interface{}) {
 	return "https://p.12306.cn/tservice/qr/travel/v1?c=%s-%02d-%02d%v&w=h", "F"
 }
 
-func (Kunming) BruteForce(serials chan<- string) {
-}
-
 func (Kunming) AlwaysOn() bool {
 	return false
 }

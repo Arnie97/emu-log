@@ -47,18 +47,15 @@ func (Jinan) URL() (pattern string, mockValue interface{}) {
 	return "https://static.ccrgt.com/orderMeals?scene=%s", nil
 }
 
-func (Jinan) BruteForce(serials chan<- string) {
-}
-
 func (Jinan) AlwaysOn() bool {
 	return true
 }
 
-func (Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
+func (b Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("referer", fmt.Sprintf(
 		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
 	))
-	return common.IntervalTransport{}.RoundTrip(req)
+	return AdapterConf(b).Request.RoundTrip(req)
 }
 
 func (b Jinan) Info(serial string) (info JSONObject, err error) {
@@ -74,7 +71,7 @@ func (b Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, 
 	query := JinanQuery{
 		Params:    b.InfoEncrypt(params),
 		Timestamp: common.UnixMilli(),
-		Token:     common.Conf(b.Code()),
+		Token:     SessionID(b),
 		IsSign:    2,
 	}
 	query.Signature = query.Sign()

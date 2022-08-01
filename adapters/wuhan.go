@@ -36,12 +36,6 @@ func (Wuhan) URL() (pattern string, mockValue interface{}) {
 	return "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=%d&seatRow=%d&seatNo=%v", "D/F"
 }
 
-func (Wuhan) BruteForce(serials chan<- string) {
-	for x := 1; x < 500; x++ {
-		serials <- fmt.Sprintf("%03d", x)
-	}
-}
-
 func (Wuhan) AlwaysOn() bool {
 	return true
 }
@@ -49,9 +43,9 @@ func (Wuhan) AlwaysOn() bool {
 func (b Wuhan) RoundTrip(req *http.Request) (*http.Response, error) {
 	common.SetCookies(req, []*http.Cookie{{
 		Name:  "OpenId",
-		Value: common.Conf(b.Code()),
+		Value: SessionID(b),
 	}})
-	return common.IntervalTransport{}.RoundTrip(req)
+	return AdapterConf(b).Request.RoundTrip(req)
 }
 
 func (b Wuhan) Info(serial string) (info JSONObject, err error) {

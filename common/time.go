@@ -34,3 +34,32 @@ func MockStaticUnixMilli(t int64) {
 		return time.Unix(t/1e3, t%1e3*1e6)
 	}
 }
+
+// Duration is a TOML wrapper type for time.Duration.
+// https://github.com/golang/go/issues/16039
+type Duration time.Duration
+
+// UnmarshalText parses a TOML string into a Duration value.
+func (d *Duration) UnmarshalText(text []byte) error {
+	if len(text) == 0 {
+		return nil
+	}
+
+	duration, err := time.ParseDuration(string(text))
+	if err != nil {
+		return err
+	}
+
+	*d = Duration(duration)
+	return nil
+}
+
+// MarshalText formats a Duration value into a TOML string.
+func (d Duration) MarshalText() (text []byte, err error) {
+	return []byte(d.String()), nil
+}
+
+// String provide a human readable string representing the duration.
+func (d Duration) String() string {
+	return time.Duration(d).String()
+}

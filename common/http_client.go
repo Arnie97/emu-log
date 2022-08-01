@@ -9,10 +9,7 @@ import (
 )
 
 const (
-	RequestInterval = 3 * time.Second
-	RequestTimeout  = 20 * time.Second
-	UserAgentWeChat = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.2(0x1800022c) NetType/4G Language/zh_CN"
-	UserAgentJDPay  = "Mozilla/5.0 (Linux; Android 7.1.2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/67.0.3396.87 Mobile Safari/537.36/application=JDJR-App&clientType=android&#@jdPaySDK*#@"
+	RequestTimeout = 20 * time.Second
 )
 
 type (
@@ -22,17 +19,16 @@ type (
 		Post(url, contentType string, body io.Reader) (*http.Response, error)
 		PostForm(url string, data url.Values) (*http.Response, error)
 	}
-	IntervalTransport struct{}
 )
 
-func (IntervalTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	time.Sleep(RequestInterval)
-	SetUserAgent(req, UserAgentWeChat)
+func (conf *RequestConf) RoundTrip(req *http.Request) (*http.Response, error) {
+	if conf.Interval > 0 {
+		time.Sleep(time.Duration(conf.Interval))
+	}
+	if len(conf.UserAgent) > 0 {
+		req.Header.Set("user-agent", conf.UserAgent)
+	}
 	return http.DefaultTransport.RoundTrip(req)
-}
-
-func SetUserAgent(req *http.Request, userAgent string) {
-	req.Header.Set("user-agent", userAgent)
 }
 
 func SetCookies(req *http.Request, cookies []*http.Cookie) {
@@ -55,7 +51,7 @@ func HTTPClient(roundTripper ...http.RoundTripper) httpRequester {
 		return mockHTTPClientInstance
 	}
 	if roundTripper == nil {
-		roundTripper = []http.RoundTripper{IntervalTransport{}}
+		roundTripper = []http.RoundTripper{Conf().Request}
 	}
 	return &http.Client{
 		Timeout:   RequestTimeout,

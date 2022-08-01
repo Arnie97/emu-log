@@ -26,19 +26,13 @@ func (Guangzhou) URL() (pattern string, mockValue interface{}) {
 	return "https://sj-wake.yishizongheng.com/scanOrder?code=%s&carriage=%d&site=%v", "1F"
 }
 
-func (Guangzhou) BruteForce(serials chan<- string) {
-	for x := 1; x < 560; x++ {
-		serials <- fmt.Sprintf("%03d", x)
-	}
-}
-
 func (Guangzhou) AlwaysOn() bool {
 	return false
 }
 
 func (b Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("authorization", common.Conf(b.Code()))
-	return common.IntervalTransport{}.RoundTrip(req)
+	req.Header.Set("Authorization", SessionID(b))
+	return AdapterConf(b).Request.RoundTrip(req)
 }
 
 func (b Guangzhou) Info(serial string) (info JSONObject, err error) {
