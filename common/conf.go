@@ -17,6 +17,7 @@ const (
 type (
 	GlobalConf struct {
 		Request  *RequestConf           `toml:"request,omitempty"`
+		Schedule ScheduleConf           `toml:"schedule,omitempty"`
 		Adapters map[string]AdapterConf `toml:"adapters,omitempty"`
 	}
 	AdapterConf struct {
@@ -27,6 +28,10 @@ type (
 		Interval  Duration `toml:"interval,omitempty"`
 		UserAgent string   `toml:"user-agent,omitempty"`
 		SessionID string   `toml:"session-id,omitempty"`
+	}
+	ScheduleConf struct {
+		StartTime Duration `toml:"start-time,omitempty"`
+		EndTime   Duration `toml:"end-time,omitempty"`
 	}
 	GenerationRule struct {
 		Format string `toml:"format,omitempty"`

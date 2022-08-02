@@ -12,8 +12,6 @@ import (
 )
 
 const (
-	startTime = 6 * time.Hour
-	endTime   = 22 * time.Hour
 	day       = 24 * time.Hour
 	tzBeijing = 8 * time.Hour
 )
@@ -26,6 +24,10 @@ var (
 // scheduleTask run web scraping routines on an regular basis.
 func scheduleTask(task func()) {
 	var nextRun time.Time
+	sched := common.Conf().Schedule
+	startTime := time.Duration(sched.StartTime)
+	endTime := time.Duration(sched.EndTime)
+
 	for {
 		now := time.Now()
 		today := time.Date(
@@ -37,16 +39,17 @@ func scheduleTask(task func()) {
 		} else if now.After(today.Add(endTime)) {
 			nextRun = today.Add(startTime + day)
 		}
-		task()
 		if !nextRun.IsZero() {
 			log.Info().Msgf("next scheduled run: %v", nextRun)
 			time.Sleep(time.Until(nextRun))
 		}
+		task()
 	}
 }
 
 // scanTask is a combination of scanVehicleNo() and scanTrainNo().
 func scanTask(b adapters.Bureau) {
+	endTime := time.Duration(common.Conf().Schedule.EndTime)
 	scanForNewVehicles := true
 	if b.AlwaysOn() {
 		now := time.Now()

@@ -1,5 +1,9 @@
+[schedule]
+start-time = "6h45m"
+end-time = "22h"
+
 [request]
-interval = "3s"
+interval = "5s"
 user-agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.25(0x18001929) NetType/4G Language/zh_CN"
 
 [adapters.B.request]
@@ -22,7 +26,7 @@ max = 2500000
 step = 500
 
 [adapters.K.request]
-interval = "20s"
+interval = "15s"
 session-id = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50SWQiOiIwMTIzNDU2Nzg5MDAwNjA0MDAyIiwiY29ycElkIjoid3hjMzNmMTk1MDVmYTM3ZjRlIiwibW9iaWxlIjoiMTg5MDEyMzQ1NjciLCJ0eXAiOiJKV1QiLCJleHAiOjE2NjUxODgwMDIsImNvcnBDb2RlIjoiWlNKVEFQUCIsImFsZyI6IkhTMjU2IiwiaWF0IjoxNjYwMDA0MDAyLCJsb2dpblNvdXJjZSI6IjQifQ.TYiyPsMbHT7YSwTMdX9IHk8Mpo7h1NMyTvUBg8C-Sgo"
 
 [[adapters.K.search]]
