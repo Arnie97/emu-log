@@ -114,7 +114,7 @@ func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
 				SELECT rowid, emu_no, date
 				FROM emu_log
 				ORDER BY rowid DESC
-				LIMIT 5000
+				LIMIT 10000
 			)
 			GROUP BY emu_no
 			HAVING MAX(rowid)

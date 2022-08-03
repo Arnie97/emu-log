@@ -1,30 +1,27 @@
 package common_test
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"os"
 
 	"github.com/arnie97/emu-log/common"
 )
 
 func ExampleMockHTTPClientRespBodyFromFile() {
-	os.Mkdir("testdata", 0750)
-	ioutil.WriteFile("testdata/hello", []byte("CRH6A-4002"), 0640)
-	common.MockHTTPClientRespBodyFromFile("hello")
+	common.MockHTTPClientRespBodyFromFile("../http_client_mock_test.go")
 	x := common.HTTPClient()
 
 	a, e := x.Do(nil)
 	b, f := x.Get("")
 	c, g := x.Post("", "", bytes.NewReader(nil))
 	d, h := x.PostForm("", nil)
-	fmt.Println("same resp:", a == b && b == c && c == d)
+	fmt.Println("same resp:", a == b || b == c || c == d)
 
-	body, i := ioutil.ReadAll(d.Body)
+	body, i := bufio.NewReader(d.Body).ReadString('\n')
 	j := d.Body.Close()
-	fmt.Println("no errors:", e == f && f == g && g == h && h == i && i == j)
-	fmt.Println("resp body:", string(body))
+	fmt.Println("no errors:", isAllNil(e, f, g, h, i, j))
+	fmt.Print("resp body: ", body)
 
 	common.MockHTTPClientError(fmt.Errorf("my sample error"))
 	k, m := common.HTTPClient().Do(nil)
@@ -33,6 +30,15 @@ func ExampleMockHTTPClientRespBodyFromFile() {
 	// Output:
 	// same resp: false
 	// no errors: true
-	// resp body: CRH6A-4002
+	// resp body: package common_test
 	// err  mock: <nil>, my sample error
+}
+
+func isAllNil(values ...interface{}) bool {
+	for _, v := range values {
+		if v != nil {
+			return false
+		}
+	}
+	return true
 }

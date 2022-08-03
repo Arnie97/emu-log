@@ -65,16 +65,13 @@ func MustGetBureauByCode(bureauCode string) (b Bureau) {
 	return
 }
 
-func AdapterConf(b Bureau) (adapterConf common.AdapterConf) {
-	conf := common.Conf()
-	adapterConf = conf.Adapters[b.Code()]
-	if adapterConf.Request != nil {
-		return
-	} else if conf.Request != nil {
-		adapterConf.Request = conf.Request
-	} else {
-		adapterConf.Request = new(common.RequestConf)
-	}
+func AdapterConf(b Bureau) (merged common.AdapterConf) {
+	global := common.Conf()
+	merged = global.Adapters[b.Code()]
+	adapterRequest := merged.Request
+	merged.Request = new(common.RequestConf)
+	common.Must(common.StructDecode(global.Request, merged.Request))
+	common.Must(common.StructDecode(adapterRequest, merged.Request))
 	return
 }
 

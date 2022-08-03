@@ -15,8 +15,14 @@ func ExampleUnixMilli() {
 
 	fmt.Println(common.UnixMilli(time.Now()) == common.UnixMilli())
 
+	defer func() {
+		fmt.Println(recover() != nil)
+	}()
+	common.UnixMilli(time.Now(), time.Now())
+
 	// Output:
 	// 9223372036000 <nil>
+	// true
 	// true
 }
 

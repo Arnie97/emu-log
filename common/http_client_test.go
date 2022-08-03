@@ -11,7 +11,7 @@ import (
 
 func ExampleHTTPClient() {
 	common.DisableMockHTTPClient()
-	mockConf()
+	common.MockConf()
 
 	x := common.HTTPClient()
 	y := common.HTTPClient(http.DefaultTransport)

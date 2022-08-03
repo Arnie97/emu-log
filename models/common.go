@@ -4,10 +4,15 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/arnie97/emu-log/common"
 	_ "github.com/mattn/go-sqlite3"
+)
+
+const (
+	dbFile = "emu-log.db"
 )
 
 type Table interface {
@@ -38,7 +43,10 @@ func Migrate(db *sql.DB) (err error) {
 func DB() *sql.DB {
 	dbOnce.Do(func() {
 		var err error
-		dbConn, err = sql.Open("sqlite3", common.AppPath()+"/emu-log.db")
+		dbConn, err = sql.Open(
+			"sqlite3",
+			filepath.Join(common.AppPath(), dbFile),
+		)
 		common.Must(err)
 		// TODO: defer dbConn.Close()
 

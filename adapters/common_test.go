@@ -22,9 +22,29 @@ type (
 		SerialNo string `toml:"serial"`
 		URL      string `toml:"url"`
 	}
+	MockAdapter struct {
+		adapters.Shanghai
+		code string
+	}
 )
 
+func (m *MockAdapter) Code() string {
+	return m.code
+}
+
+func ExampleAdapterConf() {
+	common.MockConf()
+	conf := adapters.AdapterConf(&MockAdapter{code: "X"})
+	fmt.Println(conf.Request.UserAgent, int64(conf.Request.Interval))
+
+	// Output:
+	// Mozilla/5.0 4002
+}
+
 func ExampleSessionID() {
+	common.MockConf()
+	fmt.Println(adapters.SessionID(&MockAdapter{code: "X"}))
+
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
 	for _, b := range adapters.Bureaus {
 		if transport, ok := b.(http.RoundTripper); ok {
@@ -32,6 +52,7 @@ func ExampleSessionID() {
 		}
 	}
 	// Output:
+	// hello-world
 }
 
 func ExampleBuildURL() {

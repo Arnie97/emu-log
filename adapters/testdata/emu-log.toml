@@ -1,0 +1,22 @@
+[request]
+interval = "0.00246ms"
+user-agent = "Mozilla/5.0"
+
+[adapters.X.request]
+interval = "4µs2ns"
+session-id = "hello-world"
+
+[[adapters.X.search]]
+format = "CRH5-%03dA"
+
+[[adapters.X.search]]
+format = "CRH3-%03dC"
+min = 2
+max = 4
+step = 2
+
+[[adapters.X.search]]
+format = "CRH2-%03dA"
+max = 3
+
+[adapters.Y.request]

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ConfPath = "/emu-log.toml"
+	confFile = "emu-log.toml"
 )
 
 type (
@@ -25,9 +25,9 @@ type (
 		SearchSpace []GenerationRule `toml:"search,omitempty"`
 	}
 	RequestConf struct {
-		Interval  Duration `toml:"interval,omitempty"`
-		UserAgent string   `toml:"user-agent,omitempty"`
-		SessionID string   `toml:"session-id,omitempty"`
+		Interval  Duration `toml:"interval,omitempty"   json:"interval,omitempty"`
+		UserAgent string   `toml:"user-agent,omitempty" json:"user-agent,omitempty"`
+		SessionID string   `toml:"session-id,omitempty" json:"session-id,omitempty"`
 	}
 	ScheduleConf struct {
 		StartTime Duration `toml:"start-time,omitempty"`
@@ -74,8 +74,12 @@ func Conf() *GlobalConf {
 	return &conf
 }
 
+func confPath() string {
+	return filepath.Join(AppPath(), confFile)
+}
+
 func loadConf() error {
-	file, err := os.Open(AppPath() + ConfPath)
+	file, err := os.Open(confPath())
 	if err != nil {
 		return err
 	}

@@ -26,12 +26,13 @@ func UnixMilli(args ...time.Time) int64 {
 		panic("Invalid argument length")
 	}
 
-	return t.UnixNano() / 1e6
+	return t.UnixNano() / int64(time.Millisecond)
 }
 
 func MockStaticUnixMilli(t int64) {
 	mockWallClock = func() time.Time {
-		return time.Unix(t/1e3, t%1e3*1e6)
+		return time.Unix(0,
+			(time.Duration(t) * time.Millisecond).Nanoseconds())
 	}
 }
 
