@@ -24,7 +24,7 @@ func (Kunming) Name() string {
 }
 
 func (Kunming) URL() (pattern string, mockValue interface{}) {
-	return "https://p.12306.cn/tservice/qr/travel/v1?c=%s-%02d-%02d%v&w=h", "F"
+	return "https://p.12306.cn/tservice/qr/travel/v1?c=%s&w=h", nil
 }
 
 func (Kunming) AlwaysOn() bool {
@@ -73,13 +73,7 @@ func (Kunming) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 }
 
 func (Kunming) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
-	retrievedVehicleNo, _ := info["carCode"].(string)
-	if len(retrievedVehicleNo) == 0 {
-		// pass
-	} else if serialNo != retrievedVehicleNo {
-		vehicleNo = "CRH@" + retrievedVehicleNo
-	} else {
-		vehicleNo = common.NormalizeVehicleNo(retrievedVehicleNo)
-	}
+	defer common.Catch(&err)
+	vehicleNo = common.NormalizeVehicleNo(info["carCode"].(string))
 	return
 }

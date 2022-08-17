@@ -26,5 +26,5 @@ func ExampleKunming_VehicleNo() {
 	)
 	// Output:
 	// "CRH2A4088"    false
-	// ""             false
+	// ""             true
 }

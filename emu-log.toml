@@ -34,19 +34,31 @@ format = "K1001%09d"
 min = 867429
 
 [[adapters.M.search]]
-format = "CRH2G-%d"
+format = "CRH2G-%d-04-04A"
 min = 2417
 max = 2426
 
 [[adapters.M.search]]
-format = "CRH2G-%d"
+format = "CRH2G-%d-04-04A"
 min = 4072
 max = 4081
 
 [[adapters.M.search]]
-format = "CRH2G-%d"
+format = "CRH2G-%d-04-04A"
 min = 4106
 max = 4111
+
+[[adapters.M.search]]
+format = "H%07d"
+min = 1000
+max = 160000
+step = 1000
+
+[[adapters.M.search]]
+format = "W%07d"
+min = 6000
+max = 160000
+step = 1000
 
 [adapters.N.request]
 session-id = "oaIK-wv06uZ7eiOw7Ee-hEp0ox_k"

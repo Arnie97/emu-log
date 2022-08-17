@@ -31,11 +31,15 @@ serial = "K1001025528172"
 url = "https://static.ccrgt.com/orderMeals?scene=K1001025528172"
 
 [adapters.M]
-pattern = 'CR[-\w]+-\d{4}'
+pattern = 'CR[-\w]+-\d{4}-\d{2}-\d{2}[A-DF]|[A-Z]\d{7}'
 
 [[adapters.M.cases]]
-serial = "CRH2A-4088"
-url = "https://p.12306.cn/tservice/qr/travel/v1?c=CRH2A-4088-06-06F&w=h"
+serial = "CRH2A-4088-04-04F"
+url = "https://p.12306.cn/tservice/qr/travel/v1?c=CRH2A-4088-04-04F&w=h"
+
+[[adapters.M.cases]]
+serial = "H0004002"
+url = "https://p.12306.cn/tservice/qr/travel/v1?c=H0004002&w=h"
 
 [adapters.N]
 pattern = '\d{1,3}'
