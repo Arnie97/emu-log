@@ -21,8 +21,8 @@ func ExampleShanghaiLegacy_TrainNo() {
 	// true
 }
 
-func ExampleShanghaiLegacy_VehicleNo() {
-	printVehicleNo(adapters.ShanghaiLegacy{},
+func ExampleShanghaiLegacy_UnitNo() {
+	printUnitNo(adapters.ShanghaiLegacy{},
 		"shanghai_legacy_full.json",
 		"shanghai_legacy_basic.json",
 		"shanghai_legacy_invalid.json",

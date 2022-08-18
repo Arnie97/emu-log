@@ -46,8 +46,8 @@ func ExampleSessionID() {
 	fmt.Println(adapters.SessionID(&MockAdapter{code: "X"}))
 
 	req, _ := http.NewRequest(http.MethodGet, "", nil)
-	for _, b := range adapters.Bureaus {
-		if transport, ok := b.(http.RoundTripper); ok {
+	for _, a := range adapters.Adapters {
+		if transport, ok := a.(http.RoundTripper); ok {
 			transport.RoundTrip(req)
 		}
 	}
@@ -56,10 +56,10 @@ func ExampleSessionID() {
 }
 
 func ExampleBuildURL() {
-	for bureauCode, testDef := range getTests() {
-		b := adapters.MustGetBureauByCode(bureauCode)
+	for adapterCode, testDef := range getTests() {
+		a := adapters.MustGetAdapterByCode(adapterCode)
 		item := testDef.TestCases[0]
-		if urlBuilt := adapters.BuildURL(b, item.SerialNo); urlBuilt != item.URL {
+		if urlBuilt := adapters.BuildURL(a, item.SerialNo); urlBuilt != item.URL {
 			fmt.Println(urlBuilt)
 			fmt.Println(item.URL)
 		}
@@ -68,15 +68,15 @@ func ExampleBuildURL() {
 }
 
 func ExampleParseURL() {
-	for bureauCode, testDef := range getTests() {
+	for adapterCode, testDef := range getTests() {
 		for _, item := range testDef.TestCases {
-			b, s := adapters.ParseURL(item.URL)
-			if b == nil {
+			a, s := adapters.ParseURL(item.URL)
+			if a == nil {
 				fmt.Println(item.URL, "->", "?")
 				continue
 			}
-			if b.Code() != bureauCode || s != item.SerialNo {
-				fmt.Println(item.URL, "->", b.Name(), s)
+			if a.Code() != adapterCode || s != item.SerialNo {
+				fmt.Println(item.URL, "->", a.Name(), s)
 			}
 		}
 	}
@@ -91,37 +91,37 @@ func getTests() map[string]AdapterTestDefinition {
 	return testFile.Adapters
 }
 
-func getMockSerialNo(b adapters.Bureau) string {
-	return getTests()[b.Code()].TestCases[0].SerialNo
+func getMockSerialNo(a adapters.Adapter) string {
+	return getTests()[a.Code()].TestCases[0].SerialNo
 }
 
-func assertBruteForce(b adapters.Bureau, assert func(string) bool) {
-	b.AlwaysOn()
+func assertBruteForce(a adapters.Adapter, assert func(string) bool) {
+	a.AlwaysOn()
 	serials := make(chan string, 1024)
 	go func() {
-		for _, rule := range adapters.AdapterConf(b).SearchSpace {
+		for _, rule := range adapters.AdapterConf(a).SearchSpace {
 			rule.Emit(serials)
 		}
 		close(serials)
 	}()
 	for s := range serials {
 		if !assert(s) {
-			fmt.Printf("[%s] invalid serial number pattern: %s\n", b.Code(), s)
+			fmt.Printf("[%s] invalid serial number pattern: %s\n", a.Code(), s)
 		}
 	}
 }
 
-func assertBruteForceRegExp(b adapters.Bureau, pattern string) {
-	assertBruteForce(b, regexp.MustCompile(pattern).MatchString)
+func assertBruteForceRegExp(a adapters.Adapter, pattern string) {
+	assertBruteForce(a, regexp.MustCompile(pattern).MatchString)
 }
 
-func printTrainNo(b adapters.Bureau, mockFiles ...string) {
-	b.Name()
+func printTrainNo(a adapters.Adapter, mockFiles ...string) {
+	a.Name()
 
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		info, err := b.Info(getMockSerialNo(b))
-		trains, err := b.TrainNo(info)
+		info, err := a.Info(getMockSerialNo(a))
+		trains, err := a.TrainNo(info)
 		fmt.Printf("\n%v\n", err != nil)
 		for _, train := range trains {
 			fmt.Printf("%#-14v %#v\n", train.TrainNo, train.Date)
@@ -130,25 +130,25 @@ func printTrainNo(b adapters.Bureau, mockFiles ...string) {
 
 	for _, mockBody := range []string{"", "null", "<html>not json</html>"} {
 		common.MockHTTPClientRespBody(mockBody)
-		info, err := b.Info(getMockSerialNo(b))
+		info, err := a.Info(getMockSerialNo(a))
 		if info != nil && err == nil {
 			fmt.Printf("uncaught error for http response %#v", mockBody)
 		}
 	}
 
 	common.MockHTTPClientError(fmt.Errorf("mock http error"))
-	info, err := b.Info(getMockSerialNo(b))
+	info, err := a.Info(getMockSerialNo(a))
 	if info != nil && err == nil {
 		fmt.Printf("uncaught error for http error")
 	}
 }
 
-func printVehicleNo(b adapters.Bureau, mockFiles ...string) {
+func printUnitNo(a adapters.Adapter, mockFiles ...string) {
 	for _, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		serialNo := getMockSerialNo(b)
-		info, err := b.Info(serialNo)
-		vehicleNo, err := b.VehicleNo(serialNo, info)
-		fmt.Printf("%#-14v %v\n", vehicleNo, err != nil)
+		serialNo := getMockSerialNo(a)
+		info, err := a.Info(serialNo)
+		unitNo, err := a.UnitNo(serialNo, info)
+		fmt.Printf("%#-14v %v\n", unitNo, err != nil)
 	}
 }

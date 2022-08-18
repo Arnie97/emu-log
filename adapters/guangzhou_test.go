@@ -18,8 +18,8 @@ func ExampleGuangzhou_TrainNo() {
 	// true
 }
 
-func ExampleGuangzhou_VehicleNo() {
-	printVehicleNo(
+func ExampleGuangzhou_UnitNo() {
+	printUnitNo(
 		adapters.Guangzhou{},
 		"guangzhou_full.json",
 		"guangzhou_invalid.json",

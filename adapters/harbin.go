@@ -13,8 +13,7 @@ var (
 	harbinTrainNoRegExp = regexp.MustCompile(`<div class="cczi">([\w/]+)&nbsp;<font>([-\w/]*)</font></div>`)
 )
 
-type Harbin struct {
-}
+type Harbin struct{}
 
 func init() {
 	Register(Harbin{})
@@ -25,7 +24,7 @@ func (Harbin) Code() string {
 }
 
 func (Harbin) Name() string {
-	return "中国铁路哈尔滨局集团有限公司"
+	return "旅客服务系统（继峰科技）"
 }
 
 func (Harbin) URL() (pattern string, mockValue interface{}) {
@@ -36,16 +35,16 @@ func (Harbin) AlwaysOn() bool {
 	return false
 }
 
-func (b Harbin) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Cookie", SessionID(b))
-	return AdapterConf(b).Request.RoundTrip(req)
+func (a Harbin) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Cookie", SessionID(a))
+	return AdapterConf(a).Request.RoundTrip(req)
 }
 
-func (b Harbin) Info(serial string) (info JSONObject, err error) {
+func (a Harbin) Info(serial string) (info JSONObject, err error) {
 	const api = "http://l.jeehon.com/lkfw/api/index.asp?id=%s"
 	url := fmt.Sprintf(api, serial)
 	var resp *http.Response
-	if resp, err = common.HTTPClient(b).Get(url); err != nil {
+	if resp, err = common.HTTPClient(a).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -61,7 +60,7 @@ func (b Harbin) Info(serial string) (info JSONObject, err error) {
 	return
 }
 
-func (b Harbin) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
+func (a Harbin) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
 	trains = []TrainSchedule{{
 		TrainNo: info["train"].(string),
@@ -69,9 +68,9 @@ func (b Harbin) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (b Harbin) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
+func (a Harbin) UnitNo(serialNo string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = fmt.Sprintf("CRH380BG5@%s", serialNo[:2])
-	_, err = b.TrainNo(info)
+	unitNo = fmt.Sprintf("CRH380BG5@%s", serialNo[:2])
+	_, err = a.TrainNo(info)
 	return
 }

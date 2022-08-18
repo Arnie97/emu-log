@@ -17,8 +17,8 @@ func ExampleNormalizeTrainNo() {
 	// Output: [C1040 C1037 C1040] [G1040 G1041] [D1040] [] []
 }
 
-func ExampleNormalizeVehicleNo() {
-	for _, vehicleNo := range []string{
+func ExampleNormalizeUnitNo() {
+	for _, unitNo := range []string{
 		"CRH_6-002A",
 		"CRH5A1-5028",
 		"CR200J2-4001",
@@ -28,7 +28,7 @@ func ExampleNormalizeVehicleNo() {
 		"CR400BFB-1-5097 ",
 		" CR400AFBZ2-2249 ",
 	} {
-		fmt.Println(common.NormalizeVehicleNo(vehicleNo))
+		fmt.Println(common.NormalizeUnitNo(unitNo))
 	}
 
 	// Output:
@@ -43,16 +43,16 @@ func ExampleNormalizeVehicleNo() {
 	// CR400AFBZ2249
 }
 
-func ExampleApproxEqualVehicleNo() {
+func ExampleApproxEqualUnitNo() {
 	fmt.Println(
-		common.ApproxEqualVehicleNo("CRH380B3626", "CHR380B3626"),
-		common.ApproxEqualVehicleNo("CR400BF5033", "5033"),
-		common.ApproxEqualVehicleNo("CRH5A5124", "CRH5A15124"),
-		common.ApproxEqualVehicleNo("CRH2E2462", "CR8+8-0@459"),
-		common.ApproxEqualVehicleNo("CRH2A2002", "CRH6A4002"),
-		common.ApproxEqualVehicleNo("CR", "CR"),
-		common.ApproxEqualVehicleNo("CRH6C2145", ""),
-		common.ApproxEqualVehicleNo("", "CRH2C2150"),
+		common.ApproxEqualUnitNo("CRH380B3626", "CHR380B3626"),
+		common.ApproxEqualUnitNo("CR400BF5033", "5033"),
+		common.ApproxEqualUnitNo("CRH5A5124", "CRH5A15124"),
+		common.ApproxEqualUnitNo("CRH2E2462", "CR8+8-0@459"),
+		common.ApproxEqualUnitNo("CRH2A2002", "CRH6A4002"),
+		common.ApproxEqualUnitNo("CR", "CR"),
+		common.ApproxEqualUnitNo("CRH6C2145", ""),
+		common.ApproxEqualUnitNo("", "CRH2C2150"),
 	)
 	// Output: true true true true false true false true
 }

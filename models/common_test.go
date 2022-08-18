@@ -12,7 +12,7 @@ func ExampleDB() {
 	x := models.DB()
 	y := models.DB()
 	_, err := x.Exec(`SELECT 1;`)
-	c1 := models.CountRecords("emu_qrcode")
+	c1 := models.CountRecords("emu_qr_code")
 	c2 := models.CountRecords("emu_log", "date")
 
 	fmt.Println("x == y:  ", x == y)
@@ -29,23 +29,23 @@ func ExampleDB() {
 func ExampleListLatestTrainByCondition() {
 	resetTestDB()
 
-	serialModel := models.SerialModel{VehicleNo: "CRH6A4002", BureauCode: "F", SerialNo: "002"}
+	serialModel := models.SerialModel{UnitNo: "CRH6A4002", Adapter: "F", SerialNo: "002"}
 	serialModel.Add()
-	fmt.Println(models.ListSerials(adapters.MustGetBureauByCode("F")))
-	fmt.Println(models.ListSerialsForSingleVehicle("%J2015"))
-	fmt.Println(models.ListLatestSerialForMultiVehicles(adapters.MustGetBureauByCode("P")))
-	fmt.Println(models.ListVehiclesForSingleTrain("D5461"))
-	models.LogModel{Date: "2020-11-20", VehicleNo: "CRH6A4002", TrainNo: "D5464/1/4"}.Add()
-	fmt.Println(models.ListVehiclesForSingleTrain("D5461"))
-	fmt.Println(models.ListLatestVehicleForMultiTrains([]string{"D5461", "D3045", "G666", "D5464"}))
-	fmt.Println(models.ListTrainsForSingleVehicle("%2015"))
-	fmt.Println(len(models.ListVehiclesForSingleTrain("D3071")))
+	fmt.Println(models.ListSerials(adapters.MustGetAdapterByCode("F")))
+	fmt.Println(models.ListSerialsForSingleUnit("%J2015"))
+	fmt.Println(models.ListLatestSerialForMultiUnits(adapters.MustGetAdapterByCode("P")))
+	fmt.Println(models.ListUnitsForSingleTrainNo("D5461"))
+	models.LogModel{Date: "2020-11-20", UnitNo: "CRH6A4002", TrainNo: "D5464/1/4"}.Add()
+	fmt.Println(models.ListUnitsForSingleTrainNo("D5461"))
+	fmt.Println(models.ListLatestUnitForMultiTrains([]string{"D5461", "D3045", "G666", "D5464"}))
+	fmt.Println(models.ListTrainsForSingleUnitNo("%2015"))
+	fmt.Println(len(models.ListUnitsForSingleTrainNo("D3071")))
 	for i := 0; i < 10; i++ {
-		models.LogModel{VehicleNo: "CRH2A2015", TrainNo: "D3074/D3071"}.Add()
+		models.LogModel{UnitNo: "CRH2A2015", TrainNo: "D3074/D3071"}.Add()
 	}
-	fmt.Println(len(models.ListVehiclesForSingleTrain("D3071")))
-	fmt.Println(models.ListLatestTrainForMultiVehicles([]string{"CRH6A4002", "CR200J2040", "CRH2A2460"}))
-	fmt.Println(models.ListLatestTrainForMatchedVehicles("%A%02%"))
+	fmt.Println(len(models.ListUnitsForSingleTrainNo("D3071")))
+	fmt.Println(models.ListLatestTrainForMultiUnits([]string{"CRH6A4002", "CR200J2040", "CRH2A2460"}))
+	fmt.Println(models.ListLatestTrainForMatchedUnits("%A%02%"))
 
 	mockInfo := adapters.JSONObject{}
 	serialModel.AddTrainOperationLogs(mockInfo)
@@ -55,8 +55,8 @@ func ExampleListLatestTrainByCondition() {
 	serialModel.AddTrainOperationLogs(mockInfo)
 	mockInfo["carCode"] = "CRH6A-4002"
 	serialModel.AddTrainOperationLogs(mockInfo)
-	fmt.Println(models.ListTrainsForSingleVehicle("CRH6AA0002"))
-	fmt.Println(models.ListTrainsForSingleVehicle("CRH6A4002"))
+	fmt.Println(models.ListTrainsForSingleUnitNo("CRH6AA0002"))
+	fmt.Println(models.ListTrainsForSingleUnitNo("CRH6A4002"))
 
 	// Output:
 	// [{CRH6A4002 F 002} {CH001 F 053} {CRH2650 F 111} {CRH5A5075 F 472}]

@@ -4,13 +4,13 @@ import (
 	"github.com/arnie97/emu-log/adapters"
 )
 
-func ExampleWuhan_TrainNo() {
+func ExampleLTDD_TrainNo() {
 	printTrainNo(
-		adapters.Wuhan{},
-		"wuhan_full.html",
-		"wuhan_anonymous.html",
-		"wuhan_basic.html",
-		"wuhan_invalid.html",
+		adapters.LTDD{},
+		"ltdd_full.html",
+		"ltdd_anonymous.html",
+		"ltdd_basic.html",
+		"ltdd_invalid.html",
 	)
 	// Output:
 	//
@@ -25,13 +25,13 @@ func ExampleWuhan_TrainNo() {
 	// true
 }
 
-func ExampleWuhan_VehicleNo() {
-	printVehicleNo(
-		adapters.Wuhan{},
-		"wuhan_full.html",
-		"wuhan_anonymous.html",
-		"wuhan_basic.html",
-		"wuhan_invalid.html",
+func ExampleLTDD_UnitNo() {
+	printUnitNo(
+		adapters.LTDD{},
+		"ltdd_full.html",
+		"ltdd_anonymous.html",
+		"ltdd_basic.html",
+		"ltdd_invalid.html",
 	)
 	// Output:
 	// "CR400AF2151"  false

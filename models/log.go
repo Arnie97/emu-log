@@ -8,9 +8,9 @@ import (
 )
 
 type LogModel struct {
-	Date      string `json:"date"`
-	VehicleNo string `json:"emu_no"`
-	TrainNo   string `json:"train_no"`
+	Date    string `json:"date"`
+	UnitNo  string `json:"emu_no"`
+	TrainNo string `json:"train_no"`
 }
 
 func (LogModel) Schema() string {
@@ -48,7 +48,7 @@ func (logModel LogModel) Add() {
 
 	res, err := DB().Exec(
 		`INSERT OR IGNORE INTO emu_log VALUES (?, ?, ?)`,
-		logModel.Date, logModel.VehicleNo, logModel.TrainNo,
+		logModel.Date, logModel.UnitNo, logModel.TrainNo,
 	)
 	common.Must(err)
 
@@ -64,12 +64,12 @@ func (logModel LogModel) Add() {
 }
 
 // Materialize updates the materialized view,
-// which stores the last used vehicle for each half of train numbers.
+// which stores the last used unit for each half of train numbers.
 func (logModel LogModel) Materialize(logID int64) {
 	for _, singleTrainNo := range common.NormalizeTrainNo(logModel.TrainNo) {
 		_, err := DB().Exec(
 			`REPLACE INTO emu_latest VALUES (?, ?, ?, ?)`,
-			logModel.Date, logModel.VehicleNo, singleTrainNo, logID,
+			logModel.Date, logModel.UnitNo, singleTrainNo, logID,
 		)
 		common.Must(err)
 	}
@@ -83,7 +83,7 @@ func (logModel LogModel) Query(sql string, args ...interface{}) (logs []LogModel
 	for rows.Next() {
 		common.Must(rows.Scan(
 			&logModel.Date,
-			&logModel.VehicleNo,
+			&logModel.UnitNo,
 			&logModel.TrainNo,
 		))
 		logs = append(logs, logModel)
@@ -91,7 +91,7 @@ func (logModel LogModel) Query(sql string, args ...interface{}) (logs []LogModel
 	return logs
 }
 
-func ListVehiclesForSingleTrain(trainNo string) []LogModel {
+func ListUnitsForSingleTrainNo(trainNo string) []LogModel {
 	return LogModel{}.Query(`
 		SELECT z.date, z.emu_no, z.train_no
 		FROM emu_latest AS x
@@ -104,7 +104,7 @@ func ListVehiclesForSingleTrain(trainNo string) []LogModel {
 	`, trainNo)
 }
 
-func ListLatestVehicleForMultiTrains(trainNoList []string) []LogModel {
+func ListLatestUnitForMultiTrains(trainNoList []string) []LogModel {
 	trainNoArgs := make([]interface{}, len(trainNoList))
 	trainNoArgsPlaceHolder := strings.Repeat(", ?", len(trainNoList))[2:]
 	for i := range trainNoList {
@@ -117,7 +117,7 @@ func ListLatestVehicleForMultiTrains(trainNoList []string) []LogModel {
 	`, trainNoArgs...)
 }
 
-func ListTrainsForSingleVehicle(vehicleNo string) []LogModel {
+func ListTrainsForSingleUnitNo(unitNo string) []LogModel {
 	return LogModel{}.Query(`
 		SELECT *
 		FROM (
@@ -125,29 +125,29 @@ func ListTrainsForSingleVehicle(vehicleNo string) []LogModel {
 			FROM emu_log
 			WHERE emu_no IN (
 				SELECT emu_no
-				FROM emu_qrcode
+				FROM emu_qr_code
 				WHERE emu_no LIKE ?
 			)
 			ORDER BY date DESC, rowid DESC
 			LIMIT 30
 		)
 		ORDER BY emu_no ASC;
-	`, vehicleNo)
+	`, unitNo)
 }
 
-func ListLatestTrainForMatchedVehicles(vehicleNo string) []LogModel {
+func ListLatestTrainForMatchedUnits(unitNo string) []LogModel {
 	return ListLatestTrainByCondition(
-		`LIKE ?`, "%"+common.NormalizeVehicleNo(vehicleNo)+"%")
+		`LIKE ?`, "%"+common.NormalizeUnitNo(unitNo)+"%")
 }
 
-func ListLatestTrainForMultiVehicles(vehicleNoList []string) []LogModel {
-	vehicleNoArgs := make([]interface{}, len(vehicleNoList))
-	vehicleNoPlaceHolder := strings.Repeat(", ?", len(vehicleNoList))[2:]
-	for i := range vehicleNoList {
-		vehicleNoArgs[i] = common.NormalizeVehicleNo(vehicleNoList[i])
+func ListLatestTrainForMultiUnits(unitNoList []string) []LogModel {
+	unitNoArgs := make([]interface{}, len(unitNoList))
+	unitNoPlaceHolder := strings.Repeat(", ?", len(unitNoList))[2:]
+	for i := range unitNoList {
+		unitNoArgs[i] = common.NormalizeUnitNo(unitNoList[i])
 	}
 	return ListLatestTrainByCondition(
-		`IN (`+vehicleNoPlaceHolder+`)`, vehicleNoArgs...)
+		`IN (`+unitNoPlaceHolder+`)`, unitNoArgs...)
 }
 
 func ListLatestTrainByCondition(cond string, args ...interface{}) []LogModel {
@@ -159,7 +159,7 @@ func ListLatestTrainByCondition(cond string, args ...interface{}) []LogModel {
 			FROM emu_log
 			WHERE emu_no IN (
 				SELECT DISTINCT emu_no
-				FROM emu_qrcode
+				FROM emu_qr_code
 				WHERE emu_no `+cond+`
 			)
 			GROUP BY emu_no

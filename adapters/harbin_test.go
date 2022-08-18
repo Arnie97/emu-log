@@ -18,8 +18,8 @@ func ExampleHarbin_TrainNo() {
 	// true
 }
 
-func ExampleHarbin_VehicleNo() {
-	printVehicleNo(adapters.Harbin{},
+func ExampleHarbin_UnitNo() {
+	printUnitNo(adapters.Harbin{},
 		"harbin_basic.html",
 		"harbin_invalid.html",
 	)

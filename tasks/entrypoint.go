@@ -14,10 +14,10 @@ const helpMsg = `%s
 
 usage:
 
-%[2]s i[nfo]       BUREAU_CODE [QR_CODE ...]
-%[2]s t[rainNo]   [BUREAU_CODE ...]
-%[2]s v[ehicleNo] [BUREAU_CODE ...]
-%[2]s s[chedule]  [BUREAU_CODE ...]
+%[2]s i[nfo]      SITE_ADAPTER [QR_CODE ...]
+%[2]s t[rainNo]  [SITE_ADAPTER ...]
+%[2]s u[nitNo]   [SITE_ADAPTER ...]
+%[2]s s[chedule] [SITE_ADAPTER ...]
 %[2]s d[aemon]
 `
 
@@ -32,25 +32,25 @@ func CmdParser(args ...string) {
 	case "s", "schedule":
 		go serveHTTP()
 		scheduleTask(func() {
-			iterateBureaus(scanTask, args[2:]...)
+			iterateAdapters(scanTask, args[2:]...)
 		})
 	case "t", "trainNo":
-		iterateBureaus(scanTrainNo, args[2:]...)
-	case "v", "vehicleNo":
-		iterateBureaus(scanVehicleNo, args[2:]...)
+		iterateAdapters(scanTrainNo, args[2:]...)
+	case "u", "unitNo":
+		iterateAdapters(scanUnitNo, args[2:]...)
 	case "i", "info", "a", "add":
 		if len(args) < 3 {
-			log.Fatal().Msg("missing argument: BUREAU_CODE [QR_CODE ...]")
+			log.Fatal().Msg("missing argument: SITE_ADAPTER [QR_CODE ...]")
 		}
 
-		b := adapters.MustGetBureauByCode(args[2])
+		a := adapters.MustGetAdapterByCode(args[2])
 		for _, qrCode := range args[3:] {
 			if args[1][0] == 'i' {
-				info, err := b.Info(qrCode)
+				info, err := a.Info(qrCode)
 				common.PrettyPrint(info)
 				common.Must(err)
 			} else {
-				addVehicleBySerial(b, qrCode)
+				addUnitBySerial(a, qrCode)
 			}
 		}
 

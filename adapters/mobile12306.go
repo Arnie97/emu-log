@@ -8,33 +8,32 @@ import (
 	"github.com/arnie97/emu-log/common"
 )
 
-type Kunming struct {
-}
+type Mobile12306 struct{}
 
 func init() {
-	Register(&Kunming{})
+	Register(&Mobile12306{})
 }
 
-func (Kunming) Code() string {
+func (Mobile12306) Code() string {
 	return "M"
 }
 
-func (Kunming) Name() string {
-	return "中国铁路昆明局集团有限公司"
+func (Mobile12306) Name() string {
+	return "铁路畅行"
 }
 
-func (Kunming) URL() (pattern string, mockValue interface{}) {
+func (Mobile12306) URL() (pattern string, mockValue interface{}) {
 	return "https://p.12306.cn/tservice/qr/travel/v1?c=%s&w=h", nil
 }
 
-func (Kunming) AlwaysOn() bool {
+func (Mobile12306) AlwaysOn() bool {
 	return false
 }
 
-func (b *Kunming) Info(serial string) (info JSONObject, err error) {
+func (a *Mobile12306) Info(serial string) (info JSONObject, err error) {
 	const api = "https://mobile.12306.cn/wxxcx/wechat/main/travelServiceDecodeQrcode"
 
-	urlStruct, err := url.ParseRequestURI(BuildURL(b, serial))
+	urlStruct, err := url.ParseRequestURI(BuildURL(a, serial))
 	if err != nil {
 		return
 	}
@@ -57,7 +56,7 @@ func (b *Kunming) Info(serial string) (info JSONObject, err error) {
 	return
 }
 
-func (Kunming) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
+func (Mobile12306) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
 	shortDate := info["endDay"].(string)
 	shortTime := info["endTime"].(string)
@@ -72,8 +71,8 @@ func (Kunming) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Kunming) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
+func (Mobile12306) UnitNo(serialNo string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["carCode"].(string))
+	unitNo = common.NormalizeUnitNo(info["carCode"].(string))
 	return
 }

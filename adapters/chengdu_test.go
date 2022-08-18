@@ -32,8 +32,8 @@ func ExampleChengdu_TrainNo() {
 	// true
 }
 
-func ExampleChengdu_VehicleNo() {
-	printVehicleNo(
+func ExampleChengdu_UnitNo() {
+	printUnitNo(
 		adapters.Chengdu{},
 		"chengdu_full_1.base64",
 		"chengdu_full_2.base64",

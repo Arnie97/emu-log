@@ -47,8 +47,8 @@ func ExampleJinan_TrainNo() {
 	// false
 }
 
-func ExampleJinan_VehicleNo() {
-	printVehicleNo(
+func ExampleJinan_UnitNo() {
+	printUnitNo(
 		adapters.Jinan{},
 		"jinan_full.json",
 		"jinan_basic.json",

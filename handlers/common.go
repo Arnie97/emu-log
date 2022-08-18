@@ -24,15 +24,15 @@ func NewRouter() *chi.Mux {
 	mux.Get(`/map/{stationName}`, railMapHandler)
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
 	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
-	mux.Get(`/emu/{vehicleNo:.*,.*}`, multiVehicleNoHandler)
-	mux.Route(`/emu/{vehicleNo:[A-Z-\d]*?[@\d]\d{3}}`, func(r chi.Router) {
-		r.Get("/", singleVehicleNoHandler)
-		r.Get("/qr", vehicleBuildURLHandler)
-		r.Post("/qr", vehicleParseURLHandler)
+	mux.Get(`/emu/{unitNo:.*,.*}`, multiUnitNoHandler)
+	mux.Route(`/emu/{unitNo:[A-Z-\d]*?[@\d]\d{3}}`, func(r chi.Router) {
+		r.Get("/", singleUnitNoHandler)
+		r.Get("/qr", unitBuildURLHandler)
+		r.Post("/qr", unitParseURLHandler)
 	})
-	mux.Put(`/emu/qr`, vehicleParseURLMapHandler)
-	mux.Post(`/emu/qr`, vehicleParseURLHandler)
-	mux.Get(`/emu/{vehicleNo:[A-Z-\d@]+}`, fuzzyVehicleNoHandler)
+	mux.Put(`/emu/qr`, unitParseURLMapHandler)
+	mux.Post(`/emu/qr`, unitParseURLHandler)
+	mux.Get(`/emu/{unitNo:[A-Z-\d@]+}`, fuzzyUnitNoHandler)
 	return mux
 }
 
@@ -41,7 +41,7 @@ func serializeLogEntries(rows *sql.Rows, w http.ResponseWriter) {
 	results := make([]models.LogModel, 0)
 	for rows.Next() {
 		var e models.LogModel
-		common.Must(rows.Scan(&e.Date, &e.VehicleNo, &e.TrainNo))
+		common.Must(rows.Scan(&e.Date, &e.UnitNo, &e.TrainNo))
 		results = append(results, e)
 	}
 	jsonResponse(results, w)

@@ -12,43 +12,43 @@ import (
 )
 
 var (
-	htmlVehicleRegExp = regexp.MustCompile(`<p class="schedule">.+:(\w+)-6-6D/F</p>`)
+	htmlUnitNoRegExp  = regexp.MustCompile(`<p class="schedule">.+:(\w+)-6-6D/F</p>`)
 	htmlTrainNoRegExp = regexp.MustCompile(`<p class="train-title">(\w+)随车购</p>`)
-	jsonVehicleRegExp = regexp.MustCompile(`var locomotive_info = (\{.+\});`)
+	jsonUnitNoRegExp  = regexp.MustCompile(`var locomotive_info = (\{.+\});`)
 	jsonCompanyRegExp = regexp.MustCompile(`var company_info = (\{.+\});`)
 )
 
-type Wuhan struct{}
+type LTDD struct{}
 
 func init() {
-	Register(Wuhan{})
+	Register(LTDD{})
 }
 
-func (Wuhan) Code() string {
+func (LTDD) Code() string {
 	return "N"
 }
 
-func (Wuhan) Name() string {
-	return "中国铁路武汉局集团有限公司"
+func (LTDD) Name() string {
+	return "旅途点点（田螺科技）"
 }
 
-func (Wuhan) URL() (pattern string, mockValue interface{}) {
+func (LTDD) URL() (pattern string, mockValue interface{}) {
 	return "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index?locomotiveId=%s&carriage=%d&seatRow=%d&seatNo=%v", "D/F"
 }
 
-func (Wuhan) AlwaysOn() bool {
+func (LTDD) AlwaysOn() bool {
 	return true
 }
 
-func (b Wuhan) RoundTrip(req *http.Request) (*http.Response, error) {
+func (a LTDD) RoundTrip(req *http.Request) (*http.Response, error) {
 	common.SetCookies(req, []*http.Cookie{{
 		Name:  "OpenId",
-		Value: SessionID(b),
+		Value: SessionID(a),
 	}})
-	return AdapterConf(b).Request.RoundTrip(req)
+	return AdapterConf(a).Request.RoundTrip(req)
 }
 
-func (b Wuhan) Info(serial string) (info JSONObject, err error) {
+func (a LTDD) Info(serial string) (info JSONObject, err error) {
 	const (
 		landingPage  = "https://wechat.lvtudiandian.com/index.php/QrSweepCode/index?locomotiveId=%s&carriage=6&seatRow=6&seatNo=D%%2FF"
 		orderingPage = "https://wechat.lvtudiandian.com/index.php/Home/SweepCode/index.html?is_redirect=1"
@@ -56,7 +56,7 @@ func (b Wuhan) Info(serial string) (info JSONObject, err error) {
 
 	url := fmt.Sprintf(landingPage, serial)
 	var resp *http.Response
-	if resp, err = common.HTTPClient(b).Get(url); err != nil {
+	if resp, err = common.HTTPClient(a).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -69,7 +69,7 @@ func (b Wuhan) Info(serial string) (info JSONObject, err error) {
 		return
 	}
 
-	if resp, err = common.HTTPClient(b).Get(orderingPage); err != nil {
+	if resp, err = common.HTTPClient(a).Get(orderingPage); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -78,9 +78,9 @@ func (b Wuhan) Info(serial string) (info JSONObject, err error) {
 		return
 	}
 
-	if match := jsonVehicleRegExp.FindSubmatch(bytes); match != nil {
+	if match := jsonUnitNoRegExp.FindSubmatch(bytes); match != nil {
 		json.Unmarshal(match[1], &info)
-	} else if match := htmlVehicleRegExp.FindSubmatch(bytes); match != nil {
+	} else if match := htmlUnitNoRegExp.FindSubmatch(bytes); match != nil {
 		info = JSONObject{"locomotive_code": string(match[1])}
 		if match = htmlTrainNoRegExp.FindSubmatch(bytes); match != nil {
 			info["partner_name"] = string(match[1])
@@ -92,7 +92,7 @@ func (b Wuhan) Info(serial string) (info JSONObject, err error) {
 	return
 }
 
-func (Wuhan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
+func (LTDD) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	defer common.Catch(&err)
 	trains = []TrainSchedule{{
 		TrainNo: info["partner_name"].(string),
@@ -100,11 +100,11 @@ func (Wuhan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Wuhan) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
+func (LTDD) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["locomotive_code"].(string))
-	if strings.HasPrefix(vehicleNo, "380") {
-		vehicleNo = "CRH" + vehicleNo
+	unitNo = common.NormalizeUnitNo(info["locomotive_code"].(string))
+	if strings.HasPrefix(unitNo, "380") {
+		unitNo = "CRH" + unitNo
 	}
 	return
 }

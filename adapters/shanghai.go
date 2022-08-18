@@ -27,7 +27,7 @@ func (Shanghai) Code() string {
 }
 
 func (Shanghai) Name() string {
-	return "中国铁路上海局集团有限公司（爱上铁）"
+	return "华东印记（爱上铁）"
 }
 
 func (Shanghai) URL() (pattern string, mockValue interface{}) {
@@ -38,18 +38,18 @@ func (Shanghai) AlwaysOn() bool {
 	return true
 }
 
-func (b Shanghai) RoundTrip(req *http.Request) (*http.Response, error) {
+func (a Shanghai) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("channel", "MALL-WX-APPLET")
 	req.Header.Set("version", "MALL-WX-APPLET_1.0.7")
-	return AdapterConf(b).Request.RoundTrip(req)
+	return AdapterConf(a).Request.RoundTrip(req)
 }
 
-func (b Shanghai) Info(serial string) (info JSONObject, err error) {
+func (a Shanghai) Info(serial string) (info JSONObject, err error) {
 	const api = "https://ky.railshj.cn/12306app/orderingfood/pqcode/getTrainByPqCode"
-	buf := bytes.NewBuffer(b.SerialEncrypt(serial))
+	buf := bytes.NewBuffer(a.SerialEncrypt(serial))
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient(b).Post(api, common.ContentType, buf); err != nil {
+	if resp, err = common.HTTPClient(a).Post(api, common.ContentType, buf); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -64,7 +64,7 @@ func (b Shanghai) Info(serial string) (info JSONObject, err error) {
 	if err != nil || len(result.Data) == 0 {
 		return
 	}
-	err = b.InfoDecrypt(result.Data, &info)
+	err = a.InfoDecrypt(result.Data, &info)
 	return
 }
 
@@ -73,7 +73,7 @@ func (b Shanghai) Info(serial string) (info JSONObject, err error) {
 // next encode the JSON string with padded base64 encoding scheme,
 // after that encrypts the base64-encoded string with AES-ECB cipher mode,
 // and finally wrap the result in JSON again.
-func (b Shanghai) SerialEncrypt(serial string) []byte {
+func (a Shanghai) SerialEncrypt(serial string) []byte {
 	message := struct {
 		SignExt      string `json:"signext,omitempty"`
 		TimestampExt int64  `json:"timestampext,omitempty"`
@@ -81,7 +81,7 @@ func (b Shanghai) SerialEncrypt(serial string) []byte {
 	}{
 		PQCode: serial,
 	}
-	message.SignExt = b.Signature(message)
+	message.SignExt = a.Signature(message)
 	message.TimestampExt = common.UnixMilli()
 
 	plainText, err := json.Marshal(message)
@@ -101,7 +101,7 @@ func (b Shanghai) SerialEncrypt(serial string) []byte {
 
 // Signature serializes the message, and generates its
 // hexadecimal hash digest with the MD5 - SHA1 hash chain.
-func (b Shanghai) Signature(message interface{}) string {
+func (Shanghai) Signature(message interface{}) string {
 	jsonBytes, err := json.Marshal(message)
 	common.Must(err)
 
@@ -118,7 +118,7 @@ func (b Shanghai) Signature(message interface{}) string {
 
 // InfoDecrypt decrypts the hexadecimal encoded cipher text with AES-ECB-128,
 // and unmarshals the plain text result into the given structure.
-func (b Shanghai) InfoDecrypt(src []byte, dest interface{}) (err error) {
+func (Shanghai) InfoDecrypt(src []byte, dest interface{}) (err error) {
 	cipherTextLength, err := hex.Decode(src, src)
 	if err != nil {
 		return
@@ -138,8 +138,8 @@ func (Shanghai) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Shanghai) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
+func (Shanghai) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
+	unitNo = common.NormalizeUnitNo(info["cdh"].(string))
 	return
 }

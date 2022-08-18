@@ -32,7 +32,7 @@ func (Chengdu) Code() string {
 }
 
 func (Chengdu) Name() string {
-	return "中国铁路成都局集团有限公司"
+	return "川之味"
 }
 
 func (Chengdu) URL() (pattern string, mockValue interface{}) {
@@ -43,11 +43,11 @@ func (Chengdu) AlwaysOn() bool {
 	return false
 }
 
-func (b Chengdu) Info(serial string) (info JSONObject, err error) {
+func (a Chengdu) Info(serial string) (info JSONObject, err error) {
 	const api = "https://kyd.cd-rail.com/KYDMS_S/WeixinServlet"
 
 	var form url.Values
-	if form, err = b.SerialEncrypt(api, serial); err != nil {
+	if form, err = a.SerialEncrypt(api, serial); err != nil {
 		return
 	}
 
@@ -58,7 +58,7 @@ func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 	defer resp.Body.Close()
 
 	result := []*JSONObject{&info}
-	if err = b.InfoDecrypt(resp.Body, &result); err != nil {
+	if err = a.InfoDecrypt(resp.Body, &result); err != nil {
 		return
 	}
 	return
@@ -66,24 +66,24 @@ func (b Chengdu) Info(serial string) (info JSONObject, err error) {
 
 // SerialEncrypt converts the QR code tuple to a form,
 // and encrypts the form values in DES-ECB cipher mode.
-func (b Chengdu) SerialEncrypt(api, serial string) (ret url.Values, err error) {
+func (Chengdu) SerialEncrypt(api, serial string) (ret url.Values, err error) {
 	components := strings.Split(serial, ",")
 	if len(components) != 6 {
 		err = fmt.Errorf("invalid serial number tuple: %s", serial)
 		return
 	}
 	var (
-		today         = time.Now().Format("2006/01/02")
-		vehicleModel  = components[1]
-		vehicleDigits = components[2]
-		seatCoach     int
-		sqlParams     []byte
+		today      = time.Now().Format("2006/01/02")
+		unitClass  = components[1]
+		unitSerial = components[2]
+		seatCoach  int
+		sqlParams  []byte
 	)
 	if seatCoach, err = strconv.Atoi(components[3]); err != nil {
 		return
 	}
 
-	sqlParamsTuple := []interface{}{vehicleDigits, seatCoach, today, vehicleModel}
+	sqlParamsTuple := []interface{}{unitSerial, seatCoach, today, unitClass}
 	if sqlParams, err = json.Marshal(sqlParamsTuple); err != nil {
 		return
 	}
@@ -106,7 +106,7 @@ func (b Chengdu) SerialEncrypt(api, serial string) (ret url.Values, err error) {
 
 // InfoDecrypt decrypts the base64 encoded cipher text with DES-ECB,
 // and unmarshals the plain text result into the given structure.
-func (b Chengdu) InfoDecrypt(src io.Reader, dest interface{}) (err error) {
+func (Chengdu) InfoDecrypt(src io.Reader, dest interface{}) (err error) {
 	defer common.Catch(&err)
 
 	var (
@@ -144,23 +144,23 @@ func (Chengdu) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (b Chengdu) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
-	retrievedVehicleNo, _ := info["TRAIN_UNDER"].(string)
-	if len(retrievedVehicleNo) == 0 {
+func (Chengdu) UnitNo(qrTuple string, info JSONObject) (unitNo string, err error) {
+	retrievedUnitNo, _ := info["TRAIN_UNDER"].(string)
+	if len(retrievedUnitNo) == 0 {
 		return
 	}
 
 	var (
-		components    = strings.Split(serialNo, ",")
-		vehicleModel  = components[1]
-		vehicleDigits = components[2]
+		components = strings.Split(qrTuple, ",")
+		unitClass  = components[1]
+		unitSerial = components[2]
 	)
-	vehicleNo = vehicleModel + vehicleDigits
-	if common.ApproxEqualVehicleNo(vehicleNo, retrievedVehicleNo) {
+	unitNo = unitClass + unitSerial
+	if common.ApproxEqualUnitNo(unitNo, retrievedUnitNo) {
 		return
 	}
 
 	// the number in the QR code does not match the one in the HTTP response
-	vehicleNo = "CRH@" + retrievedVehicleNo
+	unitNo = "CRH@" + retrievedUnitNo
 	return
 }

@@ -41,8 +41,8 @@ func ExampleShanghai_TrainNo() {
 	// true
 }
 
-func ExampleShanghai_VehicleNo() {
-	printVehicleNo(adapters.Shanghai{},
+func ExampleShanghai_UnitNo() {
+	printUnitNo(adapters.Shanghai{},
 		"shanghai_full.json",
 		"shanghai_basic.json",
 		"shanghai_invalid.json",

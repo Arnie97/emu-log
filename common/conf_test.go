@@ -14,8 +14,8 @@ func ExampleConf() {
 
 	serials := make(chan string)
 	go func() {
-		for _, b := range common.Conf().Adapters {
-			for _, rule := range b.SearchSpace {
+		for _, a := range common.Conf().Adapters {
+			for _, rule := range a.SearchSpace {
 				rule.Emit(serials)
 			}
 		}

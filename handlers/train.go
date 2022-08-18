@@ -8,17 +8,17 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// singleTrainNoHandler returns the used vehicle and the corresponding date
+// singleTrainNoHandler returns the used unit and the corresponding date
 // for the 30 most recent log items that matches the given train number.
 func singleTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNo := chi.URLParam(r, "trainNo")
-	results := models.ListVehiclesForSingleTrain(trainNo)
+	results := models.ListUnitsForSingleTrainNo(trainNo)
 	jsonResponse(results, w)
 }
 
-// multiTrainNoHandler returns the last used vehicle for multiple trains.
+// multiTrainNoHandler returns the last used unit number for multiple trains.
 func multiTrainNoHandler(w http.ResponseWriter, r *http.Request) {
 	trainNoList := strings.Split(chi.URLParam(r, "trainNo"), ",")
-	results := models.ListLatestVehicleForMultiTrains(trainNoList)
+	results := models.ListLatestUnitForMultiTrains(trainNoList)
 	jsonResponse(results, w)
 }

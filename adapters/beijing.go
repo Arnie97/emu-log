@@ -20,7 +20,7 @@ func (Beijing) Code() string {
 }
 
 func (Beijing) Name() string {
-	return "中国铁路北京局集团有限公司"
+	return "康之旅（京铁列服）"
 }
 
 func (Beijing) URL() (pattern string, mockValue interface{}) {
@@ -71,8 +71,8 @@ func (Beijing) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Beijing) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
+func (Beijing) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["TrainId"].(string))
+	unitNo = common.NormalizeUnitNo(info["TrainId"].(string))
 	return
 }

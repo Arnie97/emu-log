@@ -7,18 +7,18 @@ import (
 )
 
 type SerialModel struct {
-	VehicleNo  string `json:"emu_no"`
-	BureauCode string `json:"emu_bureau"`
-	SerialNo   string `json:"emu_qrcode"`
+	UnitNo   string `json:"emu_no"`
+	Adapter  string `json:"adapter"`
+	SerialNo string `json:"qr_code"`
 }
 
 func (SerialModel) Schema() string {
 	return `
-		CREATE TABLE IF NOT EXISTS emu_qrcode (
-			emu_no      VARCHAR NOT NULL,
-			emu_bureau  CHAR(1) NOT NULL,
-			emu_qrcode  VARCHAR NOT NULL,
-			UNIQUE(emu_bureau, emu_qrcode)
+		CREATE TABLE IF NOT EXISTS emu_qr_code (
+			emu_no   VARCHAR NOT NULL,
+			adapter  CHAR(1) NOT NULL,
+			qr_code  VARCHAR NOT NULL,
+			UNIQUE(adapter, qr_code)
 		);
 	`
 }
@@ -30,32 +30,33 @@ func init() {
 // Add inserts a recently discovered serial number into the database.
 func (s SerialModel) Add() {
 	_, err := DB().Exec(
-		`INSERT OR IGNORE INTO emu_qrcode VALUES (?, ?, ?)`,
-		s.VehicleNo, s.BureauCode, s.SerialNo,
+		`INSERT OR IGNORE INTO
+		emu_qr_code(emu_no, adapter, qr_code) VALUES (?, ?, ?)`,
+		s.UnitNo, s.Adapter, s.SerialNo,
 	)
 	common.Must(err)
 }
 
 // AddTrainOperationLogs creates related operation log records if possible.
 func (s SerialModel) AddTrainOperationLogs(info adapters.JSONObject) {
-	b := adapters.MustGetBureauByCode(s.BureauCode)
-	trains, err := b.TrainNo(info)
+	a := adapters.MustGetAdapterByCode(s.Adapter)
+	trains, err := a.TrainNo(info)
 	if err != nil || len(trains) == 0 {
-		log.Debug().Msgf("[%s] %v -> %v", b.Code(), s, err)
+		log.Debug().Msgf("[%s] %v -> %v", a.Code(), s, err)
 		return
 	}
 
 	var logModel LogModel
-	logModel.VehicleNo, _ = b.VehicleNo(s.SerialNo, info)
+	logModel.UnitNo, _ = a.UnitNo(s.SerialNo, info)
 	for _, train := range trains {
 		logModel.TrainNo = train.TrainNo
 		logModel.Date = train.Date
-		if !common.ApproxEqualVehicleNo(s.VehicleNo, logModel.VehicleNo) {
-			log.Warn().Msgf("[%s] %v -> %v ignored", b.Code(), s, logModel)
+		if !common.ApproxEqualUnitNo(s.UnitNo, logModel.UnitNo) {
+			log.Warn().Msgf("[%s] %v -> %v ignored", a.Code(), s, logModel)
 			return
 		}
-		log.Debug().Msgf("[%s] %v -> %v", b.Code(), s, logModel)
-		logModel.VehicleNo = s.VehicleNo
+		log.Debug().Msgf("[%s] %v -> %v", a.Code(), s, logModel)
+		logModel.UnitNo = s.UnitNo
 		logModel.Add()
 	}
 }
@@ -67,47 +68,47 @@ func (s SerialModel) Query(sql string, args ...interface{}) (serials []SerialMod
 	defer rows.Close()
 
 	for rows.Next() {
-		common.Must(rows.Scan(&s.VehicleNo, &s.BureauCode, &s.SerialNo))
+		common.Must(rows.Scan(&s.UnitNo, &s.Adapter, &s.SerialNo))
 		serials = append(serials, s)
 	}
 	return serials
 }
 
-// ListSerials returns all known serials and corresponding vehicles
-// of the given railway company from the database.
-func ListSerials(b adapters.Bureau) []SerialModel {
+// ListSerials returns all known serials and corresponding units
+// of a given adapter from the database.
+func ListSerials(a adapters.Adapter) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_no, emu_bureau, emu_qrcode
-		FROM emu_qrcode
-		WHERE emu_bureau = ?
-		ORDER BY emu_qrcode ASC;
-	`, b.Code())
+		SELECT emu_no, adapter, qr_code
+		FROM emu_qr_code
+		WHERE adapter = ?
+		ORDER BY qr_code ASC;
+	`, a.Code())
 }
 
-// ListSerialsForSingleVehicle returns all the known serials for a vehicle.
-func ListSerialsForSingleVehicle(vehicleNo string) []SerialModel {
+// ListSerialsForSingleUnit returns all the known serials for one unit.
+func ListSerialsForSingleUnit(unitNo string) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_no, emu_bureau, emu_qrcode
-		FROM emu_qrcode
+		SELECT emu_no, adapter, qr_code
+		FROM emu_qr_code
 		WHERE emu_no LIKE ?
 		ORDER BY rowid DESC;
-	`, vehicleNo)
+	`, unitNo)
 }
 
-// ListLatestSerialForMultiVehicles returns the most recently discovered
-// serial number for each vehicle in the given railway company, but excluding
+// ListLatestSerialForMultiUnits returns the most recently discovered
+// serial number for each unit from the given adapter, but excluding
 // those with known train schedules.
-func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
+func ListLatestSerialForMultiUnits(a adapters.Adapter) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_qrcode.emu_no, emu_bureau, emu_qrcode
+		SELECT emu_qr_code.emu_no, adapter, qr_code
 		FROM (
-			SELECT emu_no, emu_bureau, emu_qrcode
-			FROM emu_qrcode
-			WHERE emu_bureau = ?
+			SELECT emu_no, adapter, qr_code
+			FROM emu_qr_code
+			WHERE adapter = ?
 			GROUP BY emu_no
 			HAVING MAX(rowid)
 			ORDER BY emu_no ASC
-		) AS emu_qrcode
+		) AS emu_qr_code
 		LEFT JOIN (
 			SELECT emu_no, date
 			FROM (
@@ -119,7 +120,7 @@ func ListLatestSerialForMultiVehicles(b adapters.Bureau) []SerialModel {
 			GROUP BY emu_no
 			HAVING MAX(rowid)
 		) AS emu_log
-		ON emu_qrcode.emu_no = emu_log.emu_no
+		ON emu_qr_code.emu_no = emu_log.emu_no
 		WHERE date IS NULL OR date < DATETIME('now', 'localtime');
-	`, b.Code())
+	`, a.Code())
 }

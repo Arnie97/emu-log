@@ -47,11 +47,11 @@ func scheduleTask(task func()) {
 	}
 }
 
-// scanTask is a combination of scanVehicleNo() and scanTrainNo().
-func scanTask(b adapters.Bureau) {
+// scanTask is a combination of scanUnitNo() and scanTrainNo().
+func scanTask(a adapters.Adapter) {
 	endTime := time.Duration(common.Conf().Schedule.EndTime)
-	scanForNewVehicles := true
-	if b.AlwaysOn() {
+	scanForNewUnits := true
+	if a.AlwaysOn() {
 		now := time.Now()
 		today := time.Date(
 			now.Year(), now.Month(), now.Day(),
@@ -59,41 +59,41 @@ func scanTask(b adapters.Bureau) {
 		)
 
 		// for "always on" adapters, it would be more than sufficient to scan
-		// the whole key space once a day to discover recently added vehicles.
+		// the whole key space once a day to discover recently added units.
 		// let's run it during the possessive intervals in the train diagrams.
 		if !now.After(today.Add(endTime)) {
-			scanForNewVehicles = false
+			scanForNewUnits = false
 		}
 	}
 
-	if scanForNewVehicles {
+	if scanForNewUnits {
 		wg.Add(1)
-		defer scanVehicleNo(b)
+		defer scanUnitNo(a)
 	}
-	scanTrainNo(b)
+	scanTrainNo(a)
 }
 
-// iterateBureaus parallelizes scanning requests for different railway
+// iterateAdapters parallelizes scanning requests for different railway
 // companies with goroutines.
-func iterateBureaus(task func(adapters.Bureau), bureaus ...string) {
+func iterateAdapters(task func(adapters.Adapter), adapterList ...string) {
 	once.Do(func() {
 		checkLocalTimezone()
 		checkInternetConnection()
 		checkDatabase()
 	})
 
-	// support both joined bureau codes and space separated bureau codes
-	bureauCodes := strings.Join(bureaus, "")
-	if len(bureauCodes) == 0 {
-		for _, b := range adapters.Bureaus {
+	// support both joined adapter codes and space separated adapter codes
+	adapterCodes := strings.Join(adapterList, "")
+	if len(adapterCodes) == 0 {
+		for _, a := range adapters.Adapters {
 			wg.Add(1)
-			go task(b)
+			go task(a)
 		}
 	} else {
-		for _, code := range bureauCodes {
-			b := adapters.MustGetBureauByCode(string(code))
+		for _, code := range adapterCodes {
+			a := adapters.MustGetAdapterByCode(string(code))
 			wg.Add(1)
-			go task(b)
+			go task(a)
 		}
 	}
 
@@ -115,7 +115,7 @@ func checkLocalTimezone() {
 // checkInternetConnection prints the RTT for a HTTP connection.
 func checkInternetConnection() {
 	start := time.Now()
-	_, err := adapters.Bureaus["K"].Info("K1001036127001")
+	_, err := adapters.Adapters["K"].Info("K1001036127001")
 	common.Must(err)
 	log.Info().Msgf(
 		"internet connection ok, round-trip delay %v",
@@ -130,8 +130,8 @@ func checkDatabase() {
 		models.CountRecords("emu_log"),
 	)
 	log.Info().Msgf(
-		"found %d vehicles and %d qr codes in the database",
-		models.CountRecords("emu_qrcode", "DISTINCT emu_no"),
-		models.CountRecords("emu_qrcode"),
+		"found %d units and %d QR codes in the database",
+		models.CountRecords("emu_qr_code", "DISTINCT emu_no"),
+		models.CountRecords("emu_qr_code"),
 	)
 }

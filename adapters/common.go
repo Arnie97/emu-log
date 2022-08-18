@@ -1,4 +1,4 @@
-// Package adapters defines API adapters for each supported railway bureau.
+// Package adapters defines API adapters for each supported site.
 package adapters
 
 import (
@@ -13,7 +13,7 @@ import (
 )
 
 type (
-	Bureau interface {
+	Adapter interface {
 		Code() string
 		Name() string
 
@@ -21,16 +21,16 @@ type (
 		// with the serial number replaced by the placeholder "%s".
 		URL() (pattern string, mockValue interface{})
 
-		// AlwaysOn means the bureau adapter still returns some basic
+		// AlwaysOn means the site adapter still returns some basic
 		// information even if meal ordering service is currently not
 		// available. Otherwise, unallocated serial numbers cannot
-		// be differentiated from serials assigned to offline vehicles,
+		// be differentiated from serials assigned to offline units,
 		// and the unknown serials have to be visited in each scan.
 		AlwaysOn() bool
 
 		Info(serialNo string) (info JSONObject, err error)
 		TrainNo(info JSONObject) ([]TrainSchedule, error)
-		VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error)
+		UnitNo(serialNo string, info JSONObject) (unitNo string, err error)
 	}
 	JSONObject    map[string]interface{}
 	TrainSchedule struct{ TrainNo, Date string }
@@ -48,26 +48,26 @@ var (
 		`(?:\d+)`,     // %d
 		`(?:.*?)`,     // %v
 	}
-	Bureaus = make(map[string]Bureau)
+	Adapters = make(map[string]Adapter)
 )
 
-func Register(b Bureau) {
-	if Bureaus[b.Code()] != nil {
-		common.Must(fmt.Errorf("[%s] bureau was redeclared in the adapters package", b.Code()))
+func Register(a Adapter) {
+	if Adapters[a.Code()] != nil {
+		common.Must(fmt.Errorf("[%s] adapter was redeclared in the adapters package", a.Code()))
 	}
-	Bureaus[b.Code()] = b
+	Adapters[a.Code()] = a
 }
 
-func MustGetBureauByCode(bureauCode string) (b Bureau) {
-	if b = Bureaus[bureauCode]; b == nil {
-		log.Fatal().Msgf("[%s] unknown bureau adapter", bureauCode)
+func MustGetAdapterByCode(adapterCode string) (a Adapter) {
+	if a = Adapters[adapterCode]; a == nil {
+		log.Fatal().Msgf("[%s] unknown adapter", adapterCode)
 	}
 	return
 }
 
-func AdapterConf(b Bureau) (merged common.AdapterConf) {
+func AdapterConf(a Adapter) (merged common.AdapterConf) {
 	global := common.Conf()
-	merged = global.Adapters[b.Code()]
+	merged = global.Adapters[a.Code()]
 	adapterRequest := merged.Request
 	merged.Request = new(common.RequestConf)
 	common.Must(common.StructDecode(global.Request, merged.Request))
@@ -75,22 +75,22 @@ func AdapterConf(b Bureau) (merged common.AdapterConf) {
 	return
 }
 
-func SessionID(b Bureau) string {
-	return AdapterConf(b).Request.SessionID
+func SessionID(a Adapter) string {
+	return AdapterConf(a).Request.SessionID
 }
 
-func BuildURL(b Bureau, serial string) (url string) {
-	urlPattern, urlMockValue := b.URL()
+func BuildURL(a Adapter, serial string) (url string) {
+	urlPattern, urlMockValue := a.URL()
 	return fmt.Sprintf(printfMap.Replace(urlPattern), serial, 6, urlMockValue)
 }
 
-func ParseURL(url string) (b Bureau, serial string) {
-	for _, b = range Bureaus {
-		urlPattern, _ := b.URL()
+func ParseURL(url string) (a Adapter, serial string) {
+	for _, a = range Adapters {
+		urlPattern, _ := a.URL()
 		urlPattern = printfMap.Replace(regexp.QuoteMeta(urlPattern))
 		urlRegExp := regexp.MustCompile(fmt.Sprintf(urlPattern, printfRegExps...))
 		if match := urlRegExp.FindStringSubmatch(url); match != nil {
-			return b, match[1]
+			return a, match[1]
 		}
 	}
 	return nil, ""

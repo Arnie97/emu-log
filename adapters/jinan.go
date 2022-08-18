@@ -40,7 +40,7 @@ func (Jinan) Code() string {
 }
 
 func (Jinan) Name() string {
-	return "中国铁路济南局集团有限公司"
+	return "掌上济铁（国铁吉讯）"
 }
 
 func (Jinan) URL() (pattern string, mockValue interface{}) {
@@ -51,15 +51,15 @@ func (Jinan) AlwaysOn() bool {
 	return true
 }
 
-func (b Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
+func (a Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("referer", fmt.Sprintf(
 		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
 	))
-	return AdapterConf(b).Request.RoundTrip(req)
+	return AdapterConf(a).Request.RoundTrip(req)
 }
 
-func (b Jinan) Info(serial string) (info JSONObject, err error) {
-	return b.EncryptedQuery(
+func (a Jinan) Info(serial string) (info JSONObject, err error) {
+	return a.EncryptedQuery(
 		"https://apicloud.ccrgt.com/crgt/retail-takeout/h5/takeout/scan/list",
 		struct {
 			SeatCode string `json:"seatCode"`
@@ -67,11 +67,11 @@ func (b Jinan) Info(serial string) (info JSONObject, err error) {
 	)
 }
 
-func (b Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, err error) {
+func (a Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, err error) {
 	query := JinanQuery{
-		Params:    b.InfoEncrypt(params),
+		Params:    a.InfoEncrypt(params),
 		Timestamp: common.UnixMilli(),
-		Token:     SessionID(b),
+		Token:     SessionID(a),
 		IsSign:    2,
 	}
 	query.Signature = query.Sign()
@@ -83,7 +83,7 @@ func (b Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, 
 	buf := bytes.NewBuffer(jsonBytes)
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient(b).Post(api, common.ContentType, buf); err != nil {
+	if resp, err = common.HTTPClient(a).Post(api, common.ContentType, buf); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -96,13 +96,13 @@ func (b Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, 
 	if err = parseResult(resp, &result); err != nil {
 		return
 	}
-	err = b.InfoDecrypt(result.Data, &info)
+	err = a.InfoDecrypt(result.Data, &info)
 	return
 }
 
 // InfoEncrypt encrypts the JSON string in AES-CBC-128 cipher mode, and return
 // the cipher text encoded with padded base64 encoding scheme.
-func (b Jinan) InfoEncrypt(src interface{}) string {
+func (Jinan) InfoEncrypt(src interface{}) string {
 	plainText, err := json.Marshal(src)
 	common.Must(err)
 
@@ -112,7 +112,7 @@ func (b Jinan) InfoEncrypt(src interface{}) string {
 
 // InfoDecrypt decrypts the base64 encoded cipher text with AES-CBC-128,
 // and unmarshals the plain text result into the given structure.
-func (b Jinan) InfoDecrypt(src string, dest interface{}) (err error) {
+func (Jinan) InfoDecrypt(src string, dest interface{}) (err error) {
 	cipherText, err := base64.StdEncoding.DecodeString(src)
 	if err != nil {
 		return
@@ -137,7 +137,7 @@ func (q JinanQuery) Sign() string {
 	return strings.ToUpper(hex.EncodeToString(hash[:]))
 }
 
-func (b Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
+func (Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	var (
 		infoList []struct {
 			TrainInfo struct {
@@ -167,8 +167,8 @@ func (b Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Jinan) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
+func (Jinan) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["czNo"].(string))
+	unitNo = common.NormalizeUnitNo(info["czNo"].(string))
 	return
 }

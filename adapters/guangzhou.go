@@ -19,7 +19,7 @@ func (Guangzhou) Code() string {
 }
 
 func (Guangzhou) Name() string {
-	return "中国铁路广州局集团有限公司"
+	return "舌尖上的旅途（易食纵横）"
 }
 
 func (Guangzhou) URL() (pattern string, mockValue interface{}) {
@@ -30,17 +30,17 @@ func (Guangzhou) AlwaysOn() bool {
 	return false
 }
 
-func (b Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", SessionID(b))
-	return AdapterConf(b).Request.RoundTrip(req)
+func (a Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", SessionID(a))
+	return AdapterConf(a).Request.RoundTrip(req)
 }
 
-func (b Guangzhou) Info(serial string) (info JSONObject, err error) {
+func (a Guangzhou) Info(serial string) (info JSONObject, err error) {
 	const api = "https://sj-api.yishizongheng.com/shejian/api/train/getByQrcode?qrcode=%s"
 	url := fmt.Sprintf(api, strings.TrimLeft(serial, "0"))
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient(b).Get(url); err != nil {
+	if resp, err = common.HTTPClient(a).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -65,9 +65,9 @@ func (Guangzhou) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	return
 }
 
-func (Guangzhou) VehicleNo(serialNo string, info JSONObject) (vehicleNo string, err error) {
+func (Guangzhou) UnitNo(serialNo string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = fmt.Sprintf(
+	unitNo = fmt.Sprintf(
 		"CR%s-%.0f@%s",
 		info["carriageNum"].(string), info["id"], serialNo,
 	)

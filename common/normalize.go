@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	vehicleNoNormalizeRules = []struct{ pattern, replace string }{
+	unitNoNormalizeRules = []struct{ pattern, replace string }{
 		{`[1-4]-`, ""},
 		{`[-\s_]`, ""},
 		{"(CRH380D)V", "$1"},
@@ -35,17 +35,17 @@ func NormalizeTrainNo(trainNo string) (results []string) {
 	return
 }
 
-func NormalizeVehicleNo(vehicleNo string) string {
-	for _, rule := range vehicleNoNormalizeRules {
-		vehicleNo = regexp.MustCompile(
-			rule.pattern).ReplaceAllString(vehicleNo, rule.replace)
+func NormalizeUnitNo(unitNo string) string {
+	for _, rule := range unitNoNormalizeRules {
+		unitNo = regexp.MustCompile(
+			rule.pattern).ReplaceAllString(unitNo, rule.replace)
 	}
-	return vehicleNo
+	return unitNo
 }
 
-// ApproxEqualVehicleNo compares whether the proposed vehicle number
+// ApproxEqualUnitNo compares whether the proposed unit number
 // is approximately the same as the original one.
-func ApproxEqualVehicleNo(original, proposed string) bool {
+func ApproxEqualUnitNo(original, proposed string) bool {
 	if len(original) == 0 || strings.ContainsRune(proposed, '@') {
 		return true
 	}

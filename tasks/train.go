@@ -8,22 +8,22 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// scanTrainNo iterates over all the known vehicles operated by the specified
-// railway company to see if any of these vehicles is currently associated to
-// a train number (or a bunch of train numbers).
-func scanTrainNo(b adapters.Bureau) {
-	log.Info().Msgf("[%s] retrieving latest activities for known vehicles", b.Code())
+// scanTrainNo iterates over all the known units operated by the specified
+// adapter to see if any of these units is currently associated to a train
+// number (or a bunch of train numbers).
+func scanTrainNo(a adapters.Adapter) {
+	log.Info().Msgf("[%s] retrieving latest activities for known units", a.Code())
 	defer wg.Done()
-	for _, serialModel := range models.ListLatestSerialForMultiVehicles(b) {
-		if !strings.HasPrefix(serialModel.VehicleNo, "CR") {
-			log.Debug().Msgf("[%s] %v -> ignored", b.Code(), serialModel)
+	for _, serialModel := range models.ListLatestSerialForMultiUnits(a) {
+		if !strings.HasPrefix(serialModel.UnitNo, "CR") {
+			log.Debug().Msgf("[%s] %v -> ignored", a.Code(), serialModel)
 			continue
 		}
-		info, err := b.Info(serialModel.SerialNo)
+		info, err := a.Info(serialModel.SerialNo)
 		if err != nil {
-			log.Debug().Msgf("[%s] %v -> %v", b.Code(), serialModel, err)
+			log.Debug().Msgf("[%s] %v -> %v", a.Code(), serialModel, err)
 		}
 		serialModel.AddTrainOperationLogs(info)
 	}
-	log.Info().Msgf("[%s] updates done for known vehicles", b.Code())
+	log.Info().Msgf("[%s] updates done for known units", a.Code())
 }

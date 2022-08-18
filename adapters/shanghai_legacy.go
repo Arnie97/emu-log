@@ -18,7 +18,7 @@ func (ShanghaiLegacy) Code() string {
 }
 
 func (ShanghaiLegacy) Name() string {
-	return "中国铁路上海局集团有限公司（二维火）"
+	return "华东印记（咻咻365）"
 }
 
 func (ShanghaiLegacy) URL() (pattern string, mockValue interface{}) {
@@ -60,8 +60,8 @@ func (ShanghaiLegacy) TrainNo(info JSONObject) (trains []TrainSchedule, err erro
 	return
 }
 
-func (ShanghaiLegacy) VehicleNo(_ string, info JSONObject) (vehicleNo string, err error) {
+func (ShanghaiLegacy) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
-	vehicleNo = common.NormalizeVehicleNo(info["cdh"].(string))
+	unitNo = common.NormalizeUnitNo(info["cdh"].(string))
 	return
 }
