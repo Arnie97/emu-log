@@ -143,3 +143,7 @@ func (Shanghai) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	unitNo = common.NormalizeUnitNo(info["cdh"].(string))
 	return
 }
+
+func (Shanghai) Operator(_ string, _ JSONObject) (bureauCode string, err error) {
+	return "H", nil
+}

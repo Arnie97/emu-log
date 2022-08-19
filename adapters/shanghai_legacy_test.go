@@ -28,7 +28,7 @@ func ExampleShanghaiLegacy_UnitNo() {
 		"shanghai_legacy_invalid.json",
 	)
 	// Output:
-	// "CRH2A2001"    false
-	// "CRH2C2150"    false
-	// ""             true
+	// H "CRH2A2001"    false false false
+	// H "CRH2C2150"    false false false
+	// H ""              true  true false
 }

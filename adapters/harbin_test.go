@@ -24,7 +24,6 @@ func ExampleHarbin_UnitNo() {
 		"harbin_invalid.html",
 	)
 	// Output:
-	//
-	// "CRH380BG5@42" false
-	// "CRH380BG5@42" true
+	// B "CRH380BG5@42" false false false
+	// B "CRH380BG5@42" false  true false
 }

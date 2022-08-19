@@ -40,7 +40,7 @@ func ExampleChengdu_UnitNo() {
 		"chengdu_invalid.base64",
 	)
 	// Output:
-	// "CRH3A3089"    false
-	// "CRH@1582"     false
-	// ""             false
+	// W "CRH3A3089"    false false false
+	// W "CRH@1582"     false false false
+	// W ""             false false false
 }

@@ -91,8 +91,12 @@ func getTests() map[string]AdapterTestDefinition {
 	return testFile.Adapters
 }
 
-func getMockSerialNo(a adapters.Adapter) string {
-	return getTests()[a.Code()].TestCases[0].SerialNo
+func getMockSerialNo(a adapters.Adapter, preferredIndex int) string {
+	testCases := getTests()[a.Code()].TestCases
+	if len(testCases) > preferredIndex {
+		return testCases[preferredIndex].SerialNo
+	}
+	return testCases[0].SerialNo
 }
 
 func assertBruteForce(a adapters.Adapter, assert func(string) bool) {
@@ -118,9 +122,9 @@ func assertBruteForceRegExp(a adapters.Adapter, pattern string) {
 func printTrainNo(a adapters.Adapter, mockFiles ...string) {
 	a.Name()
 
-	for _, mockFile := range mockFiles {
+	for index, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		info, err := a.Info(getMockSerialNo(a))
+		info, err := a.Info(getMockSerialNo(a, index))
 		trains, err := a.TrainNo(info)
 		fmt.Printf("\n%v\n", err != nil)
 		for _, train := range trains {
@@ -130,25 +134,27 @@ func printTrainNo(a adapters.Adapter, mockFiles ...string) {
 
 	for _, mockBody := range []string{"", "null", "<html>not json</html>"} {
 		common.MockHTTPClientRespBody(mockBody)
-		info, err := a.Info(getMockSerialNo(a))
+		info, err := a.Info(getMockSerialNo(a, 0))
 		if info != nil && err == nil {
 			fmt.Printf("uncaught error for http response %#v", mockBody)
 		}
 	}
 
 	common.MockHTTPClientError(fmt.Errorf("mock http error"))
-	info, err := a.Info(getMockSerialNo(a))
+	info, err := a.Info(getMockSerialNo(a, 0))
 	if info != nil && err == nil {
 		fmt.Printf("uncaught error for http error")
 	}
 }
 
 func printUnitNo(a adapters.Adapter, mockFiles ...string) {
-	for _, mockFile := range mockFiles {
+	for index, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
-		serialNo := getMockSerialNo(a)
-		info, err := a.Info(serialNo)
-		unitNo, err := a.UnitNo(serialNo, info)
-		fmt.Printf("%#-14v %v\n", unitNo, err != nil)
+		serialNo := getMockSerialNo(a, index)
+		info, infoErr := a.Info(serialNo)
+		unitNo, unitErr := a.UnitNo(serialNo, info)
+		operator, err := adapters.Operator(a, serialNo, info)
+		fmt.Printf("%1v %#-14v %5v %5v %5v\n", operator, unitNo,
+			infoErr != nil, unitErr != nil, err != nil)
 	}
 }

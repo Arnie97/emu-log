@@ -25,6 +25,6 @@ func ExampleGuangzhou_UnitNo() {
 		"guangzhou_invalid.json",
 	)
 	// Output:
-	// "CR16-11876@9" false
-	// ""             true
+	// Q "CR16-11876@9" false false false
+	// Q ""              true  true false
 }

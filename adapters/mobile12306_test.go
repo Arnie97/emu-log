@@ -25,6 +25,6 @@ func ExampleMobile12306_UnitNo() {
 		"mobile12306_invalid.json",
 	)
 	// Output:
-	// "CRH2A4088"    false
-	// ""             true
+	// M "CRH2A4088"    false false false
+	// H ""              true  true false
 }

@@ -16,6 +16,11 @@ var (
 	htmlTrainNoRegExp = regexp.MustCompile(`<p class="train-title">(\w+)随车购</p>`)
 	jsonUnitNoRegExp  = regexp.MustCompile(`var locomotive_info = (\{.+\});`)
 	jsonCompanyRegExp = regexp.MustCompile(`var company_info = (\{.+\});`)
+	jsonCompanyIDMap  = map[string]string{
+		"4":  "Z", // 广西宁铁餐饮服务有限公司
+		"25": "W", // 成都客运段
+		"49": "N", // 新武汉动高餐饮管理服务有限公司
+	}
 )
 
 type LTDD struct{}
@@ -106,5 +111,11 @@ func (LTDD) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	if strings.HasPrefix(unitNo, "380") {
 		unitNo = "CRH" + unitNo
 	}
+	return
+}
+
+func (LTDD) Operator(_ string, info JSONObject) (bureauCode string, err error) {
+	defer common.Catch(&err)
+	bureauCode = jsonCompanyIDMap[info["company_id"].(string)]
 	return
 }

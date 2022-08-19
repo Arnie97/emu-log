@@ -51,6 +51,10 @@ func addUnitBySerial(a adapters.Adapter, serial string) {
 		log.Debug().Msgf("[%s] %s -> %v", a.Code(), serial, err)
 		return
 	}
+	serialModel.Operator, err = adapters.Operator(a, serial, info)
+	if err != nil || serialModel.Operator == "" {
+		serialModel.Operator = "?"
+	}
 	serialModel.Add()
 	serialModel.AddTrainOperationLogs(info)
 }

@@ -25,6 +25,6 @@ func ExampleBeijing_UnitNo() {
 		"beijing_invalid.json",
 	)
 	// Output:
-	// "CR400AF0207"  false
-	// ""             true
+	// P "CR400AF0207"  false false false
+	// P ""              true  true false
 }

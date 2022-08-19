@@ -79,6 +79,7 @@ func unitParseURLHandler(w http.ResponseWriter, r *http.Request) {
 	if a == nil {
 		serialModel := models.SerialModel{
 			Adapter:  "?",
+			Operator: "?",
 			UnitNo:   unitNo,
 			SerialNo: *input.URL,
 		}
@@ -90,12 +91,14 @@ func unitParseURLHandler(w http.ResponseWriter, r *http.Request) {
 	// case 3: unit currently offline or unit number does not match
 	serialModel := models.SerialModel{
 		Adapter:  a.Code(),
+		Operator: "?",
 		SerialNo: serial,
 	}
 	info, err := a.Info(serial)
 	if err == nil {
 		serialModel.UnitNo, err = a.UnitNo(serial, info)
 	}
+	serialModel.Operator, err = adapters.Operator(a, serial, info)
 	if !common.ApproxEqualUnitNo(unitNo, serialModel.UnitNo) {
 		serialModel.UnitNo = "-" + unitNo + "@" + serialModel.UnitNo
 		serialModel.Add()
@@ -143,10 +146,12 @@ func unitParseURLMapHandler(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		serialModel.UnitNo, err = a.UnitNo(serial, info)
 	}
+	serialModel.Operator, err = adapters.Operator(a, serial, info)
 	serialModel.Add()
 	serialModel.AddTrainOperationLogs(info)
 
 	resp := struct {
+		Operator string `json:"operator,omitempty"`
 		UnitNo   string `json:"emu_no,omitempty"`
 		SerialNo string `json:"serial_no"`
 		Adapter  struct {
@@ -155,6 +160,7 @@ func unitParseURLMapHandler(w http.ResponseWriter, r *http.Request) {
 		} `json:"adapter"`
 		Logs []models.LogModel `json:"logs,omitempty"`
 	}{
+		Operator: serialModel.Operator,
 		UnitNo:   serialModel.UnitNo,
 		SerialNo: serial,
 		Logs:     models.ListTrainsForSingleUnitNo(serialModel.UnitNo),

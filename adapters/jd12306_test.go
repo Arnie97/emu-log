@@ -29,7 +29,7 @@ func ExampleJD12306_UnitNo() {
 		"jd12306_invalid.json",
 	)
 	// Output:
-	// "CRH5G5194"    false
-	// "CRH380B3667"  false
-	// ""             true
+	// J "CRH5G5194"    false false false
+	// Y "CRH380B3667"  false false false
+	// V ""             false  true false
 }

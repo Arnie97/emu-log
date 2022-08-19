@@ -9,12 +9,16 @@ url = "http://l.jeehon.com/lkfw/api?id=42sprsam7sa"
 pattern = '[A-Z]+\w+\d{9}[A-CDF]\d'
 
 [[adapters.F.cases]]
+serial = "JCRH5G519407002Dt"
+url = "https://p.12306.cn/tservice/catering/init?c=JCRH5G519407002Dt&w=t"
+
+[[adapters.F.cases]]
 serial = "YCHR380B366704003C0"
 url = "https://p.12306.cn/tservice/catering/init?c=YCHR380B366704003C0&w=h"
 
 [[adapters.F.cases]]
-serial = "JCRH5G519407002Dt"
-url = "https://p.12306.cn/tservice/catering/init?c=JCRH5G519407002Dt&w=t"
+serial = "VCRH380A26900818Ft"
+url = "https://p.12306.cn/tservice/catering/init?c=VCRH380A26900818Ft&w=t"
 
 [adapters.H]
 pattern = 'PQ\d{7}'

@@ -24,7 +24,7 @@ func (JD12306) Name() string {
 }
 
 func (JD12306) URL() (pattern string, mockValue interface{}) {
-	return "https://p.12306.cn/tservice/catering/init?c=%s&w=%v", "h"
+	return "https://p.12306.cn/tservice/catering/init?c=%s&w=%v", "t"
 }
 
 func (JD12306) AlwaysOn() bool {
@@ -137,5 +137,11 @@ func (JD12306) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 func (JD12306) UnitNo(_ string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
 	unitNo = common.NormalizeUnitNo(info["carCode"].(string))
+	return
+}
+
+func (JD12306) Operator(serialNo string, _ JSONObject) (bureauCode string, err error) {
+	defer common.Catch(&err)
+	bureauCode = serialNo[:1]
 	return
 }

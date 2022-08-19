@@ -7,16 +7,18 @@ import (
 )
 
 type SerialModel struct {
-	UnitNo   string `json:"emu_no"`
 	Adapter  string `json:"adapter"`
+	Operator string `json:"operator"`
+	UnitNo   string `json:"emu_no"`
 	SerialNo string `json:"qr_code"`
 }
 
 func (SerialModel) Schema() string {
 	return `
 		CREATE TABLE IF NOT EXISTS emu_qr_code (
-			emu_no   VARCHAR NOT NULL,
 			adapter  CHAR(1) NOT NULL,
+			operator CHAR(1) NOT NULL,
+			emu_no   VARCHAR NOT NULL,
 			qr_code  VARCHAR NOT NULL,
 			UNIQUE(adapter, qr_code)
 		);
@@ -31,8 +33,8 @@ func init() {
 func (s SerialModel) Add() {
 	_, err := DB().Exec(
 		`INSERT OR IGNORE INTO
-		emu_qr_code(emu_no, adapter, qr_code) VALUES (?, ?, ?)`,
-		s.UnitNo, s.Adapter, s.SerialNo,
+		emu_qr_code(adapter, operator, emu_no, qr_code) VALUES (?, ?, ?, ?)`,
+		s.Adapter, s.Operator, s.UnitNo, s.SerialNo,
 	)
 	common.Must(err)
 }
@@ -68,7 +70,7 @@ func (s SerialModel) Query(sql string, args ...interface{}) (serials []SerialMod
 	defer rows.Close()
 
 	for rows.Next() {
-		common.Must(rows.Scan(&s.UnitNo, &s.Adapter, &s.SerialNo))
+		common.Must(rows.Scan(&s.Adapter, &s.Operator, &s.UnitNo, &s.SerialNo))
 		serials = append(serials, s)
 	}
 	return serials
@@ -78,7 +80,7 @@ func (s SerialModel) Query(sql string, args ...interface{}) (serials []SerialMod
 // of a given adapter from the database.
 func ListSerials(a adapters.Adapter) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_no, adapter, qr_code
+		SELECT adapter, operator, emu_no, qr_code
 		FROM emu_qr_code
 		WHERE adapter = ?
 		ORDER BY qr_code ASC;
@@ -88,7 +90,7 @@ func ListSerials(a adapters.Adapter) []SerialModel {
 // ListSerialsForSingleUnit returns all the known serials for one unit.
 func ListSerialsForSingleUnit(unitNo string) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_no, adapter, qr_code
+		SELECT adapter, operator, emu_no, qr_code
 		FROM emu_qr_code
 		WHERE emu_no LIKE ?
 		ORDER BY rowid DESC;
@@ -100,9 +102,9 @@ func ListSerialsForSingleUnit(unitNo string) []SerialModel {
 // those with known train schedules.
 func ListLatestSerialForMultiUnits(a adapters.Adapter) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT emu_qr_code.emu_no, adapter, qr_code
+		SELECT adapter, operator, emu_qr_code.emu_no, qr_code
 		FROM (
-			SELECT emu_no, adapter, qr_code
+			SELECT emu_no, adapter, operator, qr_code
 			FROM emu_qr_code
 			WHERE adapter = ?
 			GROUP BY emu_no

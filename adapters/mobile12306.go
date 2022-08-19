@@ -4,8 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 
 	"github.com/arnie97/emu-log/common"
+)
+
+var (
+	unitNoWithBureauCodeRegExp = regexp.MustCompile(`^[A-Z]\d{7}$`)
 )
 
 type Mobile12306 struct{}
@@ -74,5 +79,15 @@ func (Mobile12306) TrainNo(info JSONObject) (trains []TrainSchedule, err error) 
 func (Mobile12306) UnitNo(serialNo string, info JSONObject) (unitNo string, err error) {
 	defer common.Catch(&err)
 	unitNo = common.NormalizeUnitNo(info["carCode"].(string))
+	return
+}
+
+func (Mobile12306) Operator(serialNo string, info JSONObject) (bureauCode string, err error) {
+	if bureauCode, ok := info["bureauCode"].(string); ok {
+		return bureauCode, nil
+	}
+	if unitNoWithBureauCodeRegExp.MatchString(serialNo) {
+		return serialNo[:1], nil
+	}
 	return
 }

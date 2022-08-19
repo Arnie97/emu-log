@@ -32,6 +32,10 @@ type (
 		TrainNo(info JSONObject) ([]TrainSchedule, error)
 		UnitNo(serialNo string, info JSONObject) (unitNo string, err error)
 	}
+	UnionAdapter interface {
+		Adapter
+		Operator(serialNo string, info JSONObject) (bureauCode string, err error)
+	}
 	JSONObject    map[string]interface{}
 	TrainSchedule struct{ TrainNo, Date string }
 )
@@ -77,6 +81,13 @@ func AdapterConf(a Adapter) (merged common.AdapterConf) {
 
 func SessionID(a Adapter) string {
 	return AdapterConf(a).Request.SessionID
+}
+
+func Operator(a Adapter, serial string, info JSONObject) (bureauCode string, err error) {
+	if a, ok := a.(UnionAdapter); ok {
+		return a.Operator(serial, info)
+	}
+	return a.Code(), nil
 }
 
 func BuildURL(a Adapter, serial string) (url string) {

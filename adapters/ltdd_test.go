@@ -15,7 +15,7 @@ func ExampleLTDD_TrainNo() {
 	// Output:
 	//
 	// false
-	// "G1730"        ""
+	// "D2936"        ""
 	//
 	// false
 	// "G551"         ""
@@ -34,8 +34,8 @@ func ExampleLTDD_UnitNo() {
 		"ltdd_invalid.html",
 	)
 	// Output:
-	// "CR400AF2151"  false
-	// "CR400AF2158"  false
-	// "CRH380D1545"  false
-	// ""             true
+	// Z "CRH2A2276"    false false false
+	// N "CR400AF2158"  false false false
+	// W "CRH380D1545"  false false false
+	//   ""             false  true  true
 }

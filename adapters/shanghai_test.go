@@ -48,8 +48,7 @@ func ExampleShanghai_UnitNo() {
 		"shanghai_invalid.json",
 	)
 	// Output:
-	//
-	// "CR400BFB5097" false
-	// ""             true
-	// ""             true
+	// H "CR400BFB5097" false false false
+	// H ""              true  true false
+	// H ""              true  true false
 }

@@ -54,6 +54,6 @@ func ExampleJinan_UnitNo() {
 		"jinan_basic.json",
 	)
 	// Output:
-	// "CR400AFA2115" false
-	// "CRH380BL5501" false
+	// K "CR400AFA2115" false false false
+	// K "CRH380BL5501" false false false
 }
