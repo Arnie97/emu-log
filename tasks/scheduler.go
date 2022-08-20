@@ -48,7 +48,7 @@ func scheduleTask(task func()) {
 }
 
 // scanTask is a combination of scanUnitNo() and scanTrainNo().
-func scanTask(a adapters.Adapter) {
+func scanTask(a adapters.Adapter, operators ...string) {
 	endTime := time.Duration(common.Conf().Schedule.EndTime)
 	scanForNewUnits := true
 	if a.AlwaysOn() {
@@ -70,30 +70,37 @@ func scanTask(a adapters.Adapter) {
 		wg.Add(1)
 		defer scanUnitNo(a)
 	}
-	scanTrainNo(a)
+	scanTrainNo(a, operators...)
 }
 
 // iterateAdapters parallelizes scanning requests for different railway
 // companies with goroutines.
-func iterateAdapters(task func(adapters.Adapter), adapterList ...string) {
+func iterateAdapters(task func(adapters.Adapter, ...string), adapterList ...string) {
 	once.Do(func() {
 		checkLocalTimezone()
 		checkInternetConnection()
 		checkDatabase()
 	})
 
-	// support both joined adapter codes and space separated adapter codes
-	adapterCodes := strings.Join(adapterList, "")
-	if len(adapterCodes) == 0 {
+	if len(adapterList) == 0 {
 		for _, a := range adapters.Adapters {
 			wg.Add(1)
 			go task(a)
 		}
 	} else {
-		for _, code := range adapterCodes {
-			a := adapters.MustGetAdapterByCode(string(code))
+		for _, adapterCode := range adapterList {
+			operatorCodes := make([]string, 0, len(adapterCode))
+			sep := strings.Index(adapterCode, ".")
+			if sep > 0 {
+				for index := sep + 1; index < len(adapterCode); index++ {
+					operatorCodes = append(operatorCodes, adapterCode[index:index+1])
+				}
+				adapterCode = adapterCode[:sep]
+			}
+
+			a := adapters.MustGetAdapterByCode(string(adapterCode))
 			wg.Add(1)
-			go task(a)
+			go task(a, operatorCodes...)
 		}
 	}
 

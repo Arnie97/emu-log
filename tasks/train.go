@@ -11,10 +11,10 @@ import (
 // scanTrainNo iterates over all the known units operated by the specified
 // adapter to see if any of these units is currently associated to a train
 // number (or a bunch of train numbers).
-func scanTrainNo(a adapters.Adapter) {
+func scanTrainNo(a adapters.Adapter, operators ...string) {
 	log.Info().Msgf("[%s] retrieving latest activities for known units", a.Code())
 	defer wg.Done()
-	for _, serialModel := range models.ListLatestSerialForMultiUnits(a) {
+	for _, serialModel := range models.ListLatestSerialForMultiUnits(a, operators...) {
 		if !strings.HasPrefix(serialModel.UnitNo, "CR") {
 			log.Debug().Msgf("[%s] %v -> ignored", a.Code(), serialModel)
 			continue

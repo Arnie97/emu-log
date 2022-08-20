@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/arnie97/emu-log/common"
@@ -66,5 +67,24 @@ func CountRecords(tableName string, fields ...string) (count int) {
 		`SELECT COUNT(%s) FROM %s`, field, tableName,
 	))
 	common.Must(row.Scan(&count))
+	return
+}
+
+// In fills the SQL query statement with IN(args...) if args is not empty,
+// or with emptyDefault otherwise.
+func In(query string, args []string, emptyDefault string) (
+	rewritten string, argv []interface{}) {
+
+	if len(args) == 0 {
+		rewritten = fmt.Sprintf(query, emptyDefault)
+		return
+	}
+	placeholders := strings.Repeat(", ?", len(args))[2:]
+	rewritten = fmt.Sprintf(query, fmt.Sprintf("IN (%s)", placeholders))
+
+	argv = make([]interface{}, len(args))
+	for i := range args {
+		argv[i] = args[i]
+	}
 	return
 }

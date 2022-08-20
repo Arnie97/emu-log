@@ -8,7 +8,7 @@ import (
 
 // scanUnitNo tries each unknown QR code in the brute force key space to see
 // if any of these serial numbers was recently (or is currently) put in to use.
-func scanUnitNo(a adapters.Adapter) {
+func scanUnitNo(a adapters.Adapter, _ ...string) {
 	log.Info().Msgf("[%s] started scanning for new units", a.Code())
 	defer wg.Done()
 

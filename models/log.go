@@ -1,7 +1,6 @@
 package models
 
 import (
-	"strings"
 	"time"
 
 	"github.com/arnie97/emu-log/common"
@@ -105,16 +104,12 @@ func ListUnitsForSingleTrainNo(trainNo string) []LogModel {
 }
 
 func ListLatestUnitForMultiTrains(trainNoList []string) []LogModel {
-	trainNoArgs := make([]interface{}, len(trainNoList))
-	trainNoArgsPlaceHolder := strings.Repeat(", ?", len(trainNoList))[2:]
-	for i := range trainNoList {
-		trainNoArgs[i] = trainNoList[i]
-	}
-	return LogModel{}.Query(`
+	query, argv := In(`
 		SELECT date, emu_no, train_no
 		FROM emu_latest
-		WHERE train_no IN (`+trainNoArgsPlaceHolder+`)
-	`, trainNoArgs...)
+		WHERE train_no %s
+	`, trainNoList, "IS NULL")
+	return LogModel{}.Query(query, argv...)
 }
 
 func ListTrainsForSingleUnitNo(unitNo string) []LogModel {
@@ -141,13 +136,8 @@ func ListLatestTrainForMatchedUnits(unitNo string) []LogModel {
 }
 
 func ListLatestTrainForMultiUnits(unitNoList []string) []LogModel {
-	unitNoArgs := make([]interface{}, len(unitNoList))
-	unitNoPlaceHolder := strings.Repeat(", ?", len(unitNoList))[2:]
-	for i := range unitNoList {
-		unitNoArgs[i] = common.NormalizeUnitNo(unitNoList[i])
-	}
-	return ListLatestTrainByCondition(
-		`IN (`+unitNoPlaceHolder+`)`, unitNoArgs...)
+	query, argv := In("%s", unitNoList, "IS NULL")
+	return ListLatestTrainByCondition(query, argv...)
 }
 
 func ListLatestTrainByCondition(cond string, args ...interface{}) []LogModel {

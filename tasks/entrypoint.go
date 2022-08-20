@@ -15,9 +15,9 @@ const helpMsg = `%s
 usage:
 
 %[2]s i[nfo]      SITE_ADAPTER [QR_CODE ...]
-%[2]s t[rainNo]  [SITE_ADAPTER ...]
 %[2]s u[nitNo]   [SITE_ADAPTER ...]
-%[2]s s[chedule] [SITE_ADAPTER ...]
+%[2]s t[rainNo]  [SITE_ADAPTER[.OPERATORS] ...]
+%[2]s s[chedule] [SITE_ADAPTER[.OPERATORS] ...]
 %[2]s d[aemon]
 `
 

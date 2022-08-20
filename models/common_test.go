@@ -35,6 +35,7 @@ func ExampleListLatestTrainByCondition() {
 	fmt.Println(models.ListSerials(adapters.MustGetAdapterByCode("F")))
 	fmt.Println(models.ListSerialsForSingleUnit("%J2015"))
 	fmt.Println(models.ListLatestSerialForMultiUnits(adapters.MustGetAdapterByCode("P")))
+	fmt.Println(models.ListLatestSerialForMultiUnits(adapters.MustGetAdapterByCode("M"), "H", "P"))
 	fmt.Println(models.ListUnitsForSingleTrainNo("D5461"))
 	models.LogModel{Date: "2020-11-20", UnitNo: "CRH6A4002", TrainNo: "D5464/1/4"}.Add()
 	fmt.Println(models.ListUnitsForSingleTrainNo("D5461"))
@@ -63,6 +64,7 @@ func ExampleListLatestTrainByCondition() {
 	// [{F A CRH6A4002 002} {F ? CH001 053} {F ? CRH2650 111} {F N CRH5A5075 472}]
 	// [{U H CR200J2015 PV0000064000} {U H CR200J2015 PV0000063800} {H H CR200J2015 PQ2098500} {H H CR200J2015 PQ0916500} {H H CR200J2015 PQ0916000}]
 	// [{P P CR400AF0207 51573000} {P P CR400AF2015 51742500}]
+	// [{M H CR300BF3010 H0140000} {M P CR400AF0207 CR400AF-0207-05-03A} {M P CR400AF2015 CR400AF-2015-03-10A} {M H CR400BF3010 H0035000}]
 	// [{2020-11-16 CR200J2015 D5464/1/4} {2020-11-14 CR200J2015 D5464/1/4} {2020-11-13 CR200J2040 D5464/1/4}]
 	// [{2020-11-20 CRH6A4002 D5464/1/4} {2020-11-16 CR200J2015 D5464/1/4} {2020-11-14 CR200J2015 D5464/1/4} {2020-11-13 CR200J2040 D5464/1/4}]
 	// [{2020-11-20 CRH6A4002 D5461} {2020-11-20 CRH6A4002 D5464} {2020-11-14 CR400AF0207 G666}]

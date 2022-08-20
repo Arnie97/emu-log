@@ -100,13 +100,13 @@ func ListSerialsForSingleUnit(unitNo string) []SerialModel {
 // ListLatestSerialForMultiUnits returns the most recently discovered
 // serial number for each unit from the given adapter, but excluding
 // those with known train schedules.
-func ListLatestSerialForMultiUnits(a adapters.Adapter) []SerialModel {
-	return SerialModel{}.Query(`
+func ListLatestSerialForMultiUnits(a adapters.Adapter, operators ...string) []SerialModel {
+	query, argv := In(`
 		SELECT adapter, operator, emu_qr_code.emu_no, qr_code
 		FROM (
 			SELECT emu_no, adapter, operator, qr_code
 			FROM emu_qr_code
-			WHERE adapter = ?
+			WHERE operator %s AND adapter = ?
 			GROUP BY emu_no
 			HAVING MAX(rowid)
 			ORDER BY emu_no ASC
@@ -124,5 +124,7 @@ func ListLatestSerialForMultiUnits(a adapters.Adapter) []SerialModel {
 		) AS emu_log
 		ON emu_qr_code.emu_no = emu_log.emu_no
 		WHERE date IS NULL OR date < DATETIME('now', 'localtime');
-	`, a.Code())
+	`, operators, "IS NOT NULL")
+	argv = append(argv, a.Code())
+	return SerialModel{}.Query(query, argv...)
 }
