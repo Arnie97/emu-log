@@ -16,6 +16,9 @@ max = 4
 step = 2
 
 [[adapters.X.search]]
+min = 9
+
+[[adapters.X.search]]
 format = "CRH2-%03dA"
 max = 3
 

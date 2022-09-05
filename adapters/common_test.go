@@ -101,13 +101,8 @@ func getMockSerialNo(a adapters.Adapter, preferredIndex int) string {
 
 func assertBruteForce(a adapters.Adapter, assert func(string) bool) {
 	a.AlwaysOn()
-	serials := make(chan string, 1024)
-	go func() {
-		for _, rule := range adapters.AdapterConf(a).SearchSpace {
-			rule.Emit(serials)
-		}
-		close(serials)
-	}()
+	serials := make(chan string)
+	go adapters.AdapterConf(a).EmitSerials(serials)
 	for s := range serials {
 		if !assert(s) {
 			fmt.Printf("[%s] invalid serial number pattern: %s\n", a.Code(), s)

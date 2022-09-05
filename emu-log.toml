@@ -20,7 +20,6 @@ max = 11000
 step = 200
 
 [[adapters.H.search]]
-format = "PQ%07d"
 min = 11000
 max = 2500000
 step = 500
@@ -39,12 +38,10 @@ min = 2417
 max = 2426
 
 [[adapters.M.search]]
-format = "CRH2G-%d-04-04A"
 min = 4072
 max = 4081
 
 [[adapters.M.search]]
-format = "CRH2G-%d-04-04A"
 min = 4106
 max = 4111
 
@@ -74,7 +71,6 @@ max = 51950000
 step = 1000
 
 [[adapters.P.search]]
-format = "%08d"
 min = 60650000
 max = 61050000
 step = 1000

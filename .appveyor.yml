@@ -69,7 +69,7 @@ for:
     - image: Ubuntu
   clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
   init:
-  - gvm install go1.19 --binary
+  - gvm install go1.10 --binary
   before_build:
   - lsb_release -a
   - export GOPATH=$HOME/go

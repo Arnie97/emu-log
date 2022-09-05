@@ -41,7 +41,20 @@ type (
 	}
 )
 
-func (rule *GenerationRule) Emit(serials chan<- string) {
+func (a AdapterConf) EmitSerials(serials chan<- string) {
+	var lastFormat string
+	for _, rule := range a.SearchSpace {
+		if len(rule.Format) > 0 {
+			lastFormat = rule.Format
+		} else {
+			rule.Format = lastFormat
+		}
+		rule.EmitSerials(serials)
+	}
+	close(serials)
+}
+
+func (rule *GenerationRule) EmitSerials(serials chan<- string) {
 	defaultValue := 1
 	if rule.Min == nil {
 		rule.Min = &defaultValue

@@ -13,12 +13,7 @@ func scanUnitNo(a adapters.Adapter, _ ...string) {
 	defer wg.Done()
 
 	serials := make(chan string)
-	go func() {
-		for _, rule := range adapters.AdapterConf(a).SearchSpace {
-			rule.Emit(serials)
-		}
-		close(serials)
-	}()
+	go adapters.AdapterConf(a).EmitSerials(serials)
 
 	var index int
 	serialModels := models.ListSerials(a)

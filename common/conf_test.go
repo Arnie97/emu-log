@@ -13,14 +13,11 @@ func ExampleConf() {
 	common.PrettyPrint(common.Conf().Request.Interval)
 
 	serials := make(chan string)
-	go func() {
-		for _, a := range common.Conf().Adapters {
-			for _, rule := range a.SearchSpace {
-				rule.Emit(serials)
-			}
+	for _, a := range common.Conf().Adapters {
+		if len(a.SearchSpace) > 0 {
+			go a.EmitSerials(serials)
 		}
-		close(serials)
-	}()
+	}
 	for s := range serials {
 		fmt.Println(s)
 	}
@@ -31,6 +28,7 @@ func ExampleConf() {
 	// CRH5-001A
 	// CRH3-002C
 	// CRH3-004C
+	// CRH3-009C
 	// CRH2-001A
 	// CRH2-002A
 	// CRH2-003A
