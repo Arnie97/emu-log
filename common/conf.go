@@ -3,8 +3,10 @@ package common
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/pelletier/go-toml"
@@ -19,6 +21,7 @@ type (
 		Request  *RequestConf           `toml:"request,omitempty"`
 		Schedule ScheduleConf           `toml:"schedule,omitempty"`
 		Adapters map[string]AdapterConf `toml:"adapters,omitempty"`
+		Limits   []LimitConf            `toml:"limits,omitempty"`
 	}
 	AdapterConf struct {
 		Request     *RequestConf     `toml:"request,omitempty"`
@@ -32,6 +35,15 @@ type (
 	ScheduleConf struct {
 		StartTime Duration `toml:"start-time,omitempty"`
 		EndTime   Duration `toml:"end-time,omitempty"`
+	}
+	LimitConf struct {
+		MaxMatches int                 `toml:"max-matches"`
+		Conditions map[string]string   `toml:"conditions,omitempty"`
+		Indicator  *LimitIndicatorConf `toml:"indicator,omitempty"`
+	}
+	LimitIndicatorConf struct {
+		UnitNo  string `toml:"unit-no"`
+		TrainNo string `toml:"train-no"`
 	}
 	GenerationRule struct {
 		Format string `toml:"format,omitempty"`
@@ -105,6 +117,24 @@ func loadConf() error {
 	}
 	if conf.Request == nil {
 		conf.Request = new(RequestConf)
+	}
+	return nil
+}
+
+// RequestLimit returns the first rule matching the request headers, or nil.
+func (conf *GlobalConf) RequestLimit(header http.Header) *LimitConf {
+	for i := range conf.Limits {
+		rule := &conf.Limits[i]
+		matchAllConditions := true
+		for k, v := range rule.Conditions {
+			if !strings.Contains(header.Get(k), v) {
+				matchAllConditions = false
+				break
+			}
+		}
+		if matchAllConditions {
+			return rule
+		}
 	}
 	return nil
 }

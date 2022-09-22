@@ -47,7 +47,7 @@ func ExampleListLatestTrainByCondition() {
 	}
 	fmt.Println(len(models.ListUnitsForSingleTrainNo("D3071")))
 	fmt.Println(models.ListLatestTrainForMultiUnits([]string{"CRH6A4002", "CR200J2040", "CRH2A2460"}))
-	fmt.Println(models.ListLatestTrainForMatchedUnits("%A%02%"))
+	fmt.Println(models.ListLatestTrainForMatchedUnits(30, "%A%02%"))
 
 	mockInfo := adapters.JSONObject{}
 	serialModel.AddTrainOperationLogs(mockInfo)

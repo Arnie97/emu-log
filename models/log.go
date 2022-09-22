@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/arnie97/emu-log/common"
@@ -130,17 +131,17 @@ func ListTrainsForSingleUnitNo(unitNo string) []LogModel {
 	`, unitNo)
 }
 
-func ListLatestTrainForMatchedUnits(unitNo string) []LogModel {
+func ListLatestTrainForMatchedUnits(limit int, unitNo string) []LogModel {
 	return ListLatestTrainByCondition(
-		`LIKE ?`, "%"+common.NormalizeUnitNo(unitNo)+"%")
+		limit, `LIKE ?`, "%"+common.NormalizeUnitNo(unitNo)+"%")
 }
 
 func ListLatestTrainForMultiUnits(unitNoList []string) []LogModel {
 	query, argv := In("%s", unitNoList, "IS NULL")
-	return ListLatestTrainByCondition(query, argv...)
+	return ListLatestTrainByCondition(30, query, argv...)
 }
 
-func ListLatestTrainByCondition(cond string, args ...interface{}) []LogModel {
+func ListLatestTrainByCondition(limit int, cond string, args ...interface{}) []LogModel {
 	return LogModel{}.Query(`
 		SELECT date, emu_no, train_no
 		FROM emu_log
@@ -153,7 +154,7 @@ func ListLatestTrainByCondition(cond string, args ...interface{}) []LogModel {
 				WHERE emu_no `+cond+`
 			)
 			GROUP BY emu_no
-			LIMIT 30
+			LIMIT `+strconv.Itoa(limit)+`
 		)
 		ORDER BY emu_no
 	`, args...)

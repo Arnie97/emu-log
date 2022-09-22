@@ -6,6 +6,26 @@ end-time = "22h"
 interval = "5s"
 user-agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.25(0x18001929) NetType/4G Language/zh_CN"
 
+# Fuzzy unit searches default to 30 matches. The first rule whose conditions
+# all match resets the limit; each header value must contain the given string.
+# The optional limit indicator config adds an extra item to the response.
+[[limits]]
+max-matches = 1000
+[limits.conditions]
+Authorization = "Basic YXJuaWU5NzpwQCQkdzByZA=="
+[limits.indicator]
+unit-no = "Privileged User"
+train-no = "Unlocked"
+
+[[limits]]
+max-matches = 10
+[limits.conditions]
+User-Agent = "Moerail/202"
+Origin = "https://mobile.12306.cn"
+
+[[limits]]
+max-matches = 30
+
 [adapters.B.request]
 session-id = "ASPSESSIONIDASCRACRA=JBIJHDLDFPMJCJHHBGGGIEEG; openid=oBsWm6BdZiZ0PBQOeY0TnREvQ0qI"
 

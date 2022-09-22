@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/arnie97/emu-log/adapters"
 	"github.com/arnie97/emu-log/common"
@@ -32,12 +33,23 @@ func multiUnitNoHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(results, w)
 }
 
-// fuzzyUnitNoHandler takes an incomplete part of the unit number,
-// and returns the most recent occurance for the first 30 units
-// in lexicographical order that matches the given fuzzy pattern.
+// fuzzyUnitNoHandler takes an incomplete part of the unit number and returns
+// the most recent occurrence for matching units, subject to the request limit.
 func fuzzyUnitNoHandler(w http.ResponseWriter, r *http.Request) {
 	unitNo := common.NormalizeUnitNo(chi.URLParam(r, "unitNo"))
-	results := models.ListLatestTrainForMatchedUnits(unitNo)
+	requestLimit := common.Conf().RequestLimit(r.Header)
+	limit := 30
+	if requestLimit != nil {
+		limit = requestLimit.MaxMatches
+	}
+	results := models.ListLatestTrainForMatchedUnits(limit, unitNo)
+	if requestLimit != nil && requestLimit.Indicator != nil {
+		results = append(results, models.LogModel{
+			UnitNo:  requestLimit.Indicator.UnitNo,
+			TrainNo: requestLimit.Indicator.TrainNo,
+			Date:    time.Now().Format(common.ISODate),
+		})
+	}
 	jsonResponse(results, w)
 }
 
