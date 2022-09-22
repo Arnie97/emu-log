@@ -17,7 +17,7 @@ func NewRouter() *chi.Mux {
 	mux := chi.NewRouter()
 	mux.Use(
 		middleware.RealIP,
-		middleware.Logger,
+		middlewareDefaultLogger,
 		middleware.Recoverer,
 		middleware.Timeout(common.RequestTimeout),
 	)
