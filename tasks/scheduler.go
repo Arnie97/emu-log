@@ -78,7 +78,6 @@ func scanTask(a adapters.Adapter, operators ...string) {
 func iterateAdapters(task func(adapters.Adapter, ...string), adapterList ...string) {
 	once.Do(func() {
 		checkLocalTimezone()
-		checkInternetConnection()
 		checkDatabase()
 	})
 
@@ -119,21 +118,11 @@ func checkLocalTimezone() {
 	}
 }
 
-// checkInternetConnection prints the RTT for a HTTP connection.
-func checkInternetConnection() {
-	start := time.Now()
-	_, err := adapters.Adapters["K"].Info("K1001036127001")
-	common.Must(err)
-	log.Info().Msgf(
-		"internet connection ok, round-trip delay %v",
-		time.Since(start),
-	)
-}
-
 // checkDatabase prints row counts for all tables to ensure a working DB
 func checkDatabase() {
 	log.Info().Msgf(
-		"found %d log records in the database",
+		"found %d train numbers and %d log records in the database",
+		models.CountRecords("emu_latest"),
 		models.CountRecords("emu_log"),
 	)
 	log.Info().Msgf(
