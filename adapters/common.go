@@ -69,6 +69,7 @@ func MustGetAdapterByCode(adapterCode string) (a Adapter) {
 	return
 }
 
+// AdapterConf merges the global request conf with adapter-specific overrides.
 func AdapterConf(a Adapter) (merged common.AdapterConf) {
 	global := common.Conf()
 	merged = global.Adapters[a.Code()]
@@ -77,6 +78,14 @@ func AdapterConf(a Adapter) (merged common.AdapterConf) {
 	common.Must(common.StructDecode(global.Request, merged.Request))
 	common.Must(common.StructDecode(adapterRequest, merged.Request))
 	return
+}
+
+func httpClient(a Adapter) common.HTTPRequester {
+	roundTripper, ok := a.(http.RoundTripper)
+	if !ok {
+		roundTripper = AdapterConf(a).Request
+	}
+	return common.HTTPClient(roundTripper)
 }
 
 func SessionID(a Adapter) string {

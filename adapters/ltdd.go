@@ -61,7 +61,7 @@ func (a LTDD) Info(serial string) (info JSONObject, err error) {
 
 	url := fmt.Sprintf(landingPage, serial)
 	var resp *http.Response
-	if resp, err = common.HTTPClient(a).Get(url); err != nil {
+	if resp, err = httpClient(a).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -74,7 +74,7 @@ func (a LTDD) Info(serial string) (info JSONObject, err error) {
 		return
 	}
 
-	if resp, err = common.HTTPClient(a).Get(orderingPage); err != nil {
+	if resp, err = httpClient(a).Get(orderingPage); err != nil {
 		return
 	}
 	defer resp.Body.Close()

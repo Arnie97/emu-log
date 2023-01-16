@@ -44,7 +44,7 @@ func (a Harbin) Info(serial string) (info JSONObject, err error) {
 	const api = "http://l.jeehon.com/lkfw/api/index.asp?id=%s"
 	url := fmt.Sprintf(api, serial)
 	var resp *http.Response
-	if resp, err = common.HTTPClient(a).Get(url); err != nil {
+	if resp, err = httpClient(a).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()

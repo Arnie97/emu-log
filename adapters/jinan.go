@@ -83,7 +83,7 @@ func (a Jinan) EncryptedQuery(api string, params interface{}) (info JSONObject, 
 	buf := bytes.NewBuffer(jsonBytes)
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient(a).Post(api, common.ContentType, buf); err != nil {
+	if resp, err = httpClient(a).Post(api, common.ContentType, buf); err != nil {
 		return
 	}
 	defer resp.Body.Close()

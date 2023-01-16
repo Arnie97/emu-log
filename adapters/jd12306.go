@@ -77,7 +77,7 @@ func (a *JD12306) RefreshToken() (resp *http.Response, err error) {
 
 	// the access tokens will be saved by the custom round tripper
 	const api = "https://ms.jr.jd.com/jrmserver/base/user/getNewTokenJumpUrl"
-	return common.HTTPClient(a).Get(api + SessionID(a))
+	return httpClient(a).Get(api + SessionID(a))
 }
 
 // OAuth obtains a new authorization code from JD pay,
@@ -88,13 +88,13 @@ func (a *JD12306) OAuth(serial string) (resp *http.Response, err error) {
 	if resp, err = a.RefreshToken(); err != nil {
 		return
 	}
-	if resp, err = common.HTTPClient(a).Get(BuildURL(a, serial)); err != nil {
+	if resp, err = httpClient(a).Get(BuildURL(a, serial)); err != nil {
 		return
 	}
 
 	authURL := resp.Request.URL
 	authURL.Path = authURL.Path + "_fbs"
-	if resp, err = common.HTTPClient(a).Get(authURL.String()); err != nil {
+	if resp, err = httpClient(a).Get(authURL.String()); err != nil {
 		return
 	}
 	defer resp.Body.Close()
@@ -116,12 +116,12 @@ func (a *JD12306) OAuth(serial string) (resp *http.Response, err error) {
 	// fork into a new session
 	session := *a
 	// the session ID will be saved by the custom round tripper
-	if resp, err = common.HTTPClient(&session).Get(result.URL); err != nil {
+	if resp, err = httpClient(&session).Get(result.URL); err != nil {
 		return
 	}
 
 	const api = "https://p.12306.cn/tservice/mealAction/qrcodeDecode"
-	return common.HTTPClient(&session).PostForm(api, nil)
+	return httpClient(&session).PostForm(api, nil)
 }
 
 func (JD12306) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {

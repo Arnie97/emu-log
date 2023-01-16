@@ -52,7 +52,7 @@ func (a Chengdu) Info(serial string) (info JSONObject, err error) {
 	}
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient().PostForm(api, form); err != nil {
+	if resp, err = httpClient(a).PostForm(api, form); err != nil {
 		return
 	}
 	defer resp.Body.Close()

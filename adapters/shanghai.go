@@ -49,7 +49,7 @@ func (a Shanghai) Info(serial string) (info JSONObject, err error) {
 	buf := bytes.NewBuffer(a.SerialEncrypt(serial))
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient(a).Post(api, common.ContentType, buf); err != nil {
+	if resp, err = httpClient(a).Post(api, common.ContentType, buf); err != nil {
 		return
 	}
 	defer resp.Body.Close()

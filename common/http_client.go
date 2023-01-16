@@ -13,7 +13,7 @@ const (
 )
 
 type (
-	httpRequester interface {
+	HTTPRequester interface {
 		Do(*http.Request) (*http.Response, error)
 		Get(url string) (*http.Response, error)
 		Post(url, contentType string, body io.Reader) (*http.Response, error)
@@ -46,7 +46,7 @@ func SetCookies(req *http.Request, cookies []*http.Cookie) {
 	req.Header.Set("cookie", buf.String()[:buf.Len()-2])
 }
 
-func HTTPClient(roundTripper ...http.RoundTripper) httpRequester {
+func HTTPClient(roundTripper ...http.RoundTripper) HTTPRequester {
 	if mockHTTPClientInstance != nil {
 		return mockHTTPClientInstance
 	}

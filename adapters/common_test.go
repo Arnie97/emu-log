@@ -116,7 +116,7 @@ func assertBruteForceRegExp(a adapters.Adapter, pattern string) {
 
 func printTrainNo(a adapters.Adapter, mockFiles ...string) {
 	a.Name()
-
+	common.MockConf()
 	for index, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
 		info, err := a.Info(getMockSerialNo(a, index))
@@ -143,6 +143,7 @@ func printTrainNo(a adapters.Adapter, mockFiles ...string) {
 }
 
 func printUnitNo(a adapters.Adapter, mockFiles ...string) {
+	common.MockConf()
 	for index, mockFile := range mockFiles {
 		common.MockHTTPClientRespBodyFromFile(mockFile)
 		serialNo := getMockSerialNo(a, index)

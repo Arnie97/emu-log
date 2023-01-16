@@ -36,14 +36,14 @@ func (Beijing) AlwaysOn() bool {
 	return false
 }
 
-func (Beijing) Info(qrCode string) (info JSONObject, err error) {
+func (a Beijing) Info(qrCode string) (info JSONObject, err error) {
 	const api = "https://aymaoto.jtlf.cn/webapi/otoshopping/ewh_getqrcodetrainnoinfo"
 	const key = "qrcode=%s&key=ltRsjkiM8IRbC80Ni1jzU5jiO6pJvbKd"
 	sign := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(key, qrCode))))
 	form := url.Values{"qrCode": {qrCode}, "sign": {sign}}
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient().PostForm(api, form); err != nil {
+	if resp, err = httpClient(a).PostForm(api, form); err != nil {
 		return
 	}
 	defer resp.Body.Close()

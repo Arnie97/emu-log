@@ -45,7 +45,7 @@ func (a *Mobile12306) Info(serial string) (info JSONObject, err error) {
 	form := urlStruct.Query()
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient().PostForm(api, form); err != nil {
+	if resp, err = httpClient(a).PostForm(api, form); err != nil {
 		return
 	}
 	defer resp.Body.Close()

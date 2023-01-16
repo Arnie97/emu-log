@@ -29,12 +29,12 @@ func (ShanghaiLegacy) AlwaysOn() bool {
 	return true
 }
 
-func (ShanghaiLegacy) Info(serial string) (info JSONObject, err error) {
+func (a ShanghaiLegacy) Info(serial string) (info JSONObject, err error) {
 	const api = "https://g.xiuxiu365.cn/railway_api/web/index/train?pqCode=%s"
 	url := fmt.Sprintf(api, serial)
 
 	var resp *http.Response
-	if resp, err = common.HTTPClient().Get(url); err != nil {
+	if resp, err = httpClient(a).Get(url); err != nil {
 		return
 	}
 	defer resp.Body.Close()
