@@ -25,13 +25,14 @@ func NewRouter() *chi.Mux {
 	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
 	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
 	mux.Get(`/emu/{unitNo:.*,.*}`, multiUnitNoHandler)
-	mux.Route(`/emu/{unitNo:[A-Z-\d]*?[@\d]\d{3}}`, func(r chi.Router) {
+	mux.Route(`/emu/{unitNo:[A-Z-\d]{2,}?[@\d]\d{3}}`, func(r chi.Router) {
 		r.Get("/", singleUnitNoHandler)
 		r.Get("/qr", unitBuildURLHandler)
 		r.Post("/qr", unitParseURLHandler)
 	})
 	mux.Put(`/emu/qr`, unitParseURLMapHandler)
 	mux.Post(`/emu/qr`, unitParseURLHandler)
+	mux.Post(`/emu/{any}/qr`, unitParseURLHandler)
 	mux.Get(`/emu/{unitNo:[A-Z-\d@]+}`, fuzzyUnitNoHandler)
 	return mux
 }
