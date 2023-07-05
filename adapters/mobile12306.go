@@ -28,7 +28,7 @@ func (Mobile12306) Name() string {
 }
 
 func (Mobile12306) URL() (pattern string, mockValue interface{}) {
-	return "https://p.12306.cn/tservice/qr/travel/v1?c=%s&w=h", nil
+	return "https://p.12306.cn/tservice/qr/travel/v1?c=%s&w=%v", "h"
 }
 
 func (Mobile12306) AlwaysOn() bool {
