@@ -13,7 +13,7 @@ var (
 		{"(CR)H([34]00)", "$1$2"},
 		{"CHR", "CRH"},
 	}
-	trainNoRegExp = regexp.MustCompile(`\b[GDC]?\d{1,4}\b`)
+	trainNoRegExp = regexp.MustCompile(`\b[XGTKDCS]?\d{1,4}\b`)
 )
 
 // NormalizeTrainNo converts possibly abbreviated train number pairs to an

@@ -22,7 +22,7 @@ func NewRouter() *chi.Mux {
 		middleware.Timeout(common.RequestTimeout),
 	)
 	mux.Get(`/map/{stationName}`, railMapHandler)
-	mux.Get(`/train/{trainNo:[GDC]\d{1,4}}`, singleTrainNoHandler)
+	mux.Get(`/train/{trainNo:[XGTKDCS]\d{1,4}}`, singleTrainNoHandler)
 	mux.Get(`/train/{trainNo:.*,.*}`, multiTrainNoHandler)
 	mux.Get(`/emu/{unitNo:.*,.*}`, multiUnitNoHandler)
 	mux.Route(`/emu/{unitNo:[A-Z-\d]{2,}?[@\d]\d{3}}`, func(r chi.Router) {
