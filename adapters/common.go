@@ -48,9 +48,9 @@ var (
 		"%02d", "%02[2]v",
 	)
 	printfRegExps = []interface{}{
-		`([-\w\s,]+)`, // %s
-		`(?:\d+)`,     // %d
-		`(?:.*?)`,     // %v
+		`([-\w\s,*+/]+)`, // %s
+		`(?:\d+)`,        // %d
+		`(?:.*?)`,        // %v
 	}
 	Adapters = make(map[string]Adapter)
 )
