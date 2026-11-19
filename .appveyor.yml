@@ -7,10 +7,21 @@ environment:
   GO15VENDOREXPERIMENT: 1
   GO111MODULE: on
 
+  matrix:
+  - go: '1.10.8'
+  - go: '1.14.15'
+  - go: '1.18.10'
+  - go: '1.22.12'
+  - go: '1.26.11'
+
+init:
+- gvm install go$go --binary
+- gvm use go$go
+
 install:
+- pwd
 - uname -a
 - go version
-- go env
 - gcc --version
 
 build_script:
@@ -18,16 +29,11 @@ build_script:
 - go build -v -ldflags="-s -w"
 
 after_build:
-- du emu-log
+- "bash -c 'appveyor addMessage $(du -k emu-log)'"
 
 test_script:
 - go vet ./...
 - go test -v -cover ./...
-
-stack:
-- go 1.10
-- go 1.14
-- go 1.19
 
 image:
 - MacOS
@@ -37,27 +43,30 @@ image:
 matrix:
   exclude:
   - image: MacOS
-    stack: go 1.10
+    go: '1.10.8'
   - image: Visual Studio 2019
-    stack: go 1.10
+    go: '1.10.8'
   - image: Visual Studio 2019
-    stack: go 1.14
+    go: '1.26.11'
 
 for:
 - matrix:
     only:
     - image: MacOS
-      stack: go 1.19
-  init:
-  - gvm install go1.19 --binary
   before_build:
   - sw_vers
   before_test:
   - sudo systemsetup -settimezone $TZ
+
+- matrix:
+    only:
+    - image: MacOS
+      go: '1.14.15'
   test_script:
+  - go vet ./...
   - go test -covermode=count -coverprofile=coverage.txt ./...
   on_success:
-  - curl -fsSL https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --import --no-default-keyring --keyring trustedkeys.gpg
+  - curl -fsSL https://keybase.io/codecovsecops/pgp_keys.asc | gpg --import --no-default-keyring --keyring trustedkeys.gpg
   - curl -fsSL --remote-name-all https://uploader.codecov.io/latest/macos/codecov{,.SHA256SUM{,.sig}}
   - gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
   - shasum -a 256 -c codecov.SHA256SUM
@@ -67,21 +76,25 @@ for:
 - matrix:
     only:
     - image: Ubuntu
-  clone_folder: '$HOME/go/src/github.com/arnie97/emu-log'
-  init:
-  - gvm install go1.10 --binary
+      go: '1.10.8'
+  clone_folder: '$HOME/.gvm/pkgsets/go$go/global/src/github.com/arnie97/emu-log'
+  before_build:
+  - gvm install go1.14.15 --binary
+  - (gvm use go1.14.15 && go mod vendor)
+
+- matrix:
+    only:
+    - image: Ubuntu
   before_build:
   - lsb_release -a
-  - export GOPATH=$HOME/go
-  - (gvm use go1.14 && go mod vendor)
 
 - matrix:
     only:
     - image: Visual Studio 2019
-  clone_folder: 'c:\go\src\github.com\arnie97\emu-log'
-  environment:
-    GOPATH: 'c:\go'
-    PATH: 'c:\msys64\mingw64\bin;c:\msys64\bin;%PATH%'
+  init:
+  - ps: |
+      $env:GOROOT = 'c:\go' + ($env:go -replace '\.\d+$|\.')
+      $env:PATH = "$env:GOROOT\bin;c:\msys64\mingw64\bin;c:\msys64\bin;$env:PATH"
   before_build:
   - ver
   before_test:
