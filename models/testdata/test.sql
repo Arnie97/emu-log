@@ -56,8 +56,8 @@ INSERT INTO emu_latest
 ('CR200J2015', 'D5467', '2020-11-15', 59),
 ('CRH2A2015', 'D3205', '2020-11-18', 80);
 
-DELETE FROM emu_qr_code;
-INSERT INTO emu_qr_code
+DELETE FROM emu_serial;
+INSERT INTO emu_serial
 ("rowid", "emu_no", "adapter", "operator", "qr_code") VALUES
 (12,    'CR400BF3010', 'H', 'H', 'PQ0004200'),
 (988,   'CRH380D1585', 'H', 'H', 'PQ0495500'),

@@ -51,6 +51,10 @@ func (Jinan) AlwaysOn() bool {
 	return true
 }
 
+func (Jinan) ForUnits() bool {
+	return true
+}
+
 func (a Jinan) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("referer", fmt.Sprintf(
 		"https://servicewechat.com/%s/54/page-frame.html", jinanApp,
@@ -157,7 +161,7 @@ func (Jinan) TrainNo(info JSONObject) (trains []TrainSchedule, err error) {
 	for i, elem := range infoList {
 		if i == 0 {
 			timestamp := elem.TrainInfo.ArriveTimestamp
-			train.Date = time.Unix(timestamp, 0).Format(common.ISODate)
+			train.Date = time.Unix(timestamp, 0).Format(common.DateOnly)
 		} else {
 			train.TrainNo += "/"
 		}

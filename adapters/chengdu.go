@@ -43,6 +43,10 @@ func (Chengdu) AlwaysOn() bool {
 	return false
 }
 
+func (Chengdu) ForUnits() bool {
+	return true
+}
+
 func (a Chengdu) Info(serial string) (info JSONObject, err error) {
 	const api = "https://kyd.cd-rail.com/KYDMS_S/WeixinServlet"
 

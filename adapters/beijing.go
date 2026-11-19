@@ -36,6 +36,10 @@ func (Beijing) AlwaysOn() bool {
 	return false
 }
 
+func (Beijing) ForUnits() bool {
+	return true
+}
+
 func (a Beijing) Info(qrCode string) (info JSONObject, err error) {
 	const api = "https://aymaoto.jtlf.cn/webapi/otoshopping/ewh_getqrcodetrainnoinfo"
 	const key = "qrcode=%s&key=ltRsjkiM8IRbC80Ni1jzU5jiO6pJvbKd"

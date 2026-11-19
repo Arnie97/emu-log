@@ -29,6 +29,10 @@ func (ShanghaiLegacy) AlwaysOn() bool {
 	return true
 }
 
+func (ShanghaiLegacy) ForUnits() bool {
+	return true
+}
+
 func (a ShanghaiLegacy) Info(serial string) (info JSONObject, err error) {
 	const api = "https://g.xiuxiu365.cn/railway_api/web/index/train?pqCode=%s"
 	url := fmt.Sprintf(api, serial)

@@ -7,19 +7,25 @@ import (
 )
 
 type SerialModel struct {
-	Adapter  string `json:"adapter"`
-	Operator string `json:"operator"`
-	UnitNo   string `json:"emu_no"`
-	SerialNo string `json:"qr_code"`
+	Adapter  string  `json:"adapter"`
+	Operator string  `json:"operator"`
+	UnitNo   string  `json:"emu_no"`
+	SerialNo string  `json:"qr_code"`
+	Date     *string `json:"date,omitempty"`
+}
+
+func (s SerialModel) String() string {
+	return formatQRCodeRecord(s.Adapter, s.Operator, s.UnitNo, s.SerialNo, s.Date)
 }
 
 func (SerialModel) Schema() string {
 	return `
-		CREATE TABLE IF NOT EXISTS emu_qr_code (
+		CREATE TABLE IF NOT EXISTS emu_serial (
 			adapter  CHAR(1) NOT NULL,
 			operator CHAR(1) NOT NULL,
 			emu_no   VARCHAR NOT NULL,
 			qr_code  VARCHAR NOT NULL,
+			date     VARCHAR,
 			UNIQUE(adapter, qr_code)
 		);
 	`
@@ -33,8 +39,8 @@ func init() {
 func (s SerialModel) Add() {
 	_, err := DB().Exec(
 		`INSERT OR IGNORE INTO
-		emu_qr_code(adapter, operator, emu_no, qr_code) VALUES (?, ?, ?, ?)`,
-		s.Adapter, s.Operator, s.UnitNo, s.SerialNo,
+		emu_serial(adapter, operator, emu_no, qr_code, date) VALUES (?, ?, ?, ?, ?)`,
+		s.Adapter, s.Operator, s.UnitNo, s.SerialNo, common.DateTimeString(),
 	)
 	common.Must(err)
 }
@@ -64,15 +70,16 @@ func (s SerialModel) AddTrainOperationLogs(info adapters.JSONObject) {
 }
 
 // Query executes a SQL statement and returns all the result rows.
-func (s SerialModel) Query(sql string, args ...interface{}) (serials []SerialModel) {
-	rows, err := DB().Query(sql, args...)
+func (s SerialModel) Query(query string, args ...interface{}) (serials []SerialModel) {
+	rows, err := DB().Query(query, args...)
 	common.Must(err)
 	defer rows.Close()
 
 	for rows.Next() {
-		common.Must(rows.Scan(&s.Adapter, &s.Operator, &s.UnitNo, &s.SerialNo))
+		common.Must(rows.Scan(&s.Adapter, &s.Operator, &s.UnitNo, &s.SerialNo, &s.Date))
 		serials = append(serials, s)
 	}
+	common.Must(rows.Err())
 	return serials
 }
 
@@ -80,8 +87,8 @@ func (s SerialModel) Query(sql string, args ...interface{}) (serials []SerialMod
 // of a given adapter from the database.
 func ListSerials(a adapters.Adapter) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT adapter, operator, emu_no, qr_code
-		FROM emu_qr_code
+		SELECT adapter, operator, emu_no, qr_code, date
+		FROM emu_serial
 		WHERE adapter = ?
 		ORDER BY qr_code ASC;
 	`, a.Code())
@@ -90,8 +97,8 @@ func ListSerials(a adapters.Adapter) []SerialModel {
 // ListSerialsForSingleUnit returns all the known serials for one unit.
 func ListSerialsForSingleUnit(unitNo string) []SerialModel {
 	return SerialModel{}.Query(`
-		SELECT adapter, operator, emu_no, qr_code
-		FROM emu_qr_code
+		SELECT adapter, operator, emu_no, qr_code, date
+		FROM emu_serial
 		WHERE emu_no LIKE ?
 		ORDER BY rowid DESC;
 	`, unitNo)
@@ -102,15 +109,15 @@ func ListSerialsForSingleUnit(unitNo string) []SerialModel {
 // those with known train schedules.
 func ListLatestSerialForMultiUnits(a adapters.Adapter, operators ...string) []SerialModel {
 	query, argv := In(`
-		SELECT adapter, operator, emu_qr_code.emu_no, qr_code
+		SELECT adapter, operator, emu_serial.emu_no, qr_code, emu_serial.date
 		FROM (
-			SELECT emu_no, adapter, operator, qr_code
-			FROM emu_qr_code
+			SELECT emu_no, adapter, operator, qr_code, date
+			FROM emu_serial
 			WHERE operator %s AND adapter = ?
 			GROUP BY emu_no
 			HAVING MAX(rowid)
 			ORDER BY emu_no ASC
-		) AS emu_qr_code
+		) AS emu_serial
 		LEFT JOIN (
 			SELECT emu_no, date
 			FROM (
@@ -122,8 +129,8 @@ func ListLatestSerialForMultiUnits(a adapters.Adapter, operators ...string) []Se
 			GROUP BY emu_no
 			HAVING MAX(rowid)
 		) AS emu_log
-		ON emu_qr_code.emu_no = emu_log.emu_no
-		WHERE date IS NULL OR date < DATETIME('now', 'localtime');
+		ON emu_serial.emu_no = emu_log.emu_no
+		WHERE emu_log.date IS NULL OR emu_log.date < DATETIME('now', 'localtime');
 	`, operators, "IS NOT NULL")
 	argv = append(argv, a.Code())
 	return SerialModel{}.Query(query, argv...)

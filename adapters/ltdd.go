@@ -45,6 +45,10 @@ func (LTDD) AlwaysOn() bool {
 	return true
 }
 
+func (LTDD) ForUnits() bool {
+	return true
+}
+
 func (a LTDD) RoundTrip(req *http.Request) (*http.Response, error) {
 	common.SetCookies(req, []*http.Cookie{{
 		Name:  "OpenId",

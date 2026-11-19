@@ -30,6 +30,10 @@ func (Guangzhou) AlwaysOn() bool {
 	return false
 }
 
+func (Guangzhou) ForUnits() bool {
+	return true
+}
+
 func (a Guangzhou) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", SessionID(a))
 	return AdapterConf(a).Request.RoundTrip(req)

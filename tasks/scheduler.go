@@ -126,8 +126,8 @@ func checkDatabase() {
 		models.CountRecords("emu_log"),
 	)
 	log.Info().Msgf(
-		"found %d units and %d QR codes in the database",
-		models.CountRecords("emu_qr_code", "DISTINCT emu_no"),
-		models.CountRecords("emu_qr_code"),
+		"found %d units and %d serials in the database",
+		models.CountRecords("emu_serial", "DISTINCT emu_no"),
+		models.CountRecords("emu_serial"),
 	)
 }

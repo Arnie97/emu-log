@@ -5,35 +5,42 @@ import (
 )
 
 const (
-	// ISODate is the date layout defined in ISO 8601 or RFC 3339.
-	ISODate = "2006-01-02"
+	// DateOnly is the date layout defined in ISO 8601 or RFC 3339.
+	DateOnly = "2006-01-02"
+	DateTime = "2006-01-02 15:04:05"
 )
 
 var mockWallClock func() time.Time
 
+func DateTimeString(args ...time.Time) string {
+	return resolveTime(args...).Format(DateTime)
+}
+
 // UnixMilli backports time.UnixMilli() from Go 1.17 and later versions.
 func UnixMilli(args ...time.Time) int64 {
-	var t time.Time
+	return resolveTime(args...).UnixNano() / int64(time.Millisecond)
+}
 
+func resolveTime(args ...time.Time) time.Time {
 	switch {
 	case mockWallClock != nil:
-		t = mockWallClock()
+		return mockWallClock()
 	case len(args) == 0:
-		t = time.Now()
+		return time.Now()
 	case len(args) == 1:
-		t = args[0]
+		return args[0]
 	default:
 		panic("Invalid argument length")
 	}
-
-	return t.UnixNano() / int64(time.Millisecond)
 }
 
-func MockStaticUnixMilli(t int64) {
+func MockStaticUnixMilli(t int64) func() {
+	previousClock := mockWallClock
 	mockWallClock = func() time.Time {
 		return time.Unix(0,
 			(time.Duration(t) * time.Millisecond).Nanoseconds())
 	}
+	return func() { mockWallClock = previousClock }
 }
 
 // Duration is a TOML wrapper type for time.Duration.

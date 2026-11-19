@@ -35,6 +35,10 @@ func (Harbin) AlwaysOn() bool {
 	return false
 }
 
+func (Harbin) ForUnits() bool {
+	return true
+}
+
 func (a Harbin) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Cookie", SessionID(a))
 	return AdapterConf(a).Request.RoundTrip(req)

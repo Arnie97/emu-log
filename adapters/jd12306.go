@@ -31,6 +31,10 @@ func (JD12306) AlwaysOn() bool {
 	return true
 }
 
+func (JD12306) ForUnits() bool {
+	return true
+}
+
 func (a *JD12306) RoundTrip(req *http.Request) (*http.Response, error) {
 	common.SetCookies(req, a.cookies)
 	resp, err := AdapterConf(a).Request.RoundTrip(req)

@@ -43,7 +43,7 @@ func init() {
 func (logModel LogModel) Add() {
 	// use current date as the default value if date is not provided
 	if logModel.Date == "" {
-		logModel.Date = time.Now().Format(common.ISODate)
+		logModel.Date = time.Now().Format(common.DateOnly)
 	}
 
 	res, err := DB().Exec(
@@ -121,7 +121,7 @@ func ListTrainsForSingleUnitNo(unitNo string) []LogModel {
 			FROM emu_log
 			WHERE emu_no IN (
 				SELECT emu_no
-				FROM emu_qr_code
+				FROM emu_serial
 				WHERE emu_no LIKE ?
 			)
 			ORDER BY date DESC, rowid DESC
@@ -150,7 +150,7 @@ func ListLatestTrainByCondition(limit int, cond string, args ...interface{}) []L
 			FROM emu_log
 			WHERE emu_no IN (
 				SELECT DISTINCT emu_no
-				FROM emu_qr_code
+				FROM emu_serial
 				WHERE emu_no `+cond+`
 			)
 			GROUP BY emu_no

@@ -13,7 +13,7 @@ func ExampleDB() {
 	y := models.DB()
 	_, err := x.Exec(`SELECT 1;`)
 	resetTestDB()
-	c1 := models.CountRecords("emu_qr_code")
+	c1 := models.CountRecords("emu_serial")
 	c2 := models.CountRecords("emu_log", "date")
 
 	fmt.Println("x == y:  ", x == y)
@@ -31,7 +31,10 @@ func ExampleListLatestTrainByCondition() {
 	resetTestDB()
 
 	serialModel := models.SerialModel{UnitNo: "CRH6A4002", Adapter: "F", Operator: "A", SerialNo: "002"}
+	const mockTimestamp int64 = 1714433666587
+	defer common.MockStaticUnixMilli(mockTimestamp)()
 	serialModel.Add()
+
 	fmt.Println(models.ListSerials(adapters.MustGetAdapterByCode("F")))
 	fmt.Println(models.ListSerialsForSingleUnit("%J2015"))
 	fmt.Println(models.ListLatestSerialForMultiUnits(adapters.MustGetAdapterByCode("P")))
@@ -61,7 +64,7 @@ func ExampleListLatestTrainByCondition() {
 	fmt.Println(models.ListTrainsForSingleUnitNo("CRH6A4002"))
 
 	// Output:
-	// [{F A CRH6A4002 002} {F ? CH001 053} {F ? CRH2650 111} {F N CRH5A5075 472}]
+	// [{F A CRH6A4002 002 2024-04-30 07:34:26} {F ? CH001 053} {F ? CRH2650 111} {F N CRH5A5075 472}]
 	// [{U H CR200J2015 PV0000064000} {U H CR200J2015 PV0000063800} {H H CR200J2015 PQ2098500} {H H CR200J2015 PQ0916500} {H H CR200J2015 PQ0916000}]
 	// [{P P CR400AF0207 51573000} {P P CR400AF2015 51742500}]
 	// [{M H CR300BF3010 H0140000} {M P CR400AF0207 CR400AF-0207-05-03A} {M P CR400AF2015 CR400AF-2015-03-10A} {M H CR400BF3010 H0035000}]

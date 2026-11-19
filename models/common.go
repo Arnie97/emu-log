@@ -88,3 +88,14 @@ func In(query string, args []string, emptyDefault string) (
 	}
 	return
 }
+
+// formatQRCodeRecord is used to override the models' String() methods, because
+// the default Go struct formatting only prints the address of a pointer.
+func formatQRCodeRecord(adapter, operator, unitNo, qrCode string, date *string) string {
+	var delimiter, dateValue string
+	if date != nil {
+		delimiter = " "
+		dateValue = *date
+	}
+	return fmt.Sprintf("{%s %s %s %s%v%s}", adapter, operator, unitNo, qrCode, delimiter, dateValue)
+}

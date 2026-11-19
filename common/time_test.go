@@ -28,8 +28,21 @@ func ExampleUnixMilli() {
 
 func ExampleMockStaticUnixMilli() {
 	mockTime := int64(rand.Uint32())
-	common.MockStaticUnixMilli(mockTime)
+	defer common.MockStaticUnixMilli(mockTime)()
 	fmt.Println(common.UnixMilli() == mockTime)
 
 	// Output: true
+}
+
+func ExampleDateTimeString() {
+	const mockTimestamp int64 = 1714433666587
+	fmt.Println(common.DateTimeString(time.Unix(0, mockTimestamp*int64(time.Millisecond))))
+	defer common.MockStaticUnixMilli(mockTimestamp)()
+	fmt.Println(common.DateTimeString())
+	fmt.Println(common.DateTimeString(time.Unix(0, 0)))
+
+	// Output:
+	// 2024-04-30 07:34:26
+	// 2024-04-30 07:34:26
+	// 2024-04-30 07:34:26
 }

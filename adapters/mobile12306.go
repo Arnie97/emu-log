@@ -35,6 +35,10 @@ func (Mobile12306) AlwaysOn() bool {
 	return false
 }
 
+func (Mobile12306) ForUnits() bool {
+	return true
+}
+
 func (a *Mobile12306) Info(serial string) (info JSONObject, err error) {
 	const api = "https://mobile.12306.cn/wxxcx/wechat/main/travelServiceDecodeQrcode"
 

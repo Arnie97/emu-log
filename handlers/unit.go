@@ -47,7 +47,7 @@ func fuzzyUnitNoHandler(w http.ResponseWriter, r *http.Request) {
 		results = append(results, models.LogModel{
 			UnitNo:  requestLimit.Indicator.UnitNo,
 			TrainNo: requestLimit.Indicator.TrainNo,
-			Date:    time.Now().Format(common.ISODate),
+			Date:    time.Now().Format(common.DateOnly),
 		})
 	}
 	jsonResponse(results, w)
@@ -89,14 +89,27 @@ func unitParseURLHandler(w http.ResponseWriter, r *http.Request) {
 	a, serial := adapters.ParseURL(*input.URL)
 	unitNo := common.NormalizeUnitNo(chi.URLParam(r, "unitNo"))
 	if a == nil {
-		serialModel := models.SerialModel{
+		qrCode := models.QRCodeModel{
 			Adapter:  "?",
 			Operator: "?",
 			UnitNo:   unitNo,
-			SerialNo: *input.URL,
+			QRCode:   *input.URL,
 		}
-		serialModel.Add()
-		log.Debug().Msgf("[%s] %v", serialModel.Adapter, serialModel)
+		qrCode.Add()
+		log.Debug().Msgf("[%s] %v", qrCode.Adapter, qrCode)
+		return
+	}
+
+	// case 2 optimized: well-known QR codes that does not identify a unit
+	if !a.ForUnits() {
+		qrCode := models.QRCodeModel{
+			Adapter:  a.Code(),
+			Operator: a.Code(),
+			UnitNo:   unitNo,
+			QRCode:   serial,
+		}
+		qrCode.Add()
+		log.Debug().Msgf("[%s] %v", qrCode.Adapter, qrCode)
 		return
 	}
 
@@ -142,9 +155,9 @@ func unitParseURLMapHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// case 2: unrecognized URL
+	// case 2: unrecognized URL or a QR code that does not identify a unit
 	a, serial := adapters.ParseURL(*input.URL)
-	if a == nil {
+	if a == nil || !a.ForUnits() {
 		return
 	}
 

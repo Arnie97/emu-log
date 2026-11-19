@@ -28,6 +28,9 @@ type (
 		// and the unknown serials have to be visited in each scan.
 		AlwaysOn() bool
 
+		// ForUnits reports whether the adapter's QR codes identify train units.
+		ForUnits() bool
+
 		Info(serialNo string) (info JSONObject, err error)
 		TrainNo(info JSONObject) ([]TrainSchedule, error)
 		UnitNo(serialNo string, info JSONObject) (unitNo string, err error)

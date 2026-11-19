@@ -22,6 +22,10 @@ func (OfflinePSR) AlwaysOn() bool {
 	return true
 }
 
+func (OfflinePSR) ForUnits() bool {
+	return false
+}
+
 func (OfflinePSR) Info(string) (JSONObject, error) {
 	return nil, nil
 }

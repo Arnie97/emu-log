@@ -38,6 +38,10 @@ func (Shanghai) AlwaysOn() bool {
 	return true
 }
 
+func (Shanghai) ForUnits() bool {
+	return true
+}
+
 func (a Shanghai) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("channel", "MALL-WX-APPLET")
 	req.Header.Set("version", "MALL-WX-APPLET_1.0.7")
