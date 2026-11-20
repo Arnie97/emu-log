@@ -124,8 +124,8 @@ func unitParseURLHandler(w http.ResponseWriter, r *http.Request) {
 		serialModel.UnitNo, err = a.UnitNo(serial, info)
 	}
 	serialModel.Operator, err = adapters.Operator(a, serial, info)
-	if !common.ApproxEqualUnitNo(unitNo, serialModel.UnitNo) {
-		serialModel.UnitNo = "-" + unitNo + "@" + serialModel.UnitNo
+	if serialModel.UnitNo == "" {
+		serialModel.UnitNo = "-" + unitNo + "@"
 		serialModel.Add()
 		log.Debug().Msgf("[%s] %v", serialModel.Adapter, serialModel)
 		return
