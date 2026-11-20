@@ -121,12 +121,8 @@ func checkLocalTimezone() {
 // checkDatabase prints row counts for all tables to ensure a working DB
 func checkDatabase() {
 	log.Info().Msgf(
-		"found %d train numbers and %d log records in the database",
+		"found %d train numbers, %d units, and %d serials in the database",
 		models.CountRecords("emu_latest"),
-		models.CountRecords("emu_log"),
-	)
-	log.Info().Msgf(
-		"found %d units and %d serials in the database",
 		models.CountRecords("emu_serial", "DISTINCT emu_no"),
 		models.CountRecords("emu_serial"),
 	)
